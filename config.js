@@ -1,7 +1,7 @@
 
 const CONFIG_APP = {
     APP: {
-        NAME: "MULTICHECKER-DEV",
+        NAME: "WATCHMARKET",
         VERSION: "7.0",
         SCAN_LIMIT: false,
         AUTORUN: true,  // Set false untuk menyembunyikan & menonaktifkan fitur autorun
