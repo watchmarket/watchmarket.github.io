@@ -315,6 +315,68 @@ input[type="radio"],
     border-bottom-right-radius: var(--border-radius) !important;
 }
 
+/* ==========================================================================
+   Scanner Form Controls - Standardized Layout
+   ========================================================================== */
+.scanner-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.scanner-label input[type="checkbox"] {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.scanner-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.scanner-control input[type="checkbox"] {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.scanner-control span {
+    font-weight: 600;
+}
+
+.scanner-control-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.scanner-control-inline input.uk-input {
+    height: 28px;
+    padding: 4px 8px;
+    font-size: 13px;
+}
+
+.scanner-actions {
+    display: inline-flex;
+}
+
+.scanner-actions .uk-button {
+    height: 28px;
+    line-height: 28px;
+    padding: 0 12px;
+    font-size: 13px;
+}
+
 /* Flat button styles */
 .uk-button-default {
     background: #f1f5f9;
@@ -1019,15 +1081,19 @@ body.dark-mode {
 .filter-groups-inline > div > b:first-child {
     font-size: 11px;
     font-weight: bold;
+    line-height: 1.4;
     margin-right: 2px;
     white-space: nowrap;
+    vertical-align: middle;
 }
 
 /* Separator */
 .filter-groups-inline .uk-text-muted {
     color: #999;
     font-size: 14px;
+    line-height: 1.4;
     margin: 0 4px;
+    vertical-align: middle;
 }
 
 /* Checkbox Label - More Compact */
@@ -1040,9 +1106,11 @@ body.dark-mode {
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 6px;
     font-size: 11px;
+    line-height: 1.4;
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
+    vertical-align: middle;
 }
 
 .filter-groups-inline label:hover {
@@ -1057,13 +1125,16 @@ body.dark-mode {
     margin: 0;
     width: 14px;
     height: 14px;
+    flex-shrink: 0;
     cursor: pointer;
+    vertical-align: middle;
 }
 
 /* Label text and count */
 .filter-groups-inline label span {
     font-weight: 600;
-    line-height: 1;
+    line-height: 1.4;
+    vertical-align: middle;
 }
 
 /* Checked state - Colors are now applied dynamically via JavaScript (Opsi 4) */
@@ -1583,6 +1654,12 @@ body.dark-mode .db-table-title .uk-badge {
 /* LIFI badge color */
 .bg-lifi {
     background-color: #bf0cff !important;
+    color: white !important;
+}
+
+/* 1inch badge color */
+.bg-1inch {
+    background-color: #06109b !important;
     color: white !important;
 }
 
