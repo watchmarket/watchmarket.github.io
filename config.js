@@ -1,8 +1,8 @@
 
 const CONFIG_APP = {
-     APP: {
-        NAME: "WATCHMARKET",
-        VERSION: "8.8",
+    APP: {
+        NAME: "MULTICHECKER-DEV",
+        VERSION: "8.0",
         SCAN_LIMIT: false,
         AUTORUN: true,  // Set false untuk menyembunyikan & menonaktifkan fitur autorun
     },
@@ -183,7 +183,7 @@ const CONFIG_CHAINS = {
                 tx: (hash) => `https://bscscan.com/tx/${hash}`
             }
         },
-        DEXS: ["odos", "paraswap", "0x", "kyber", "1inch", "lifi", "okx", "rubic"],
+        DEXS: ["odos", "paraswap", "0x", "kyber", "lifi", "okx"],
         WALLET_CEX: {
             GATE: { address : '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe', chainCEX : 'BSC' },
             BINANCE: { address : '0x8894E0a0c962CB723c1976a4421c95949bE2D4E3', address2 : '0xe2fc31F816A9b94326492132018C3aEcC4a93aE1', chainCEX : 'BSC' },
@@ -210,7 +210,7 @@ const CONFIG_CHAINS = {
         DATAJSON: 'https://monitoring-koin.vercel.app/JSON_KOIN/POLYGON.json',
         BaseFEEDEX : "MATICUSDT", // Corrected from POLUSDT
         GASLIMIT: 80000,
-        DEXS: ["odos", "paraswap", "0x", "kyber", "1inch", "lifi", "okx", "rubic"],
+        DEXS: ["odos", "paraswap", "0x", "kyber", "lifi", "okx"],
         LINKS: {
             explorer: {
                 token: (address) => `https://polygonscan.com/token/${address}`,
@@ -244,7 +244,7 @@ const CONFIG_CHAINS = {
                 tx: (hash) => `https://arbiscan.io/tx/${hash}`
             }
         },
-        DEXS: ["odos", "paraswap", "0x", "kyber", "1inch", "lifi", "okx", "rubic"],
+        DEXS: ["odos", "paraswap", "0x", "kyber", "lifi", "okx"],
         WALLET_CEX: {
             GATE: { address : '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe', chainCEX : 'ARBITRUM' },
             BINANCE: { address : '0x290275e3db66394C52272398959845170E4DCb88', address2 : '0xe7804c37c13166fF0b37F5aE0BB07A3aEbb6e245', chainCEX : 'ARBITRUM' },
@@ -269,7 +269,7 @@ const CONFIG_CHAINS = {
                 tx: (hash) => `https://etherscan.io/tx/${hash}`
             }
         },
-        DEXS: ["odos", "paraswap", "0x", "kyber", "1inch", "lifi", "okx", "rubic"],
+        DEXS: ["odos", "paraswap", "0x", "kyber", "lifi", "okx"],
         WALLET_CEX: {
             GATE: { address : '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe', chainCEX : 'ETH' },
             BINANCE: { address : '0xDFd5293D8e347dFe59E90eFd55b2956a1343963d', address2 : '0x28C6c06298d514Db089934071355E5743bf21d60', address3 : '0x21a31Ee1afC51d94C2eFcCAa2092aD1028285549', chainCEX : 'ETH' },
@@ -297,7 +297,7 @@ const CONFIG_CHAINS = {
                 tx: (hash) => `https://basescan.org/tx/${hash}`
             }
         },
-        DEXS: ["odos", "paraswap", "0x", "kyber", "1inch", "lifi", "okx", "rubic"],
+        DEXS: ["odos", "paraswap", "0x", "kyber", "lifi", "okx"],
         WALLET_CEX: {
             GATE: { address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe', chainCEX: 'BASE' },
             BINANCE: { address: '0xDFd5293D8e347dFe59E90eFd55b2956a1343963d', address2: '0x28C6c06298d514Db089934071355E5743bf21d60', chainCEX: 'BASE' },
@@ -370,10 +370,11 @@ const CONFIG_UI = {
         { key: 'paraswap', label: 'ParaSwap', badgeClass: 'bg-paraswap', fallbackSlug: 'paraswap' },
         { key: '0x', label: 'Matcha', badgeClass: 'bg-matcha', fallbackSlug: '0x' },
         { key: 'kyber', label: 'KyberSwap', badgeClass: 'bg-kyberswap', fallbackSlug: 'kyberswap' },
-        { key: '1inch', label: '1inch', badgeClass: 'bg-1inch', fallbackSlug: '1inch' },
         { key: 'lifi', label: 'LIFI', badgeClass: 'bg-lifi', fallbackSlug: 'lifi' },
-        { key: 'jupiter', label: 'Jupiter', badgeClass: 'bg-jupiter', fallbackSlug: 'jupiter' }
-        // DISABLED: okx, dzap, fly (now used as fallback only or not active)
+        { key: 'jupiter', label: 'Jupiter', badgeClass: 'bg-jupiter', fallbackSlug: 'jupiter' },
+        { key: 'okx', label: 'OKX', badgeClass: 'bg-okx', fallbackSlug: 'okx' }
+        // DISABLED: rango (requires production API key), 1inch, rubic (disabled by user request)
+        // DISABLED: dzap, fly (now used as fallback only or not active)
     ],
     CHAINS: [
         { key: 'polygon', label: 'Polygon', short: 'POLY', badgeClass: 'bg-success text-light' },
@@ -689,7 +690,7 @@ const CONFIG_DEXS = {
     '1inch': {
         label: '1inch',
         badgeClass: 'bg-1inch',
-        disabled: false, // ✅ ENABLED - Aktif untuk semua chain
+        disabled: true, // ⚠️ DISABLED - Disabled by user request
         warna: "#06109bff",
         builder: ({ chainCode, NameToken, NamePair }) => `https://1inch.com/swap?src=${chainCode}:${NameToken}&dst=${chainCode}:${NamePair}`,
         fetchdex: {
@@ -701,7 +702,7 @@ const CONFIG_DEXS = {
     rubic: {
         label: 'Rubic',
         badgeClass: 'bg-rubic',
-        disabled: false, // ✅ ENABLED - Rubic DEX Aggregator active
+        disabled: true, // ⚠️ DISABLED - Disabled by user request
         proxy: true, // ✅ Enable CORS proxy to avoid 429/500 errors
         warna: "#00e28d", // Rubic green
         isMultiDex: true, // ⭐ Multi-DEX aggregator - tampilkan top 3 providers
@@ -786,6 +787,40 @@ const CONFIG_DEXS = {
         allowFallback: false, // LIFI is already a multi-aggregator, no fallback needed
         isMultiDex: true, // Tampilkan provider teratas dengan format lengkap
         maxProviders: 2 // ⚠️ LIMIT: Hanya tampilkan 2 DEX teratas (tidak 3 seperti DZAP)
+    },
+
+    rango: {
+        label: 'RANGO',
+        badgeClass: 'bg-rango',
+        warna: "#00d4ff", // Rango cyan/blue
+        disabled: true, // ⚠️ DISABLED: Even test API key returns 403 Forbidden
+        // Rango requires official production API key with domain whitelist
+        // Request key via Discord: https://discord.gg/rango (#support-ticket)
+        builder: ({ chainCode, chainName, tokenAddress, pairAddress }) => {
+            // Rango uses chain names, not chain IDs
+            // Map common chains to Rango format
+            const rangoChainMap = {
+                'ethereum': 'ETH',
+                'bsc': 'BSC',
+                'polygon': 'POLYGON',
+                'avalanche': 'AVAX_CCHAIN',
+                'arbitrum': 'ARBITRUM',
+                'optimism': 'OPTIMISM',
+                'base': 'BASE',
+                'solana': 'SOLANA'
+            };
+            const fromChain = rangoChainMap[String(chainName || '').toLowerCase()] || 'ETH';
+            return `https://app.rango.exchange/?fromBlockchain=${fromChain}&fromToken=${tokenAddress}&toBlockchain=${fromChain}&toToken=${pairAddress}`;
+        },
+        fetchdex: {
+            primary: {
+                tokentopair: 'rango',    // CEX→DEX: Rango multi-chain aggregator
+                pairtotoken: 'rango'     // DEX→CEX: Rango multi-chain aggregator
+            }
+        },
+        allowFallback: false, // Rango is already a multi-chain aggregator
+        isMultiDex: true, // Tampilkan top 3 routes dengan format lengkap
+        maxProviders: 2 // Display top 3 routes
     },
 
     jupiter: {
