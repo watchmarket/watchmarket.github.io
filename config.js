@@ -1,10 +1,10 @@
 
 const CONFIG_APP = {
     APP: {
-        NAME: "MULTICHECKER-DEV",
-        VERSION: "8.0",
-        SCAN_LIMIT: false,
-        AUTORUN: true,  // Set false untuk menyembunyikan & menonaktifkan fitur autorun
+        NAME: "WATCHMARKET",
+        VERSION: "8.8",
+        SCAN_LIMIT: true,
+        AUTORUN: false,  // Set false untuk menyembunyikan & menonaktifkan fitur autorun
     },
     // Konfigurasi fallback DEX saat DEX utama gagal (rate limit, server error, timeout)
     // Pilihan: 'dzap' | 'swoop' | 'none'
