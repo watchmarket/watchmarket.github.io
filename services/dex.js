@@ -561,6 +561,7 @@
         const selectedApiKey = getRandomApiKeyOKX(apiKeysOKXDEX);
         const timestamp = new Date().toISOString();
         const path = "/api/v6/dex/aggregator/quote";
+        //https://web3.okx.com/priapi/v6/dx/trade/multi/quote?
         const queryParams = `amount=${amount_in_big}&chainIndex=${codeChain}&fromTokenAddress=${sc_input_in}&toTokenAddress=${sc_output_in}`;
         const dataToSign = timestamp + "GET" + path + "?" + queryParams;
         const signature = calculateSignature("OKX", selectedApiKey.secretKeyOKX, dataToSign);
@@ -970,16 +971,17 @@
         enableCentralizedSwappers: true // Enable CEX routes if available
       };
 
-      // ✅ Get API key from secrets.js
-      const apiKey = (typeof getRandomApiKeyRango === 'function') ? getRandomApiKeyRango() : '4a624ab5-16ff-4f96-90b7-ab00ddfc342c';
+      // ✅ Get API key from secrets.js (using official Rango test key)
+      const apiKey = (typeof getRandomApiKeyRango === 'function') ? getRandomApiKeyRango() : 'c6381a79-2817-4602-83bf-6a641a409e32';
 
       // ✅ Use api-edge.rango.exchange (faster endpoint) with API key as query parameter
       let apiUrl = `https://api-edge.rango.exchange/routing/bests?apiKey=${apiKey}`;
 
-      // Apply CORS proxy if needed
+      // ✅ CRITICAL: ALWAYS apply CORS proxy for browser requests (same as Rubic)
       try {
         const proxyPrefix = (window.CONFIG_PROXY && window.CONFIG_PROXY.PREFIX) || '';
-        if (proxyPrefix && !apiUrl.startsWith('http://') && !apiUrl.startsWith(proxyPrefix)) {
+
+        if (proxyPrefix && !apiUrl.startsWith(proxyPrefix)) {
           apiUrl = proxyPrefix + apiUrl;
         }
       } catch (e) {
@@ -1718,6 +1720,9 @@
   // Cache untuk menyimpan ongoing requests (mencegah duplicate concurrent requests)
   const DEX_INFLIGHT_REQUESTS = new Map();
 
+  // Throttle dedup logs (only log first occurrence per cache key)
+  const DEX_DEDUP_LOG_TRACKER = new Map();
+
   /**
    * Quote swap output from a DEX aggregator.
    * Builds request by strategy, applies timeout, and returns parsed amounts.
@@ -1726,6 +1731,21 @@
     return new Promise((resolve, reject) => {
       const sc_input = sc_input_in.toLowerCase();
       const sc_output = sc_output_in.toLowerCase();
+
+      // ========== CHECK IF DEX IS DISABLED ==========
+      // Check if this DEX is disabled in config before processing
+      try {
+        const dexConfig = (root.CONFIG_DEXS && root.CONFIG_DEXS[String(dexType).toLowerCase()]) || null;
+        if (dexConfig && dexConfig.disabled === true) {
+          console.warn(`[DEX DISABLED] ${String(dexType).toUpperCase()} is disabled in config - skipping request`);
+          reject({
+            statusCode: 0,
+            pesanDEX: `${String(dexType).toUpperCase()} is currently disabled`,
+            isDisabled: true
+          });
+          return;
+        }
+      } catch(_) {}
 
       // ========== CACHE KEY GENERATION ==========
       // Generate unique cache key based on request parameters
@@ -1752,7 +1772,13 @@
       // Check if there's already an ongoing request for this exact same parameters
       if (DEX_INFLIGHT_REQUESTS.has(cacheKey)) {
         // Request deduplication - attach to existing request
-        console.log(`[DEX DEDUP] ${dexType.toUpperCase()} - Duplicate request prevented!`);
+        // Only log first occurrence to reduce console spam
+        if (!DEX_DEDUP_LOG_TRACKER.has(cacheKey)) {
+          console.log(`[DEX DEDUP] ${dexType.toUpperCase()} - Duplicate request prevented!`);
+          DEX_DEDUP_LOG_TRACKER.set(cacheKey, true);
+          // Auto-cleanup after 5 seconds
+          setTimeout(() => DEX_DEDUP_LOG_TRACKER.delete(cacheKey), 5000);
+        }
         const existingRequest = DEX_INFLIGHT_REQUESTS.get(cacheKey);
         existingRequest.then(resolve).catch(reject);
         return;
