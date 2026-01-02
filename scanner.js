@@ -1416,15 +1416,21 @@ async function startScanner(tokensToScan, settings, tableBodyId) {
                         // REMOVED: Watchdog for primary DEX removed
                         // OPTIMIZED: Scanner timeout mengikuti speedScan setting + buffer
                         // CRITICAL: Scanner window HARUS LEBIH BESAR dari API timeout!
-                        // - ODOS: API timeout 8s → scanner window 10s (8s + 2s buffer)
+                        // - ODOS: API timeout 4s → scanner window 5.5s (4s + 1.5s buffer)
+                        // - Multi-Aggregators: API timeout 8s → scanner window 9.5s (8s + 1.5s buffer)
                         // - Other DEX: API timeout speedScan → scanner window (speedScan + 1.5s buffer)
                         const dexLower = String(dex).toLowerCase();
                         const isOdos = dexLower === 'odos';
+                        const isMultiAggregator = ['lifi', 'swing', 'dzap'].includes(dexLower);
 
                         let dexTimeoutWindow;
                         if (isOdos) {
                             // ✅ OPTIMIZED: Reduced from 10s to 5.5s (API timeout 4s + 1.5s buffer)
                             dexTimeoutWindow = 5500;  // 5.5s for ODOS (was 10s - too slow!)
+                        } else if (isMultiAggregator) {
+                            // ✅ FIX: Multi-aggregators need extended timeout (API 8s + 1.5s buffer)
+                            dexTimeoutWindow = 9500;  // 9.5s for LIFI/SWING/DZAP
+                            console.log(`⏱️ [${dexLower.toUpperCase()} SCANNER WINDOW] Using extended deadline: ${dexTimeoutWindow}ms`);
                         } else {
                             // Use speedScan setting + buffer (not hardcoded!)
                             const apiTimeout = Math.max(speedScan, 1000);  // Match API timeout calculation
@@ -1492,18 +1498,26 @@ async function startScanner(tokensToScan, settings, tableBodyId) {
                         }, getJedaDex(dex));
                     };
                     // Jalankan untuk kedua arah: CEX->DEX dan DEX->CEX.
-                    // OPTIMASI: Skip fetch jika checkbox Wallet CEX aktif dan status WD/DP off
+                    // OPTIMASI: Skip fetch jika checkbox Wallet CEX aktif DAN status WD/DP OFF
                     const isWalletCEXChecked = (typeof $ === 'function') ? $('#checkWalletCEX').is(':checked') : false;
 
-                    // CEX→DEX (TokentoPair): Perlu withdrawToken ON untuk bisa WD dari CEX
-                    // SKIP jika CEX tidak ada harga (!cexResult.ok)
-                    const shouldSkipTokenToPair = !cexResult.ok || (isWalletCEXChecked && token.withdrawToken === false);
+                    // Get symbols for skip reason messages
+                    const sym1 = String(token.symbol_in || '').toUpperCase();
+                    const sym2 = String(token.symbol_out || '').toUpperCase();
+
+                    // CEX→DEX (TokentoPair): User beli TOKEN di CEX → WD TOKEN → Swap di DEX → DP PAIR ke CEX
+                    // Required: WD TOKEN dan DP PAIR harus ON
+                    // ✅ FIX: Prioritize CEX-specific status from dataCexs
+                    const cexDataForSkip = (token.dataCexs && token.cex) ? token.dataCexs[String(token.cex).toUpperCase()] : null;
+                    const withdrawToken = (cexDataForSkip && cexDataForSkip.withdrawToken !== undefined) ? cexDataForSkip.withdrawToken : token.withdrawToken;
+                    const depositPair = (cexDataForSkip && cexDataForSkip.depositPair !== undefined) ? cexDataForSkip.depositPair : token.depositPair;
+
+                    const shouldSkipTokenToPair = !cexResult.ok ||
+                        (isWalletCEXChecked && (withdrawToken !== true || depositPair !== true));
                     if (!shouldSkipTokenToPair) {
                         callDex('TokentoPair');
                     } else {
-                        // Set status SKIP untuk sel yang di-skip (CEX no price atau WD OFF)
-                        const sym1 = String(token.symbol_in || '').toUpperCase();
-                        const sym2 = String(token.symbol_out || '').toUpperCase();
+                        // Set status SKIP untuk sel yang di-skip (CEX no price atau Withdraw OFF)
                         const tokenId = String(token.id || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
                         const baseIdRaw = `${String(token.cex).toUpperCase()}_${String(dex).toUpperCase()}_${sym1}_${sym2}_${String(token.chain).toUpperCase()}_${tokenId}`;
                         const baseId = baseIdRaw.replace(/[^A-Z0-9_]/g, '');
@@ -1514,27 +1528,43 @@ async function startScanner(tokensToScan, settings, tableBodyId) {
                             const span = ensureDexStatusSpan(cell);
                             span.className = 'dex-status uk-text-muted';
                             span.innerHTML = `<span class=\"uk-label uk-label-warning\"><< SKIP >></span>`;
-                            // Tentukan alasan skip
-                            const skipReason = !cexResult.ok
-                                ? 'CEX tidak ada harga - DEX di-skip'
-                                : 'Withdraw Token OFF - Fetch di-skip untuk optimasi';
+                            // Tentukan alasan skip untuk CEX→DEX
+                            let skipReason = 'CEX tidak ada harga - DEX di-skip';
+                            if (cexResult.ok) {
+                                // CEX→DEX butuh: WD TOKEN dan DP PAIR
+                                const missing = [];
+                                if (withdrawToken !== true) missing.push(`WD ${sym1}`);
+                                if (depositPair !== true) missing.push(`DP ${sym2}`);
+
+                                if (missing.length === 2) {
+                                    skipReason = `${missing.join(' & ')} OFF - Complete cycle tidak viable`;
+                                } else if (token.withdrawToken !== true) {
+                                    skipReason = `WD ${sym1} OFF - Tidak bisa withdraw Token dari CEX`;
+                                } else if (token.depositPair !== true) {
+                                    skipReason = `DP ${sym2} OFF - Tidak bisa deposit Pair hasil swap ke CEX`;
+                                }
+                            }
                             span.title = skipReason;
                             try { if (cell.dataset) cell.dataset.final = '1'; } catch (_) { }
                         }
                     }
 
-                    // DEX→CEX (PairtoToken): Perlu depositToken ON untuk bisa DP ke CEX
-                    // SKIP jika CEX tidak ada harga (!cexResult.ok)
-                    // FIX: Hapus double delay - callDex sudah memiliki setTimeout internal
-                    const shouldSkipPairToToken = !cexResult.ok || (isWalletCEXChecked && token.depositToken === false);
+                    // DEX→CEX (PairtoToken): User WD PAIR dari CEX → Swap di DEX → DP TOKEN hasil swap ke CEX
+                    // Required: WD PAIR dan DP TOKEN harus ON
+                    // ✅ FIX: Prioritize CEX-specific status from dataCexs
+                    const withdrawPair = (cexDataForSkip && cexDataForSkip.withdrawPair !== undefined) ? cexDataForSkip.withdrawPair : token.withdrawPair;
+                    const depositToken = (cexDataForSkip && cexDataForSkip.depositToken !== undefined) ? cexDataForSkip.depositToken : token.depositToken;
+
+                    const shouldSkipPairToToken = !cexResult.ok ||
+                        (isWalletCEXChecked && (withdrawPair !== true || depositToken !== true));
                     if (!shouldSkipPairToToken) {
                         callDex('PairtoToken');
                     } else {
-                        // Set status SKIP untuk sel yang di-skip (CEX no price atau DP OFF)
-                        const sym1 = String(token.symbol_out || '').toUpperCase();
-                        const sym2 = String(token.symbol_in || '').toUpperCase();
+                        // Set status SKIP untuk sel yang di-skip (CEX no price atau Deposit OFF)
+                        const sym1Out = String(token.symbol_out || '').toUpperCase();
+                        const sym2In = String(token.symbol_in || '').toUpperCase();
                         const tokenId = String(token.id || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-                        const baseIdRaw = `${String(token.cex).toUpperCase()}_${String(dex).toUpperCase()}_${sym1}_${sym2}_${String(token.chain).toUpperCase()}_${tokenId}`;
+                        const baseIdRaw = `${String(token.cex).toUpperCase()}_${String(dex).toUpperCase()}_${sym1Out}_${sym2In}_${String(token.chain).toUpperCase()}_${tokenId}`;
                         const baseId = baseIdRaw.replace(/[^A-Z0-9_]/g, '');
                         const idCELL = tableBodyId + '_' + baseId;
                         const cell = document.getElementById(idCELL);
@@ -1543,10 +1573,22 @@ async function startScanner(tokensToScan, settings, tableBodyId) {
                             const span = ensureDexStatusSpan(cell);
                             span.className = 'dex-status uk-text-muted';
                             span.innerHTML = `<span class=\"uk-label uk-label-warning\"><< SKIP >> </span>`;
-                            // Tentukan alasan skip
-                            const skipReason = !cexResult.ok
-                                ? 'CEX tidak ada harga - DEX di-skip'
-                                : 'Deposit Token OFF - Fetch di-skip untuk optimasi';
+                            // Tentukan alasan skip untuk DEX→CEX
+                            let skipReason = 'CEX tidak ada harga - DEX di-skip';
+                            if (cexResult.ok) {
+                                // DEX→CEX butuh: WD PAIR dan DP TOKEN
+                                const missing = [];
+                                if (withdrawPair !== true) missing.push(`WD ${sym1Out}`);
+                                if (depositToken !== true) missing.push(`DP ${sym2In}`);
+
+                                if (missing.length === 2) {
+                                    skipReason = `${missing.join(' & ')} OFF - Complete cycle tidak viable`;
+                                } else if (token.withdrawPair !== true) {
+                                    skipReason = `WD ${sym1Out} OFF - Tidak bisa withdraw Pair dari CEX`;
+                                } else if (token.depositToken !== true) {
+                                    skipReason = `DP ${sym2In} OFF - Tidak bisa deposit Token hasil swap ke CEX`;
+                                }
+                            }
                             span.title = skipReason;
                             try { if (cell.dataset) cell.dataset.final = '1'; } catch (_) { }
                         }

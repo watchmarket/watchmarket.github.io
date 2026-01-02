@@ -586,10 +586,11 @@ function renderTokenManagementList() {
 
   }
 
-  // Use searchInput from filter card for filtering (no need for separate mgrSearchInput)
-  const currentQ = ($('#searchInput').length ? ($('#searchInput').val() || '') : '');
+  // Use dedicated search input for management table
+  const currentQ = ($('#mgrSearchInput').length ? ($('#mgrSearchInput').val() || '') : '');
   const controls = (() => {
     const base = [
+      `<input type="text" id="mgrSearchInput" class="uk-input uk-form-small" placeholder="🔍 Cari koin..." value="${currentQ}" style="width:180px; padding:4px 8px; font-size:12px; margin-right:8px;">`,
       `<button id=\"btnNewToken\" class=\"uk-button uk-button-default uk-button-small\" title=\"Tambah Data Koin\"><span uk-icon=\"plus-circle\"></span> ADD COIN</button>`,
       `<button id=\"btnToggleMgrFilter\" class=\"uk-button uk-button-small uk-button-primary\" title=\"Toggle Filter Setting\"><span uk-icon=\"settings\"></span> FILTER</button>`,
       `<button id=\"btnExportTokens\" data-feature=\"export\" class=\"uk-button uk-button-small uk-button-secondary\" title=\"Export CSV\"><span uk-icon=\"download\"></span> Export</button>`,
@@ -601,7 +602,7 @@ function renderTokenManagementList() {
     // Add SYNC button only for single chain mode
     // Note: BULK MODAL button moved to header toolbar (BulkModalScanner icon)
     if (m.type === 'single') {
-      base.splice(2, 0, `<button id=\"sync-tokens-btn\" class=\"uk-button uk-button-small uk-button-primary\" title=\"Sinkronisasi Data Koin\"><span uk-icon=\"database\"></span> SYNC</button>`);
+      base.splice(3, 0, `<button id=\"sync-tokens-btn\" class=\"uk-button uk-button-small uk-button-primary\" title=\"Sinkronisasi Data Koin\"><span uk-icon=\"database\"></span> SYNC</button>`);
     }
     return base.join('\n');
   })();
@@ -1158,11 +1159,10 @@ function DisplayPNL(data) {
           sellLink = dexLink;
         } else {
           // DEX buy token -> CEX sell token
-          // dexRate = pair in / token out (USDT or pair per token)
+          // ✅ FIX: baseModal sudah dalam USDT, jadi dexRate = baseModal / amtOut sudah langsung dalam USDT/token
+          // Tidak perlu dikali lagi dengan buyPairCEX (itu kesalahan double conversion)
           const dexRate = amtOut > 0 ? (baseModal / amtOut) : 0;
-          // Convert ke USDT/token
-          const isUsdtPair = upper(Name_in) === 'USDT';
-          dexUsdtPerToken = isUsdtPair ? dexRate : (dexRate * buyPairCEX);
+          dexUsdtPerToken = dexRate;  // Already in USDT/token, no conversion needed
 
           buyPrice = dexUsdtPerToken;       // Harga beli di DEX (USDT/token)
           sellPrice = sellTokenCEX;         // Harga jual token di CEX (USDT/token)
@@ -1253,10 +1253,16 @@ function DisplayPNL(data) {
 
       // Multi-DEX: highlight per sub-kolom, BUKAN seluruh cell
       // Cell hanya diberi border jika ada sinyal, tapi background tetap putih/default
-      // FIX: Gunakan logika filter PNL yang sama seperti single-DEX
+      // ✅ FIXED: Pisahkan kondisi "tampil sinyal" vs "highlight"
       const filterPNLValue = (typeof getPNLFilter === 'function') ? n(getPNLFilter())
         : (typeof SavedSettingData !== 'undefined' ? n(SavedSettingData?.filterPNL) : 0);
+
+      // Sinyal hanya tampil jika PNL > 0 (profit positif setelah fee)
+      const hasSignal = bestPnl > 0;
+
+      // Highlight hanya jika PNL positif dan di atas threshold
       const shouldHighlight = bestPnl > 0 && (filterPNLValue === 0 || bestPnl > filterPNLValue);
+
       if (shouldHighlight) {
         // Hanya border, tanpa background (background sudah di sub-kolom)
         el.style.cssText = 'text-align:center;vertical-align:middle;border:2px solid #28a745!important;';
@@ -1266,8 +1272,8 @@ function DisplayPNL(data) {
         el.classList.remove('dex-cell-highlight');
       }
 
-      // *** SIGNAL untuk DZAP/LIFI - kirim sinyal jika profitable ***
-      if (shouldHighlight && typeof InfoSinyal === 'function') {
+      // *** SIGNAL untuk DZAP/LIFI - kirim sinyal jika ada PNL ***
+      if (hasSignal && typeof InfoSinyal === 'function') {
         // Hitung total fee untuk best provider
         const bestSubRes = subResults[0]; // Provider terbaik (sudah di-sort)
         const bestFeeSwap = n(bestSubRes?.FeeSwap || bestSubRes?.fee || 0);
@@ -1304,10 +1310,15 @@ function DisplayPNL(data) {
           idPrefix,                 // ID prefix
           baseId                    // Base ID
         );
-      } else if (!shouldHighlight) {
-        // 🔍 DEBUG: Log why multi-DEX signal was filtered out
-        console.log(`⚠️ [Multi-DEX] Signal FILTERED OUT for ${Name_in}->${Name_out} on ${dextype}:`, {
-          bestPnl: bestPnl.toFixed(2), filterPNLValue, shouldHighlight
+      } else if (!hasSignal) {
+        // 🔍 DEBUG: Log when no signal (PNL ≤ 0 - loss atau break-even)
+        console.log(`⚠️ [Multi-DEX] No signal (PNL ≤ 0) for ${Name_in}->${Name_out} on ${dextype}:`, {
+          bestPnl: bestPnl.toFixed(2)
+        });
+      } else if (hasSignal && !shouldHighlight) {
+        // ℹ️ DEBUG: Signal shown but not highlighted (PNL positif tapi < filter)
+        console.log(`ℹ️ [Multi-DEX] Signal shown WITHOUT highlight for ${Name_in}->${Name_out} on ${dextype}:`, {
+          bestPnl: bestPnl.toFixed(2), filterPNLValue, reason: 'PNL positive but below filter'
         });
       }
 
@@ -1346,7 +1357,11 @@ function DisplayPNL(data) {
     (typeof getPNLFilter === 'function') ? n(getPNLFilter())
       : (typeof SavedSettingData !== 'undefined' ? n(SavedSettingData?.filterPNL) : 0);
 
-  // FIX: Sinyal hanya muncul jika PNL positif dan memenuhi threshold filter
+  // ✅ FIXED: Pisahkan kondisi "tampil sinyal" vs "highlight"
+  // Sinyal hanya tampil jika PNL > 0 (profit positif setelah fee)
+  const hasSignal = pnl > 0;
+
+  // Highlight hanya jika PNL positif dan di atas threshold
   const passPNL = pnl > 0 && (filterPNLValue === 0 || pnl > filterPNLValue);
 
   const checkVol = (typeof $ === 'function') ? $('#checkVOL').is(':checked') : false;
@@ -1547,22 +1562,33 @@ function DisplayPNL(data) {
   const netClass = (pnl >= 0) ? 'uk-text-success' : 'uk-text-danger';
   const bracket = `[${bruto.toFixed(2)} ~ ${feeAll.toFixed(2)}]`;
 
-  const shouldHighlight = isHighlight || (pnl > feeAll);
+  // ✅ FIXED: Pisahkan profit indication (background) dari highlight (border)
+  // Background hijau muncul kapanpun PNL > 0 (profit)
+  // Border hitam tebal muncul jika profit melewati filter threshold
+  const hasProfit = pnl > 0;  // Background color indicator
+  const shouldHighlight = isHighlight;  // Border highlight (filter + volume check)
   const chainColorHexHL = getChainColorHexByName(nameChain);
   const modeNowHL = (typeof getAppMode === 'function') ? getAppMode() : { type: 'multi' };
   const isMultiModeHL = String(modeNowHL.type).toLowerCase() !== 'single';
   // Multichain: gunakan hijau muda agar konsisten
-  const multiLightGreen = 'rgba(188, 233, 97, 1)';
+  const multiLightGreen = 'rgba(188, 233, 97, 0.9)';
   const hlBg = isMultiModeHL
     ? multiLightGreen
     : (isDarkMode() ? '#87db0bff' : '#ddf0b7ff');
-  // Tambahkan kelas agar CSS bisa override tambahan saat dark-mode
+
+  // Apply background color when there's ANY profit (PNL > 0)
+  // Apply highlight class and border when profit exceeds filter threshold
   if (shouldHighlight) {
     try { $mainCell.addClass('dex-cell-highlight'); } catch (_) { }
   } else { try { $mainCell.removeClass('dex-cell-highlight'); } catch (_) { } }
-  $mainCell.attr('style', shouldHighlight
-    ? `background-color:${hlBg}!important;font-weight:bolder!important;vertical-align:middle!important;text-align:center!important; border:1px solid black !important;`
-    : 'text-align:center;vertical-align:middle;');
+
+  // Background color shows when PNL > 0, border shows when passing filter
+  if (hasProfit) {
+    const borderStyle = shouldHighlight ? 'border:2px solid black !important;' : '';
+    $mainCell.attr('style', `background-color:${hlBg}!important;font-weight:bolder!important;vertical-align:middle!important;text-align:center!important;${borderStyle}`);
+  } else {
+    $mainCell.attr('style', 'text-align:center;vertical-align:middle;');
+  }
 
   // Baris utama (SWAP dipisah baris sendiri)
   const lineBuy = `<a class="monitor-line uk-text-success dex-price-link" href="${buyLink}"  target="_blank" rel="noopener" title="${tipBuy}">⬆ ${fmtUSD(buyPrice)}</a>`;
@@ -1574,14 +1600,28 @@ function DisplayPNL(data) {
 
   const resultHtml = [lineBuy, lineSell, feeBlock1, '', feeBlock2, lineBrut, linePNL].filter(Boolean).join(' ');
 
-  // Panel sinyal / Telegram (opsional) — kondisi selaras dengan highlight/filter // REFACTORED
+  // ✅ FIXED: Sinyal hanya dikirim jika PNL > 0, highlight sesuai filter
+  // passSignal: untuk highlight (PNL > filter dan volume OK jika dicentang)
   const passSignal = (!checkVol && passPNL) || (checkVol && passPNL && volOK);
-  if (passSignal && typeof InfoSinyal === 'function') {
+
+  // Kirim sinyal hanya jika PNL > 0 (profit positif)
+  if (hasSignal && typeof InfoSinyal === 'function') {
+    console.log(`✅ [DisplayPNL] Sending signal for ${upper(dextype)}: ${upper(Name_in)}->${upper(Name_out)}, PNL: ${pnl.toFixed(2)}$`);
     InfoSinyal(lower(dextype), NameX, pnl, feeAll, upper(cex), Name_in, Name_out, profitLossPercent, Modal, nameChain, codeChain, trx, idPrefix, baseId);
-  } else if (!passSignal) {
-    // 🔍 DEBUG: Log why signal was filtered out
-    console.log(`⚠️ [DisplayPNL] Signal FILTERED OUT for ${upper(Name_in)}->${upper(Name_out)} on ${upper(dextype)}:`, {
-      passPNL, checkVol, volOK, pnl: pnl.toFixed(2), filterPNLValue, vol: n(vol), Modal: n(Modal)
+  } else if (!hasSignal) {
+    // 🔍 DEBUG: No signal (PNL ≤ 0 - loss atau break-even)
+    console.log(`⚠️ [DisplayPNL] No signal (PNL ≤ 0) for ${upper(Name_in)}->${upper(Name_out)} on ${upper(dextype)}:`, {
+      pnl: pnl.toFixed(2)
+    });
+  } else if (!InfoSinyal) {
+    console.error(`❌ [DisplayPNL] InfoSinyal function NOT FOUND for ${upper(dextype)}: ${upper(Name_in)}->${upper(Name_out)}`);
+  }
+
+  // ℹ️ DEBUG: Log highlight status
+  if (hasSignal && !passSignal) {
+    console.log(`ℹ️ [DisplayPNL] Signal shown WITHOUT highlight for ${upper(Name_in)}->${upper(Name_out)} on ${upper(dextype)}:`, {
+      pnl: pnl.toFixed(2), filterPNLValue, checkVol, volOK, vol: n(vol), Modal: n(Modal),
+      reason: !passPNL ? 'PNL below filter' : 'Volume check failed'
     });
   }
 

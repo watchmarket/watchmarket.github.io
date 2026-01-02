@@ -97,15 +97,15 @@
             if (filteredTokens.length > 0) {
                 const sampleCoin = filteredTokens[0];
                 // console.log('[Wallet Exchanger] Sample filtered coin:', {
-                    // symbol: sampleCoin.symbol_in,
-                    // chain: sampleCoin.chain,
-                    // hasCexData: !!sampleCoin.dataCexs,
-                    // cexCount: sampleCoin.dataCexs ? Object.keys(sampleCoin.dataCexs).length : 0
+                // symbol: sampleCoin.symbol_in,
+                // chain: sampleCoin.chain,
+                // hasCexData: !!sampleCoin.dataCexs,
+                // cexCount: sampleCoin.dataCexs ? Object.keys(sampleCoin.dataCexs).length : 0
                 // });
             }
 
             return filteredTokens;
-        } catch(err) {
+        } catch (err) {
             // console.error('[Wallet Exchanger] Error loading coins from storage:', err);
             return [];
         }
@@ -269,39 +269,63 @@
                     }
 
                     const coin = merged[idx];
+                    // ✅ FIX: Save to BOTH nested dataCexs (per-CEX UI) and ROOT LEVEL (backward compatibility)
                     const target = ensureCexEntry(coin, cexUpper);
 
                     if (role === 'token') {
                         const depositToken = normalizeFlag(entry.depositEnable);
-                        if (depositToken !== undefined) target.depositToken = depositToken;
+                        if (depositToken !== undefined) {
+                            coin.depositToken = depositToken; // Root level
+                            target.depositToken = depositToken; // Nested level
+                        }
 
                         const withdrawToken = normalizeFlag(entry.withdrawEnable);
-                        if (withdrawToken !== undefined) target.withdrawToken = withdrawToken;
+                        if (withdrawToken !== undefined) {
+                            coin.withdrawToken = withdrawToken; // Root level
+                            target.withdrawToken = withdrawToken; // Nested level
+                        }
 
                         const feeToken = normalizeFee(entry.feeWDs);
-                        if (feeToken !== undefined) target.feeWDToken = feeToken;
+                        if (feeToken !== undefined) {
+                            coin.feeWDToken = feeToken; // Root level
+                            target.feeWDToken = feeToken; // Nested level
+                        }
 
                         if (entry.tradingActive !== undefined) {
-                            target.tradingActive = entry.tradingActive !== false;
+                            const active = entry.tradingActive !== false;
+                            coin.tradingActive = active;
+                            target.tradingActive = active;
                         }
 
                         if (entry.contractAddress && entry.contractAddress !== '-') {
                             coin.sc_in = entry.contractAddress;
+                            target.sc_in = entry.contractAddress;
                         }
 
                         if (entry.decimals !== undefined && entry.decimals !== '-' && entry.decimals !== null) {
                             coin.des_in = entry.decimals;
                             coin.decimals = entry.decimals;
+                            target.des_in = entry.decimals;
+                            target.decimals = entry.decimals;
                         }
                     } else if (role === 'pair') {
                         const depositPair = normalizeFlag(entry.depositEnable);
-                        if (depositPair !== undefined) target.depositPair = depositPair;
+                        if (depositPair !== undefined) {
+                            coin.depositPair = depositPair;
+                            target.depositPair = depositPair;
+                        }
 
                         const withdrawPair = normalizeFlag(entry.withdrawEnable);
-                        if (withdrawPair !== undefined) target.withdrawPair = withdrawPair;
+                        if (withdrawPair !== undefined) {
+                            coin.withdrawPair = withdrawPair;
+                            target.withdrawPair = withdrawPair;
+                        }
 
                         const feePair = normalizeFee(entry.feeWDs);
-                        if (feePair !== undefined) target.feeWDPair = feePair;
+                        if (feePair !== undefined) {
+                            coin.feeWDPair = feePair;
+                            target.feeWDPair = feePair;
+                        }
                     }
                 });
             });
@@ -339,7 +363,7 @@
 
                 // console.log(`[Wallet Exchanger] Saved ${coins.length} coins to storage`);
             }
-        } catch(err) {
+        } catch (err) {
             // console.error('[Wallet Exchanger] Error saving coins to storage:', err);
         }
     }
@@ -351,24 +375,81 @@
         const $result = $('#wallet-update-result');
         const $resultText = $result.find('p');
 
+        let reportData = {
+            success: success,
+            failedCexes: failedCexes || [],
+            timestamp: new Date().toISOString()
+        };
+
         if (success && (!failedCexes || failedCexes.length === 0)) {
             $result.removeClass('uk-alert-warning uk-alert-danger').addClass('uk-alert-success');
             $resultText.html('<strong>✅ Update Berhasil!</strong> Semua exchanger berhasil diperbarui. Data terbaru ditampilkan di bawah.');
+            reportData.type = 'success';
         } else if (failedCexes && failedCexes.length > 0) {
             $result.removeClass('uk-alert-success uk-alert-danger').addClass('uk-alert-warning');
             const failedList = failedCexes.join(', ');
             $resultText.html(`<strong>⚠️ Update Sebagian Berhasil</strong><br>Exchanger yang gagal: ${failedList}`);
+            reportData.type = 'warning';
         } else {
             $result.removeClass('uk-alert-success uk-alert-warning').addClass('uk-alert-danger');
             $resultText.html('<strong>❌ Update Gagal</strong> Tidak ada exchanger yang berhasil diperbarui.');
+            reportData.type = 'error';
+        }
+
+        // ✅ FIX: Simpan report ke localStorage agar tetap tampil setelah reload
+        try {
+            localStorage.setItem('WALLET_UPDATE_REPORT', JSON.stringify(reportData));
+        } catch(e) {
+            console.warn('[Wallet Exchanger] Failed to save report to localStorage:', e);
         }
 
         $result.fadeIn(300);
 
-        // Auto-hide after 10 seconds
-        setTimeout(() => {
-            $result.fadeOut(300);
-        }, 10000);
+        // ✅ FIX: Jangan auto-hide hasil report - biarkan tetap tampil
+        // User ingin melihat hasil update secara permanen
+        // setTimeout(() => {
+        //     $result.fadeOut(300);
+        // }, 10000);
+    }
+
+    /**
+     * Restore saved report from localStorage
+     */
+    function restoreSavedReport() {
+        try {
+            const savedReport = localStorage.getItem('WALLET_UPDATE_REPORT');
+            if (!savedReport) return;
+
+            const reportData = JSON.parse(savedReport);
+            const $result = $('#wallet-update-result');
+            const $resultText = $result.find('p');
+
+            // Check if report is still fresh (max 1 hour old)
+            const reportAge = Date.now() - new Date(reportData.timestamp).getTime();
+            const oneHour = 60 * 60 * 1000;
+            if (reportAge > oneHour) {
+                // Report expired, hapus dari localStorage
+                localStorage.removeItem('WALLET_UPDATE_REPORT');
+                return;
+            }
+
+            // Restore report display
+            if (reportData.type === 'success') {
+                $result.removeClass('uk-alert-warning uk-alert-danger').addClass('uk-alert-success');
+                $resultText.html('<strong>✅ Update Berhasil!</strong> Semua exchanger berhasil diperbarui. Data terbaru ditampilkan di bawah.');
+            } else if (reportData.type === 'warning') {
+                $result.removeClass('uk-alert-success uk-alert-danger').addClass('uk-alert-warning');
+                const failedList = reportData.failedCexes.join(', ');
+                $resultText.html(`<strong>⚠️ Update Sebagian Berhasil</strong><br>Exchanger yang gagal: ${failedList}`);
+            } else {
+                $result.removeClass('uk-alert-success uk-alert-warning').addClass('uk-alert-danger');
+                $resultText.html('<strong>❌ Update Gagal</strong> Tidak ada exchanger yang berhasil diperbarui.');
+            }
+
+            $result.show();
+        } catch(e) {
+            console.warn('[Wallet Exchanger] Failed to restore report:', e);
+        }
     }
 
     /**
@@ -405,9 +486,9 @@
         try {
             const canonicalActive = getCanonicalChainKey(activeChain) || String(activeChain || '').toLowerCase();
             const chainName = (activeChain === 'MULTICHAIN') ? 'MULTICHAIN' :
-                              (CONFIG_CHAINS?.[canonicalActive]?.Nama_Chain || activeChain);
+                (CONFIG_CHAINS?.[canonicalActive]?.Nama_Chain || activeChain);
             $('#wallet-chain-label').text(String(chainName).toUpperCase());
-        } catch(_) {}
+        } catch (_) { }
 
         // ✅ BARU: Load coins dengan filter by chain only (tidak filter CEX/PAIR/DEX)
         const allCoinsData = loadCoinsFromStorage({ applyFilter: false });
@@ -418,7 +499,7 @@
                 const coinChain = getCanonicalChainKey(coin.chain) || String(coin.chain || '').toLowerCase();
                 const targetChain = getCanonicalChainKey(activeChain) || String(activeChain || '').toLowerCase();
                 return coinChain === targetChain;
-              })
+            })
             : allCoinsData;
 
         // ✅ Filter CEX: hanya tampilkan yang punya koin (sama seperti filter scanner)
@@ -528,8 +609,8 @@
                         </div>
                         <div class="wallet-cex-table-wrapper">
                             ${problemCount > 0
-                                ? renderCexTable(cexName, cexCoins, mode)
-                                : '<div class="uk-text-center uk-padding-small uk-text-muted"><p class="uk-margin-remove">Tidak ada koin bermasalah</p><p class="uk-text-small uk-margin-remove">Centang untuk update data terbaru</p></div>'}
+                    ? renderCexTable(cexName, cexCoins, mode)
+                    : '<div class="uk-text-center uk-padding-small uk-text-muted"><p class="uk-margin-remove">Tidak ada koin bermasalah</p><p class="uk-text-small uk-margin-remove">Centang untuk update data terbaru</p></div>'}
                         </div>
                     </div>
                 </div>
@@ -547,7 +628,7 @@
             if (uiKit && typeof uiKit.update === 'function') {
                 uiKit.update($grid[0]);
             }
-        } catch(_) {}
+        } catch (_) { }
     }
 
     /**
@@ -636,67 +717,67 @@
             `;
 
             chainCoins.forEach((coin, idx) => {
-            const dataCex = (coin.dataCexs || {})[cexName] || {};
+                const dataCex = (coin.dataCexs || {})[cexName] || {};
 
-            // Symbol dan SC data
-            const tokenSymbol = (coin.symbol_in || coin.tokenName || '?').toUpperCase();
-            const pairSymbol = (coin.symbol_out || 'USDT').toUpperCase();
-            const tokenSc = coin.sc_in || coin.contractAddress || '-';
+                // Symbol dan SC data
+                const tokenSymbol = (coin.symbol_in || coin.tokenName || '?').toUpperCase();
+                const pairSymbol = (coin.symbol_out || 'USDT').toUpperCase();
+                const tokenSc = coin.sc_in || coin.contractAddress || '-';
 
-            // Decimals dari enrichment
-            const decimals = coin.des_in || coin.decimals || '-';
+                // Decimals dari enrichment
+                const decimals = coin.des_in || coin.decimals || '-';
 
-            // ========== STATUS TOKEN (symbol_in) ==========
-            const wdToken = dataCex.withdrawToken;
-            const dpToken = dataCex.depositToken;
+                // ========== STATUS TOKEN (symbol_in) ==========
+                const wdToken = dataCex.withdrawToken;
+                const dpToken = dataCex.depositToken;
 
-            let statusWdToken = '';
-            if (wdToken === true) {
-                statusWdToken = '<span class="wallet-status-badge wallet-status-on">OPEN</span>';
-            } else if (wdToken === false) {
-                statusWdToken = '<span class="wallet-status-badge wallet-status-off">CLOSED</span>';
-            } else {
-                statusWdToken = '<span class="wallet-status-badge wallet-status-loading">?</span>';
-            }
+                let statusWdToken = '';
+                if (wdToken === true) {
+                    statusWdToken = '<span class="wallet-status-badge wallet-status-on">OPEN</span>';
+                } else if (wdToken === false) {
+                    statusWdToken = '<span class="wallet-status-badge wallet-status-off">CLOSED</span>';
+                } else {
+                    statusWdToken = '<span class="wallet-status-badge wallet-status-loading">?</span>';
+                }
 
-            let statusDpToken = '';
-            if (dpToken === true) {
-                statusDpToken = '<span class="wallet-status-badge wallet-status-on">OPEN</span>';
-            } else if (dpToken === false) {
-                statusDpToken = '<span class="wallet-status-badge wallet-status-off">CLOSED</span>';
-            } else {
-                statusDpToken = '<span class="wallet-status-badge wallet-status-loading">?</span>';
-            }
+                let statusDpToken = '';
+                if (dpToken === true) {
+                    statusDpToken = '<span class="wallet-status-badge wallet-status-on">OPEN</span>';
+                } else if (dpToken === false) {
+                    statusDpToken = '<span class="wallet-status-badge wallet-status-off">CLOSED</span>';
+                } else {
+                    statusDpToken = '<span class="wallet-status-badge wallet-status-loading">?</span>';
+                }
 
-            // ========== STATUS PAIR (symbol_out) ==========
-            const wdPair = dataCex.withdrawPair;
-            const dpPair = dataCex.depositPair;
+                // ========== STATUS PAIR (symbol_out) ==========
+                const wdPair = dataCex.withdrawPair;
+                const dpPair = dataCex.depositPair;
 
-            let statusWdPair = '';
-            if (wdPair === true) {
-                statusWdPair = '<span class="wallet-status-badge wallet-status-on">OPEN</span>';
-            } else if (wdPair === false) {
-                statusWdPair = '<span class="wallet-status-badge wallet-status-off">CLOSED</span>';
-            } else {
-                statusWdPair = '<span class="wallet-status-badge wallet-status-loading">?</span>';
-            }
+                let statusWdPair = '';
+                if (wdPair === true) {
+                    statusWdPair = '<span class="wallet-status-badge wallet-status-on">OPEN</span>';
+                } else if (wdPair === false) {
+                    statusWdPair = '<span class="wallet-status-badge wallet-status-off">CLOSED</span>';
+                } else {
+                    statusWdPair = '<span class="wallet-status-badge wallet-status-loading">?</span>';
+                }
 
-            let statusDpPair = '';
-            if (dpPair === true) {
-                statusDpPair = '<span class="wallet-status-badge wallet-status-on">OPEN</span>';
-            } else if (dpPair === false) {
-                statusDpPair = '<span class="wallet-status-badge wallet-status-off">CLOSED</span>';
-            } else {
-                statusDpPair = '<span class="wallet-status-badge wallet-status-loading">?</span>';
-            }
+                let statusDpPair = '';
+                if (dpPair === true) {
+                    statusDpPair = '<span class="wallet-status-badge wallet-status-on">OPEN</span>';
+                } else if (dpPair === false) {
+                    statusDpPair = '<span class="wallet-status-badge wallet-status-off">CLOSED</span>';
+                } else {
+                    statusDpPair = '<span class="wallet-status-badge wallet-status-loading">?</span>';
+                }
 
-            // Shorten smart contract addresses
-            const shortenSc = (sc) => {
-                if (!sc || sc === '-' || sc.length < 12) return sc;
-                return `${sc.substring(0, 6)}...${sc.substring(sc.length - 4)}`;
-            };
+                // Shorten smart contract addresses
+                const shortenSc = (sc) => {
+                    if (!sc || sc === '-' || sc.length < 12) return sc;
+                    return `${sc.substring(0, 6)}...${sc.substring(sc.length - 4)}`;
+                };
 
-            tableHtml += `
+                tableHtml += `
                 <tr>
                     <td>${idx + 1}</td>
                     <td>
@@ -740,14 +821,14 @@
      */
     function bindCexCardEvents() {
         // Checkbox click
-        $('.wallet-cex-checkbox').off('click').on('click', function(e) {
+        $('.wallet-cex-checkbox').off('click').on('click', function (e) {
             e.stopPropagation();
             const cexName = $(this).data('cex');
             toggleCexSelection(cexName);
         });
 
         // Header click (toggle checkbox)
-        $('.wallet-cex-header').off('click').on('click', function(e) {
+        $('.wallet-cex-header').off('click').on('click', function (e) {
             if ($(e.target).hasClass('wallet-cex-checkbox')) return;
             const cexName = $(this).data('cex');
             toggleCexSelection(cexName);
@@ -840,7 +921,7 @@
                 if (typeof toast !== 'undefined' && toast.error) {
                     toast.error('Pilih minimal 1 CEX terlebih dahulu');
                 }
-            } catch(_) {}
+            } catch (_) { }
             return;
         }
 
@@ -858,7 +939,7 @@
                 window.App.Scanner.stopScannerSoft();
                 await new Promise(r => setTimeout(r, 200));
             }
-        } catch(_) {}
+        } catch (_) { }
 
         // Show progress overlay (layar freeze)
         showFetchProgressOverlay(selectedCexList);
@@ -919,7 +1000,7 @@
                     throw new Error('fetchWalletStatus function not available');
                 }
 
-            } catch(err) {
+            } catch (err) {
                 // console.error(`[Wallet Exchanger] Error fetching ${cexName}:`, err);
                 failedCexes.push(cexName);
                 updateFetchProgress(cexName, 'error', err.message || 'Gagal fetch data');
@@ -1000,7 +1081,7 @@
                 }
             }
 
-        } catch(err) {
+        } catch (err) {
             // console.error('[Wallet Exchanger] Error processing results:', err);
             showUpdateResult(false, selectedCexList);
             if (typeof toast !== 'undefined' && toast.error) {
@@ -1038,6 +1119,9 @@
 
         // Render CEX cards dengan data dari storage
         renderCexCards();
+
+        // ✅ FIX: Restore saved report (jika ada) agar tetap tampil setelah reload/navigasi
+        restoreSavedReport();
     }
 
     /**
@@ -1061,6 +1145,10 @@
         // Bind close button
         $('#btn-close-wallet-section').off('click').on('click', hide);
 
+        // ✅ FIX: Restore saved report saat init (jika halaman di-reload)
+        // Ini memastikan report tetap tampil meskipun user reload halaman
+        restoreSavedReport();
+
         // console.log('[Wallet Exchanger UI] Module initialized');
     }
 
@@ -1071,15 +1159,16 @@
             hide,
             renderCexCards,
             showUpdateResult,
+            restoreSavedReport,
             init
         });
     } else {
         // Fallback registration
-        App.WalletExchanger = { show, hide, renderCexCards, showUpdateResult, init };
+        App.WalletExchanger = { show, hide, renderCexCards, showUpdateResult, restoreSavedReport, init };
     }
 
     // Auto-init on DOM ready
-    $(document).ready(function() {
+    $(document).ready(function () {
         init();
     });
 
