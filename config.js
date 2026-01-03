@@ -717,7 +717,7 @@ const CONFIG_DEXS = {
         builder: ({ chainCode, NameToken, NamePair }) => `https://1inch.com/swap?src=${chainCode}:${NameToken}&dst=${chainCode}:${NamePair}`,
         fetchdex: {
             //  pairtotoken: 'lifi',  
-            tokentopair: 'zero-1inch',      // KIRI (CEX→DEX): LIFI aggregator dengan 1inch filter
+            tokentopair: 'hinkal-1inch',      // KIRI (CEX→DEX): LIFI aggregator dengan 1inch filter
             pairtotoken: 'zero-1inch'   // KANAN (DEX→CEX): ZeroSwap 1inch proxy
         },
         // filter: {
