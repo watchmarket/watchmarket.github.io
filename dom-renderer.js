@@ -274,13 +274,25 @@ function loadKointoTable(filteredData, tableBodyId = 'dataTableBody') {
       const linkDZAP = createHoverLink(`https://app.dzap.io/trade?referral=d0d7E9b4&fromChain=${dzapChainId}&fromToken=${data.sc_in}&toChain=${dzapChainId}&toToken=${data.sc_out}`, '#DZP', 'uk-text-dark');
       // Jumper (LIFI): Solana uses chain ID 1151111081099710
       const jumperChainId = String(data.chain || '').toLowerCase() === 'solana' ? 1151111081099710 : chainConfig.Kode_Chain;
-      const linkJumper = createHoverLink(`https://jumper.exchange/?fromChain=${jumperChainId}&fromToken=${data.sc_in}&toChain=${jumperChainId}&toToken=${data.sc_out}`, '#JMX', 'uk-text-warning');
+      const linkJumper = createHoverLink(`https://jumper.exchange/?fromChain=${jumperChainId}&fromToken=${data.sc_in}&toChain=${jumperChainId}&toToken=${data.sc_out}`, '#JMX', 'uk-text-success');
+
+      // Rango: Multi-chain aggregator (requires blockchain name mapping)
+      const rangoChainMap = { 'bsc': 'BSC', 'ethereum': 'ETH', 'polygon': 'POLYGON', 'arbitrum': 'ARBITRUM', 'base': 'BASE', 'optimism': 'OPTIMISM', 'avalanche': 'AVAX_CCHAIN', 'solana': 'SOLANA' };
+      const rangoChain = rangoChainMap[String(data.chain || '').toLowerCase()] || String(data.chain || '').toUpperCase();
+      // Rango format: fromToken=SYMBOL for native, fromToken=SYMBOL--ADDRESS for tokens
+      const rangoFromToken = String(data.sc_in || '').toLowerCase() === chainConfig.NATIVE_TOKEN?.toLowerCase()
+        ? (data.symbol_in || '').toUpperCase()
+        : `${(data.symbol_in || '').toUpperCase()}--${data.sc_in}`;
+      const rangoToToken = String(data.sc_out || '').toLowerCase() === chainConfig.NATIVE_TOKEN?.toLowerCase()
+        ? (data.symbol_out || '').toUpperCase()
+        : `${(data.symbol_out || '').toUpperCase()}--${data.sc_out}`;
+      const linkRango = createHoverLink(`https://app.rango.exchange/bridge?fromBlockchain=${rangoChain}&fromToken=${rangoFromToken}&toBlockchain=${rangoChain}&toToken=${rangoToToken}`, '#RGX', 'uk-text-warning');
 
       // Rubic: Multi-chain aggregator (requires chain name mapping)
       const rubicChainMap = { 'bsc': 'BSC', 'ethereum': 'ETH', 'polygon': 'POLYGON', 'arbitrum': 'ARBITRUM', 'base': 'BASE', 'optimism': 'OPTIMISM', 'avalanche': 'AVAX' };
       const rubicChain = rubicChainMap[String(data.chain || '').toLowerCase()] || String(data.chain || '').toUpperCase();
 
-      const linkRBX = createHoverLink(`https://app.rubic.exchange/?fromChain=${rubicChain}&toChain=${rubicChain}&from=${data.sc_in}&to=${data.sc_out}`, '#RBX', 'uk-text-success');
+      const linkRBX = createHoverLink(`https://app.rubic.exchange/?fromChain=${rubicChain}&toChain=${rubicChain}&from=${data.sc_in}&to=${data.sc_out}`, '#RBX', 'uk-text-secondary');
 
       const rowId = `DETAIL_${String(data.cex).toUpperCase()}_${String(data.symbol_in).toUpperCase()}_${String(data.symbol_out).toUpperCase()}_${String(data.chain).toUpperCase()}`.replace(/[^A-Z0-9_]/g, '');
       const chainShort = (data.chain || '').substring(0, 3).toUpperCase();
@@ -314,7 +326,7 @@ function loadKointoTable(filteredData, tableBodyId = 'dataTableBody') {
                 <span class="detail-line uk-text-bolder">${WD_TOKEN}~ ${DP_TOKEN} | ${WD_PAIR}~ ${DP_PAIR}</span>
                 <span class="detail-line"><span class="uk-text-primary uk-text-bolder">${(data.symbol_in || '').toUpperCase()}</span> ${linkSCtoken} : ${linkStokToken}</span>
                 <span class="detail-line"><span class="uk-text-primary uk-text-bolder">${(data.symbol_out || '').toUpperCase()}</span> ${linkSCpair} : ${linkStokPair}</span>
-                <span class="detail-line">${linkUNIDEX} ${linkOKDEX} ${linkJumper} ${linkRBX} ${linkDEFIL} ${linkDZAP}</span>
+                <span class="detail-line"> ${linkRango} ${linkRBX} ${linkJumper} ${linkOKDEX} ${linkDEFIL} ${linkDZAP}</span>
             </td>`;
 
       // refactor: render slot DEX kanan via helper

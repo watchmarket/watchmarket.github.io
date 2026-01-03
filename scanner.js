@@ -405,7 +405,11 @@ async function startScanner(tokensToScan, settings, tableBodyId) {
     // Catatan: gunakan nilai dari SETTING_SCANNER
     // - Jeda DEX: per-DEX dari ConfigScan.JedaDexs[dex] (Jeda CEX dihapus)
     // ✅ FIXED: Gunakan configDefaults.timeoutCount untuk timeout
-    let speedScan = parseInt(ConfigScan.TimeoutCount || configDefaults.timeoutCount || 10000);
+    // Kecepatan scan (timeout dasar) dari setting user; fallback ke default config
+    const speedScanMsFromSetting = Number.isFinite(ConfigScan.speedScan) ? Math.round(ConfigScan.speedScan * 1000) : null;
+    const speedScanMsFromLegacy = Number.isFinite(ConfigScan.TimeoutCount) ? Math.round(ConfigScan.TimeoutCount) : null;
+    const speedScanDefault = Number.isFinite(configDefaults.timeoutCount) ? configDefaults.timeoutCount : 10000;
+    let speedScan = speedScanMsFromSetting ?? speedScanMsFromLegacy ?? speedScanDefault;
 
     // Jeda per-DEX untuk rate limiting (dapat di-set via settings, default 0 = no delay)
     // User dapat mengatur delay berbeda untuk setiap DEX jika ada rate limit
@@ -925,7 +929,33 @@ async function startScanner(tokensToScan, settings, tableBodyId) {
                                 setDexErrorBackground(cell);
                                 statusSpan.classList.remove('uk-text-warning');
                                 statusSpan.classList.add('uk-text-danger');
-                                statusSpan.innerHTML = `<span class=\"uk-label uk-label-danger\">ERROR</span>`;
+
+                                // ✅ NEW: Build DEX link using CONFIG_DEXS builder
+                                let dexLink = '';
+                                try {
+                                    const dexConfig = (window.CONFIG_DEXS || {})[String(dexName).toLowerCase()];
+                                    if (dexConfig && typeof dexConfig.builder === 'function') {
+                                        const chainCfg = (window.CONFIG_CHAINS || {})[String(token.chain).toLowerCase()] || {};
+                                        const tokenAddress = isKiri ? token.sc_in : token.sc_out;
+                                        const pairAddress = isKiri ? token.sc_out : token.sc_in;
+                                        const url = dexConfig.builder({
+                                            chainName: String(token.chain).toLowerCase(),
+                                            tokenAddress: tokenAddress,
+                                            pairAddress: pairAddress,
+                                            chainCode: chainCfg.Kode_Chain || '',
+                                            NameToken: isKiri ? token.symbol_in : token.symbol_out,
+                                            NamePair: isKiri ? token.symbol_out : token.symbol_in,
+                                            codeChain: chainCfg.Kode_Chain || ''
+                                        });
+                                        if (url && url !== '#') {
+                                            dexLink = ` <a href="${url}" target="_blank" class="uk-text-primary" style="text-decoration:underline" title="Open ${String(dexName).toUpperCase()} DEX">🔗</a>`;
+                                        }
+                                    }
+                                } catch (e) {
+                                    console.warn('[DEX LINK] Failed to build link:', e);
+                                }
+
+                                statusSpan.innerHTML = `<span class=\"uk-label uk-label-danger\">ERROR</span>${dexLink}`;
                                 if (message) {
                                     statusSpan.title = String(message);
                                     setCellTitleByEl(cell, String(message));
@@ -1262,8 +1292,8 @@ async function startScanner(tokensToScan, settings, tableBodyId) {
                                 try {
                                     // Hapus ticker lama dan mulai ticker baru untuk fallback.
                                     clearDexTickerById(idCELL);
-                                    // FIXED: Gunakan speedScan dari user setting, bukan hardcoded 5000ms
-                                    const fallbackTimeout = Math.max(speedScan, 2000); // minimum 2 detik untuk fallback
+                                    // Gunakan speedScan dari user setting, minimal 1 detik sebagai batas aman
+                                    const fallbackTimeout = Math.max(speedScan, 1000);
                                     const endAtFB = Date.now() + fallbackTimeout;
                                     // Use shared ticker helper
                                     const renderFB = (secs, cell) => {
@@ -1414,29 +1444,10 @@ async function startScanner(tokensToScan, settings, tableBodyId) {
                         const cexSummary = `CEX READY BT=${fmt6(DataCEX.priceBuyToken)} ST=${fmt6(DataCEX.priceSellToken)} BP=${fmt6(DataCEX.priceBuyPair)} SP=${fmt6(DataCEX.priceSellPair)}`;
                         updateDexCellStatus('checking', dex, cexSummary);
                         // REMOVED: Watchdog for primary DEX removed
-                        // OPTIMIZED: Scanner timeout mengikuti speedScan setting + buffer
-                        // CRITICAL: Scanner window HARUS LEBIH BESAR dari API timeout!
-                        // - ODOS: API timeout 4s → scanner window 5.5s (4s + 1.5s buffer)
-                        // - Multi-Aggregators: API timeout 8s → scanner window 9.5s (8s + 1.5s buffer)
-                        // - Other DEX: API timeout speedScan → scanner window (speedScan + 1.5s buffer)
-                        const dexLower = String(dex).toLowerCase();
-                        const isOdos = dexLower === 'odos';
-                        const isMultiAggregator = ['lifi', 'swing', 'dzap'].includes(dexLower);
-
-                        let dexTimeoutWindow;
-                        if (isOdos) {
-                            // ✅ OPTIMIZED: Reduced from 10s to 5.5s (API timeout 4s + 1.5s buffer)
-                            dexTimeoutWindow = 5500;  // 5.5s for ODOS (was 10s - too slow!)
-                        } else if (isMultiAggregator) {
-                            // ✅ FIX: Multi-aggregators need extended timeout (API 8s + 1.5s buffer)
-                            dexTimeoutWindow = 9500;  // 9.5s for LIFI/SWING/DZAP
-                            console.log(`⏱️ [${dexLower.toUpperCase()} SCANNER WINDOW] Using extended deadline: ${dexTimeoutWindow}ms`);
-                        } else {
-                            // Use speedScan setting + buffer (not hardcoded!)
-                            const apiTimeout = Math.max(speedScan, 1000);  // Match API timeout calculation
-                            const buffer = 1500;  // 1.5s buffer (API timeout + buffer > API timeout)
-                            dexTimeoutWindow = apiTimeout + buffer;
-                        }
+                        // Scanner window mengikuti speedScan user + buffer kecil agar tidak membatalkan request lebih awal
+                        const apiTimeout = Math.max(speedScan, 500); // minimal 0.5s untuk mencegah 0 timeout
+                        const buffer = 1500;  // buffer 1.5s supaya window > API timeout
+                        const dexTimeoutWindow = apiTimeout + buffer;
                         // Mulai ticker countdown untuk menampilkan sisa detik pada label "Checking".
                         try {
                             const endAt = Date.now() + dexTimeoutWindow;

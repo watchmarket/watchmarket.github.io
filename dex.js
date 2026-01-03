@@ -468,17 +468,19 @@
         return { amount_out, FeeSwap, dexTitle: 'KYBER' };
       }
     },
+    // ⚠️ DISABLED: Direct Matcha/0x API no longer used as strategy
+    // Matcha DEX now uses: swoop (0x filter) for pairtotoken, lifi (0x filter) for tokentopair
+    // See config.js matcha.fetchdex for routing configuration
+    /*
     matcha: {
       buildRequest: ({ chainName, sc_input_in, sc_output_in, amount_in_big, codeChain, sc_output, sc_input, SavedSettingData }) => {
-        /**
-         * Matcha API - Official 0x Documentation
-         * Docs: https://0x.org/docs/api
-         * Dashboard: https://dashboard.0x.org
-         *
-         * IMPORTANT: 0x officially supports EVM chains only (NOT Solana)
-         * - For Solana, use DZAP as configured fallback
-         * - Supported chains: https://0x.org/docs/developer-resources/supported-chains
-         */
+        // Matcha API - Official 0x Documentation
+        // Docs: https://0x.org/docs/api
+        // Dashboard: https://dashboard.0x.org
+        //
+        // IMPORTANT: 0x officially supports EVM chains only (NOT Solana)
+        // - For Solana, use DZAP as configured fallback
+        // - Supported chains: https://0x.org/docs/developer-resources/supported-chains
 
         // Solana is NOT officially supported by Matcha API - should use fallback
         if (chainName && String(chainName).toLowerCase() === 'solana') {
@@ -520,19 +522,18 @@
         return { url, method: 'GET', headers };
       },
       parseResponse: (response, { des_output, des_input, chainName }) => {
-        /**
-         * Parse 0x API response (allowance-holder endpoint)
-         * Response format: https://0x.org/docs/api#tag/Swap/operation/swap::allowanceHolder::getQuote
-         *
-         * Key fields:
-         * - buyAmount: Amount of buyToken (in base units)
-         * - minBuyAmount: Minimum amount accounting for slippage
-         * - allowanceTarget: Contract address for token approval
-         * - transaction: { gas, gasPrice, value, to, data }
-         * - fees: { integratorFee, zeroExFee, gasFee }
-         * - route: { fills[], tokens[] } - Liquidity routing details
-         * - issues: { allowance, balance, simulationIncomplete, invalidSourcesPassed }
-         */
+        // Parse 0x API response (allowance-holder endpoint)
+        // Response format: https://0x.org/docs/api#tag/Swap/operation/swap::allowanceHolder::getQuote
+        //
+        // Key fields:
+        // - buyAmount: Amount of buyToken (in base units)
+        // - minBuyAmount: Minimum amount accounting for slippage
+        // - allowanceTarget: Contract address for token approval
+        // - transaction: { gas, gasPrice, value, to, data }
+        // - fees: { integratorFee, zeroExFee, gasFee }
+        // - route: { fills[], tokens[] } - Liquidity routing details
+        // - issues: { allowance, balance, simulationIncomplete, invalidSourcesPassed }
+
 
         if (!response?.buyAmount) {
           throw new Error("Invalid 0x API response - missing buyAmount");
@@ -597,6 +598,7 @@
         };
       }
     },
+    */
     'unidex-matcha': {
       buildRequest: ({ codeChain, sc_input_in, sc_output_in, amount_in_big, SavedSettingData, chainName }) => {
         const userAddr = SavedSettingData?.walletMeta || '0x0000000000000000000000000000000000000000';
@@ -1001,10 +1003,75 @@
   };
 
   // =============================
-  // LIFI Strategy - Multi-Route Aggregator (Top 3 Routes)
+  // SWOOP Strategy - Single Provider Aggregator with Filter Support
+  // =============================
+  dexStrategies.swoop = {
+    buildRequest: ({ codeChain, sc_input, sc_output, des_input, des_output, amount_in_big, SavedSettingData, filter }) => {
+      // Determine aggregatorSlug from filter or default
+      let aggregatorSlug = 'odos'; // Default fallback
+      if (filter && filter.exchange) {
+        const exchange = String(filter.exchange).toLowerCase();
+        // Map exchange names to SWOOP aggregatorSlug format
+        const slugMap = {
+          'odos': 'odos',
+          'kyber': 'kyberswap',
+          'kyberswap': 'kyberswap',
+          'paraswap': 'paraswap',
+          '0x': '0x',
+          'matcha': '0x',
+          'okx': 'okx'
+        };
+        aggregatorSlug = slugMap[exchange] || exchange;
+        console.log(`[SWOOP] Using aggregatorSlug from filter: ${aggregatorSlug} (filter.exchange=${filter.exchange})`);
+      }
+
+      const payload = {
+        chainId: Number(codeChain),
+        aggregatorSlug: aggregatorSlug,
+        sender: SavedSettingData?.walletMeta || '0x0000000000000000000000000000000000000000',
+        inToken: {
+          chainId: Number(codeChain),
+          type: 'TOKEN',
+          address: sc_input.toLowerCase(),
+          decimals: Number(des_input)
+        },
+        outToken: {
+          chainId: Number(codeChain),
+          type: 'TOKEN',
+          address: sc_output.toLowerCase(),
+          decimals: Number(des_output)
+        },
+        amountInWei: amount_in_big.toString(),
+        slippageBps: '100',
+        gasPriceGwei: Number(getFromLocalStorage('gasGWEI', 0))
+      };
+
+      return {
+        url: 'https://bzvwrjfhuefn.up.railway.app/swap',
+        method: 'POST',
+        data: JSON.stringify(payload),
+        headers: { 'Content-Type': 'application/json' }
+      };
+    },
+    parseResponse: (response, { des_output, chainName }) => {
+      if (!response || !response.amountOutWei) {
+        throw new Error("SWOOP response invalid: missing amountOutWei");
+      }
+      const amount_out = parseFloat(response.amountOutWei) / Math.pow(10, des_output);
+      const FeeSwap = getFeeSwap(chainName);
+      return {
+        amount_out,
+        FeeSwap,
+        dexTitle: 'SWOOP'
+      };
+    }
+  };
+
+  // =============================
+  // LIFI Strategy - Return Single Best Route (no multi-quote UI)
   // =============================
   dexStrategies.lifi = {
-    buildRequest: ({ codeChain, sc_input, sc_output, sc_input_in, sc_output_in, amount_in_big, SavedSettingData, chainName }) => {
+    buildRequest: ({ codeChain, sc_input, sc_output, sc_input_in, sc_output_in, amount_in_big, SavedSettingData, chainName, filter }) => {
       const apiKey = (typeof getRandomApiKeyLIFI === 'function') ? getRandomApiKeyLIFI() : '';
 
       // Check for special LIFI chain ID (e.g., Solana uses different ID)
@@ -1023,15 +1090,21 @@
         ? (SavedSettingData?.walletSolana || defaultSolAddr)
         : (SavedSettingData?.walletMeta || defaultEvmAddr);
 
-      // ✅ HARDCODED: Filter for EVM chains - DEX only (no bridges)
       const options = {
         slippage: 0.03,
         order: 'RECOMMENDED',
         allowSwitchChain: false
       };
 
-      // ✅ EVM CHAINS: Strict whitelist - only allow specific DEX aggregators
-      if (!isSolana) {
+      // ✅ FILTER SUPPORT: Apply exchange filter if provided
+      if (!isSolana && filter && filter.exchange) {
+        // Use filter.exchange from config (e.g., '0x', '1inch')
+        options.exchanges = {
+          allow: [String(filter.exchange).toLowerCase()]
+        };
+        console.log(`[LIFI] Using exchange filter: ${filter.exchange}`);
+      } else if (!isSolana) {
+        // Default whitelist if no filter
         options.exchanges = {
           allow: [
             '1inch',          // 1inch aggregator
@@ -1067,15 +1140,15 @@
       };
     },
     parseResponse: (response, { des_output, chainName }) => {
-      // Parse LIFI response - return top 3 routes with single-DEX style calculation
+      // Parse LIFI response - pilih satu route terbaik (tanpa multi-quote)
       const routes = response?.routes;
 
       if (!routes || !Array.isArray(routes) || routes.length === 0) {
         throw new Error("LIFI routes not found in response");
       }
 
-      // Parse semua routes menjadi array
-      const subResults = [];
+      let bestRoute = null;
+
       for (const route of routes) {
         try {
           if (!route || !route.toAmount) continue;
@@ -1093,37 +1166,28 @@
             }
           } catch (_) { }
 
-          // Format sama seperti single DEX result
-          subResults.push({
+          const normalized = {
             amount_out: amount_out,
             FeeSwap: FeeSwap,
-            dexTitle: providerName.toUpperCase()
-          });
-        } catch (e) {
-          continue;
-        }
+            dexTitle: String(providerName || 'LIFI').toUpperCase()
+          };
+
+          if (!bestRoute || normalized.amount_out > bestRoute.amount_out) {
+            bestRoute = normalized;
+          }
+        } catch (_) { }
       }
 
-      if (subResults.length === 0) {
+      if (!bestRoute) {
         throw new Error("No valid LIFI routes found");
       }
 
-      // Sort by amount_out (descending) dan ambil top 3 routes (sama dengan DZAP)
-      // ✅ FIX: Changed from 2 to 3 to show more multi-route options
-      const maxProviders = (typeof window !== 'undefined' && window.CONFIG_DEXS?.lifi?.maxProviders) || 3;
-      subResults.sort((a, b) => b.amount_out - a.amount_out);
-      const topN = subResults.slice(0, maxProviders);
+      console.log(`[LIFI] Returning single best route from ${routes.length} options`, {
+        provider: bestRoute.dexTitle,
+        amount_out: bestRoute.amount_out
+      });
 
-      console.log(`[LIFI] Returning top ${maxProviders} routes from ${subResults.length} available routes`);
-
-      // Return format multi-DEX dengan top N routes
-      return {
-        amount_out: topN[0].amount_out,
-        FeeSwap: topN[0].FeeSwap,
-        dexTitle: 'LIFI',
-        subResults: topN,
-        isMultiDex: true
-      };
+      return bestRoute;
     }
   };
 
@@ -1131,7 +1195,7 @@
   // SWING Strategy - Multi-DEX Aggregator (Top 3 Routes)
   // =============================
   dexStrategies.swing = {
-    buildRequest: ({ codeChain, sc_input, sc_output, amount_in_big, sc_input_in, sc_output_in }) => {
+    buildRequest: ({ codeChain, sc_input, sc_output, amount_in_big, sc_input_in, sc_output_in, filter }) => {
       // Swing uses chain slugs instead of chain IDs
       const chainSlugMap = {
         1: 'ethereum',
@@ -1181,6 +1245,12 @@
         fromWallet: '',
         toWallet: ''
       });
+
+      // ✅ FILTER SUPPORT: Add exchange filter if provided
+      if (filter && filter.exchange) {
+        params.append('exchange', String(filter.exchange).toLowerCase());
+        console.log(`[SWING] Using exchange filter: ${filter.exchange}`);
+      }
 
       // ✅ PROJECT ID: Using 'galaxy-exchange' demo project (all chains enabled)
       // Custom project IDs require chain configuration at https://platform.swing.xyz/
@@ -2059,8 +2129,9 @@
   dexStrategies.paraswap = dexStrategies.velora6;  // Backward compat: paraswap -> velora
   dexStrategies.paraswap5 = dexStrategies.velora5;
   dexStrategies.paraswap6 = dexStrategies.velora6;
-  // Backward compat alias: support legacy '0x' key -> matcha
-  dexStrategies['0x'] = dexStrategies.matcha;
+  // ⚠️ DISABLED: Matcha direct API no longer used
+  // Now uses: swoop (with 0x filter) for pairtotoken, lifi (with 0x filter) for tokentopair
+  // dexStrategies['0x'] = dexStrategies.matcha; // COMMENTED OUT
 
   // -----------------------------
   // Helper: resolve fetch plan per DEX + arah
@@ -2070,51 +2141,30 @@
     try {
       const key = String(dexType || '').toLowerCase();
       const cfg = (root.CONFIG_DEXS || {})[key] || {};
+
+      // ✅ NEW CONFIG STRUCTURE: Direct fetchdex mapping (no more primary/alternative)
+      // fetchdex: { pairtotoken: 'kyber', tokentopair: 'zero-kyber' }
       const map = cfg.fetchdex || {};
       const ak = actionKey(action);
-      let primary = map.primary && map.primary[ak] ? String(map.primary[ak]).toLowerCase() : null;
+      let strategy = map[ak] ? String(map[ak]).toLowerCase() : null;
 
-      // ========== MATCHA STRATEGY OVERRIDE ==========
-      // For ALL chains, Matcha (0x) should use direct endpoint first
-      // Config has primary='unidex-0x', but we want:
-      // - Primary: '0x' (direct matcha.xyz/api/swap/price or /quote/solana)
-      // - Alternative: 'unidex-0x' (fallback for EVM chains only)
-      const isSolana = chainName && String(chainName).toLowerCase() === 'solana';
-      const isMatcha = key === '0x' || key === 'matcha';
+      // Get filter configuration if exists
+      // filter: { pairtotoken: { exchange: '0x' }, tokentopair: { exchange: 'paraswap' } }
+      const filterCfg = cfg.filter || {};
+      const filter = filterCfg[ak] || null;
 
-      if (isMatcha && primary === 'unidex-0x') {
-        primary = '0x'; // Override: use direct Matcha endpoint
-        console.log(`[${chainName?.toUpperCase() || 'CHAIN'}] Matcha: Using direct 0x endpoint (not unidex-0x)`);
+      // Fallback: if no strategy, use dexType itself as strategy
+      if (!strategy) {
+        strategy = key;
       }
 
-      // Gunakan alternative dari config DEX, atau fallback global dari CONFIG_APP.DEX_FALLBACK
-      let alternative = map.alternative && map.alternative[ak] ? String(map.alternative[ak]).toLowerCase() : null;
-      if (!alternative) {
-        // Fallback global: 'dzap' | 'swoop' | 'none' (dari CONFIG_APP.DEX_FALLBACK)
-        const globalFallback = (root.CONFIG_APP && root.CONFIG_APP.DEX_FALLBACK)
-          ? String(root.CONFIG_APP.DEX_FALLBACK).toLowerCase()
-          : 'dzap';
-        alternative = globalFallback !== 'none' ? globalFallback : null;
-      }
+      console.log(`[RESOLVE] DEX=${key}, Action=${ak}, Strategy=${strategy}, Filter=${filter ? JSON.stringify(filter) : 'none'}`);
 
-      // ========== MATCHA ALTERNATIVE OVERRIDE ==========
-      // For Matcha on ALL chains:
-      // - Solana: fallback to DZAP (Unidex doesn't support Solana)
-      // - EVM chains: fallback to unidex-0x
-      if (isMatcha) {
-        alternative = isSolana ? 'dzap' : 'unidex-0x';
-        console.log(`[${chainName?.toUpperCase() || 'CHAIN'}] Matcha alternative: ${alternative}`);
-      }
-
-      // ========== SOLANA CHAIN: FORCE DZAP AS ALTERNATIVE (for non-Matcha DEXs) ==========
-      // For Solana chain, DZAP is the ONLY alternative for ALL DEX types
-      // This overrides any configured alternative (swoop, etc.)
-      if (isSolana && !isMatcha) {
-        alternative = 'dzap';
-      }
-
-      return { primary, alternative };
-    } catch (_) { return { primary: null, alternative: null }; }
+      return { strategy, filter };
+    } catch (e) {
+      console.error('[RESOLVE ERROR]', e);
+      return { strategy: null, filter: null };
+    }
   }
 
   // ========== REQUEST DEDUPLICATION & CACHING ==========
@@ -2191,43 +2241,23 @@
 
       const SavedSettingData = getFromLocalStorage('SETTING_SCANNER', {});
 
-      // OPTIMIZED: Timeout mengikuti setting user (speedScan)
-      // CRITICAL: API timeout HARUS LEBIH KECIL dari scanner window untuk avoid cancel!
-      const dexLower = String(dexType || '').toLowerCase();
-      const isOdosFamily = ['odos', 'odos2', 'odos3', 'hinkal-odos'].includes(dexLower);
-      const isMultiAggregator = ['lifi', 'swing', 'dzap'].includes(dexLower);
-
-      let timeoutMilliseconds;
-      if (isOdosFamily) {
-        // ✅ OPTIMIZED: Reduced from 8s to 4s (ODOS is fast enough with 4s)
-        timeoutMilliseconds = 4000;  // 4 seconds for ODOS (was 8s - too slow!)
-      } else if (isMultiAggregator) {
-        // ✅ FIX: Multi-aggregators (LIFI, SWING, DZAP) need more time to fetch multiple routes
-        // These aggregators query multiple DEXs in parallel and return top N results
-        // Typical response time: 3-8 seconds depending on network and providers
-        timeoutMilliseconds = 8000;  // 8 seconds for multi-aggregators
-        console.log(`⏱️ [${dexLower.toUpperCase()} TIMEOUT] Using extended timeout: ${timeoutMilliseconds}ms for multi-aggregator`);
-      } else {
-        // For other DEXs: use speedScan setting directly (NO MINIMUM!)
-        // User can control speed via speedScan setting (default 1s)
-        const userSpeed = Math.round((SavedSettingData.speedScan || 1) * 1000);
-        timeoutMilliseconds = Math.max(userSpeed, 1000);  // Min 1s (safety), not 3s
-      }
+      // Timeout mengikuti setting user sepenuhnya (tanpa hardcode per-DEX)
+      const defaultTimeout = (root.CONFIG_UI && root.CONFIG_UI.SETTINGS && root.CONFIG_UI.SETTINGS.defaults && root.CONFIG_UI.SETTINGS.defaults.timeoutCount) || 10000;
+      const speedScanMsFromSetting = Number.isFinite(SavedSettingData.speedScan) ? Math.round(SavedSettingData.speedScan * 1000) : null;
+      const speedScanMsFromLegacy = Number.isFinite(SavedSettingData.TimeoutCount) ? Math.round(SavedSettingData.TimeoutCount) : null;
+      const resolvedSpeedMs = speedScanMsFromSetting ?? speedScanMsFromLegacy ?? defaultTimeout;
+      // Minimal 1000ms agar XHR tidak tanpa timeout ketika user memasukkan 0/negatif
+      const timeoutMilliseconds = Math.max(resolvedSpeedMs, 1000);
 
       const amount_in_big = BigInt(Math.round(Math.pow(10, des_input) * amount_in));
 
-      const runStrategy = (strategyName) => new Promise(async (res, rej) => {
+      const runStrategy = (strategyName, options = {}) => new Promise(async (res, rej) => {
         try {
           const sname = String(strategyName || '').toLowerCase();
-          // DZAP dan SWOOP sekarang hanya digunakan sebagai fallback alternatif
-          // Langsung arahkan ke getPriceAltDEX jika strategy adalah 'dzap' atau 'swoop'
-          if (sname === 'swoop' || sname === 'dzap') {
-            const force = sname; // paksa jenis fallback khusus
-            getPriceAltDEX(sc_input, des_input, sc_output, des_output, amount_in, PriceRate, dexType, NameToken, NamePair, cex, chainName, codeChain, action, { force })
-              .then(res)
-              .catch(rej);
-            return;
-          }
+          const filter = options.filter || null;
+
+          // ✅ REFACTORED: swoop and lifi now support filters as meta-aggregators
+          // No longer redirect to getPriceAltDEX - handle directly with filter support
 
           // Resolve dari registry jika ada STRATEGY override
           let sKey = sname;
@@ -2241,7 +2271,11 @@
           const strategy = dexStrategies[sKey];
           if (!strategy) return rej(new Error(`Unsupported strategy: ${sKey}`));
 
-          const requestParams = { chainName, sc_input, sc_output, amount_in_big, des_output, SavedSettingData, codeChain, action, des_input, sc_input_in, sc_output_in };
+          const requestParams = {
+            chainName, sc_input, sc_output, amount_in_big, des_output, SavedSettingData,
+            codeChain, action, des_input, sc_input_in, sc_output_in,
+            filter // ✅ Pass filter to buildRequest
+          };
 
           // ✅ FIX: Support async buildRequest (for Matcha JWT)
           let buildResult;
@@ -2327,13 +2361,17 @@
         }
       });
 
+      // ✅ REFACTORED: New routing strategy (no fallback/alternative)
       const plan = resolveFetchPlan(dexType, action, chainName);
-      const primary = plan.primary || String(dexType || '').toLowerCase();
-      const alternative = plan.alternative || null;
+      const strategy = plan.strategy || String(dexType || '').toLowerCase();
+      const filter = plan.filter || null;
+
+      // Pass filter to runStrategy if needed
+      const strategyOptions = filter ? { filter } : {};
 
       // ========== CREATE INFLIGHT REQUEST PROMISE ==========
       // Create promise chain and store in inflight cache to prevent duplicate requests
-      const inflightPromise = runStrategy(primary)
+      const inflightPromise = runStrategy(strategy, strategyOptions)
         .then((result) => {
           // SUCCESS: Cache the response for future use
           DEX_RESPONSE_CACHE.set(cacheKey, {
@@ -2341,52 +2379,6 @@
             timestamp: Date.now()
           });
           return result;
-        })
-        .catch((e1) => {
-          const code = Number(e1 && e1.statusCode);
-          const primaryKey = String(primary || '').toLowerCase();
-          // Treat ODOS variants + Hinkal proxy sebagai satu keluarga
-          const isOdosFamily = ['odos', 'odos2', 'odos3', 'hinkal'].includes(primaryKey);
-          const noResp = !Number.isFinite(code) || code === 0;
-          const isNoRespFallback = noResp && (isOdosFamily || primaryKey === 'kyber' || primaryKey === '1inch');
-
-          // ========== SOLANA CHAIN: ALWAYS FALLBACK ON TIMEOUT ==========
-          // For Solana chain, ANY timeout/no-response should trigger fallback to DZAP
-          // This ensures Matcha and other DEX timeouts will use DZAP as backup
-          const isSolanaChain = chainName && String(chainName).toLowerCase() === 'solana';
-          const isSolanaNoResp = isSolanaChain && noResp;
-
-          // ========== MATCHA EVM CHAINS: ALWAYS FALLBACK ON ERROR ==========
-          // For Matcha on EVM chains, ANY error should trigger fallback to unidex-0x
-          // This ensures we try Unidex proxy if direct Matcha endpoint fails
-          const isMatchaPrimary = primaryKey === '0x';
-          const isMatchaEVMError = isMatchaPrimary && !isSolanaChain;
-
-          const computedAlt = alternative;
-          // Fallback hanya untuk:
-          // 1. Rate limit (429)
-          // 2. Server error (500+)
-          // 3. No response (timeout/network error) for specific DEX families
-          // 4. [SOLANA ONLY] ANY timeout/no-response (falls back to DZAP)
-          // 5. [MATCHA EVM] ANY error when using direct Matcha (falls back to unidex-0x)
-          const shouldFallback = computedAlt && (
-            (Number.isFinite(code) && (code === 429 || code >= 500)) || // Rate limit atau server error
-            isNoRespFallback || // Atau no response (timeout/network error) untuk ODOS/Kyber/1inch
-            isSolanaNoResp || // [SOLANA] Atau timeout pada chain Solana (fallback ke DZAP)
-            isMatchaEVMError // [MATCHA EVM] Atau error pada Matcha EVM chains (fallback ke unidex-0x)
-          );
-          if (!shouldFallback) throw e1;
-
-          // Try alternative strategy
-          return runStrategy(computedAlt)
-            .then((result) => {
-              // SUCCESS: Cache the fallback response
-              DEX_RESPONSE_CACHE.set(cacheKey, {
-                response: result,
-                timestamp: Date.now()
-              });
-              return result;
-            });
         })
         .finally(() => {
           // CLEANUP: Remove from inflight cache after completion (success or error)
