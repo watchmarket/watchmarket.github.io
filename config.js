@@ -2,7 +2,7 @@
 const CONFIG_APP = {
     APP: {
         NAME: "WATCHMARKET",
-        VERSION: "12.11",
+        VERSION: "12.12",
         SCAN_LIMIT: true,
         AUTORUN: false,
         AUTO_VOLUME: false,   // Set false untuk menyembunyikan & menonaktifkan fitur autorun
