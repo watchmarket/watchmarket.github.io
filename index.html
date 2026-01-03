@@ -303,7 +303,26 @@
                 </div>
               </div>
 
-              <!-- ✅ 0x API key input removed - now managed in secrets.js -->
+
+              <!-- ✅ Matcha API Keys Section -->
+              <div class="uk-margin-small">
+                <label class="uk-form-label uk-text-small uk-text-bolder">
+                  <span uk-icon="key"></span> API KEYS MATCHA (0x)
+                </label>
+                <div class="uk-form-controls">
+                  <textarea 
+                    id="matcha-api-keys" 
+                    class="uk-textarea uk-form-small" 
+                    rows="4" 
+                    placeholder="Masukkan API key 0x/Matcha, satu per baris&#10;Contoh:&#10;6322c59d-5e6a-451c-8040-b52109364cd0&#10;b5a5afe4-4280-4ff2-9565-293a0b32fbd6"
+                    style="font-family: monospace; font-size: 11px; resize: vertical;"
+                  ></textarea>
+                </div>
+                <small class="uk-text-muted uk-text-small" style="display: block; margin-top: 4px;">
+                  💡 Aplikasi akan random select satu API key untuk setiap request. 
+                  Dapatkan API key di <a href="https://dashboard.0x.org/" target="_blank" rel="noopener noreferrer">dashboard.0x.org</a>
+                </small>
+              </div>
 
               <div class="uk-grid-small uk-margin-small-top" uk-grid>
                 <div class="uk-width-1-2">
@@ -378,23 +397,21 @@
 
                   Ganti RPC jika Lambat. ambil di <a href="https://chainlist.org/" target="_blank">chainlist.org</a>
 
-                </div>
-                <div class="uk-width-auto">
-                  <button type="button" id="btn-save-setting"
-                    class="uk-button uk-button-primary uk-button-small uk-border-pill">
-                    <span uk-icon="check"></span> SIMPAN PENGATURAN
-                  </button>
-                </div>
+              </div>
+              </div>
+
+              <!-- Save Button -->
+              <div class="uk-margin-small-top uk-text-right">
+                <button type="button" id="btn-save-setting"
+                  class="uk-button uk-button-primary uk-button-small uk-border-pill">
+                  <span uk-icon="check"></span> SIMPAN PENGATURAN
+                </button>
               </div>
 
             </div>
           </div>
 
-        </div> <!-- end grid -->
 
-      </form>
-
-    </section>
 
 
     <!-- CARD 2: UPDATE WALLET EXCHANGER -->

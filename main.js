@@ -639,6 +639,11 @@ function renderSettingsForm() {
         }
     });
 
+    // ✅ Load Matcha API keys from IndexedDB settings and populate textarea
+    const matchaApiKeys = appSettings.matchaApiKeys || [];
+    const matchaApiKeysText = Array.isArray(matchaApiKeys) ? matchaApiKeys.join('\n') : '';
+    $('#matcha-api-keys').val(matchaApiKeysText);
+
 }
 
 /**
@@ -1708,80 +1713,9 @@ async function deferredInit() {
         } catch (_) { }
     });
 
-    $('#btn-save-setting').on('click', async function () {
-        const nickname = $('#user').val().trim();
-        const jedaTimeGroup = parseInt($('#jeda-time-group').val(), 10);
-        const jedaKoin = parseInt($('#jeda-koin').val(), 10);
-        const walletMeta = $('#walletMeta').val().trim();
-        const scanPerKoin = $('input[name="koin-group"]:checked').val();
-        const speedScan = $('input[name="waktu-tunggu"]:checked').val();
-
-        if (!nickname || nickname.length < 6) return UIkit.notification({ message: 'Nickname harus diisi (minimal 6 karakter)!', status: 'danger' });
-        if (!/^[a-zA-Z\s]+$/.test(nickname)) return UIkit.notification({ message: 'Nickname hanya boleh berisi huruf dan spasi!', status: 'danger' });
-
-        if (!jedaTimeGroup || jedaTimeGroup <= 0) return UIkit.notification({ message: 'Jeda / Group harus lebih dari 0!', status: 'danger' });
-        if (!jedaKoin || jedaKoin <= 0) return UIkit.notification({ message: 'Jeda / Koin harus lebih dari 0!', status: 'danger' });
-        if (!walletMeta || !walletMeta.startsWith('0x')) return UIkit.notification({ message: 'Wallet Address harus valid!', status: 'danger' });
-
-        let JedaDexs = {};
-        $('.dex-delay-input').each(function () {
-            JedaDexs[$(this).data('dex')] = parseFloat($(this).val()) || 100;
-        });
-
-        // Collect user RPC settings (NEW: simplified structure using database)
-        let userRPCs = {};
-        // Get initial values from database migrator (not hardcoded anymore)
-        const getInitialRPC = (chain) => {
-            if (window.RPCDatabaseMigrator && window.RPCDatabaseMigrator.INITIAL_RPC_VALUES) {
-                return window.RPCDatabaseMigrator.INITIAL_RPC_VALUES[chain] || '';
-            }
-            return '';
-        };
-
-        $('.rpc-input').each(function () {
-            const chain = $(this).data('chain');
-            const rpc = $(this).val().trim();
-
-            // Simpan RPC yang diinput user, atau gunakan initial value dari migrator jika kosong
-            if (rpc) {
-                userRPCs[chain] = rpc;
-            } else {
-                const initialRPC = getInitialRPC(chain);
-                if (initialRPC) {
-                    userRPCs[chain] = initialRPC;
-                }
-            }
-        });
-
-        // Validasi: pastikan semua chain punya RPC
-        const missingRPCs = Object.keys(CONFIG_CHAINS).filter(chain => !userRPCs[chain]);
-        if (missingRPCs.length > 0) {
-            UIkit.notification({
-                message: `RPC untuk chain berikut harus diisi: ${missingRPCs.join(', ')}`,
-                status: 'danger',
-                timeout: 5000
-            });
-            return;
-        }
-
-        const settingData = {
-            nickname, jedaTimeGroup, jedaKoin, walletMeta,
-            scanPerKoin: parseInt(scanPerKoin, 10),
-            speedScan: parseFloat(speedScan),
-            JedaDexs,
-            userRPCs  // NEW: hanya simpan RPC yang diinput user (1 per chain)
-        };
-
-        saveToLocalStorage('SETTING_SCANNER', settingData);
-
-        try { setLastAction("SIMPAN SETTING"); } catch (_) { }
-        if (typeof UIkit !== 'undefined' && UIkit.notification) {
-            UIkit.notification("✅ SETTING SCANNER BERHASIL DISIMPAN", { status: 'success' });
-        } else if (typeof toast !== 'undefined' && toast.success) {
-            toast.success("✅ SETTING SCANNER BERHASIL DISIMPAN");
-        }
-        setTimeout(() => location.reload(), 500);
-    });
+    // ⚠️ DEPRECATED: Event handler moved to core/handlers/settings-handlers.js
+    // This duplicate handler has been removed to prevent data loss (missing matchaApiKeys field)
+    // The canonical handler in settings-handlers.js includes all fields including matchaApiKeys
 
     // Deprecated modal handler removed; settings now inline
 

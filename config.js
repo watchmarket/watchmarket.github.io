@@ -179,7 +179,7 @@ const CONFIG_CHAINS = {
                 tx: (hash) => `https://bscscan.com/tx/${hash}`
             }
         },
-        DEXS: ["kyber",  "okx", "1inch", "velora", "odos"],
+        DEXS: ["kyber", "okx", "1inch", "velora", "odos", "matcha"],
         WALLET_CEX: {
             GATE: { address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe', chainCEX: 'BSC' },
             BINANCE: { address: '0x8894E0a0c962CB723c1976a4421c95949bE2D4E3', address2: '0xe2fc31F816A9b94326492132018C3aEcC4a93aE1', chainCEX: 'BSC' },
@@ -206,7 +206,7 @@ const CONFIG_CHAINS = {
         DATAJSON: 'https://monitoring-koin.vercel.app/JSON_KOIN/POLYGON.json',
         BaseFEEDEX: "MATICUSDT", // Corrected from POLUSDT
         GASLIMIT: 80000,
-        DEXS: ["kyber",  "okx", "1inch", "velora", "odos"],
+        DEXS: ["kyber", "okx", "1inch", "velora", "odos", "matcha"],
         LINKS: {
             explorer: {
                 token: (address) => `https://polygonscan.com/token/${address}`,
@@ -240,7 +240,7 @@ const CONFIG_CHAINS = {
                 tx: (hash) => `https://arbiscan.io/tx/${hash}`
             }
         },
-        DEXS: ["kyber",  "okx", "1inch", "velora", "odos"],
+        DEXS: ["kyber", "okx", "1inch", "velora", "odos", "matcha"],
         WALLET_CEX: {
             GATE: { address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe', chainCEX: 'ARBITRUM' },
             BINANCE: { address: '0x290275e3db66394C52272398959845170E4DCb88', address2: '0xe7804c37c13166fF0b37F5aE0BB07A3aEbb6e245', chainCEX: 'ARBITRUM' },
@@ -265,7 +265,7 @@ const CONFIG_CHAINS = {
                 tx: (hash) => `https://etherscan.io/tx/${hash}`
             }
         },
-        DEXS: ["kyber",  "okx", "1inch", "velora", "odos"],
+        DEXS: ["kyber", "okx", "1inch", "velora", "odos", "matcha"],
         WALLET_CEX: {
             GATE: { address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe', chainCEX: 'ETH' },
             BINANCE: { address: '0xDFd5293D8e347dFe59E90eFd55b2956a1343963d', address2: '0x28C6c06298d514Db089934071355E5743bf21d60', address3: '0x21a31Ee1afC51d94C2eFcCAa2092aD1028285549', chainCEX: 'ETH' },
@@ -293,7 +293,7 @@ const CONFIG_CHAINS = {
                 tx: (hash) => `https://basescan.org/tx/${hash}`
             }
         },
-        DEXS: ["kyber",  "okx", "1inch", "velora", "odos"],
+        DEXS: ["kyber", "okx", "1inch", "velora", "odos", "matcha"],
         WALLET_CEX: {
             GATE: { address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe', chainCEX: 'BASE' },
             BINANCE: { address: '0xDFd5293D8e347dFe59E90eFd55b2956a1343963d', address2: '0x28C6c06298d514Db089934071355E5743bf21d60', chainCEX: 'BASE' },
@@ -330,7 +330,7 @@ const CONFIG_CHAINS = {
                 tx: (hash) => `https://solscan.io/tx/${hash}`
             }
         },
-        DEXS: [ "okx", "jupiter", "dflow", "kamino"],
+        DEXS: ["okx", "jupiter", "dflow", "kamino"],
         WALLET_CEX: {
             GATE: { address: 'HiRpdAZifEsZGdzQ5Xo5wcnaH3D2Jj9SoNsUzcYNK78J', address2: 'u6PJ8DtQuPFnfmwHbGFULQ4u4EgjDiyYKjVEsynXq2w', chainCEX: 'SOL' },
             BINANCE: { address: '28nYGHJyUVcVdxZtzKByBXEj127XnrUkrE3VaGuWj1ZU', address2: '2ojv9BAiHUrvsm9gxDe7fJSzbNZSJcxZvf8dqmWGHG8S', chainCEX: 'SOL' },
@@ -366,7 +366,7 @@ const CONFIG_UI = {
         { key: 'kyber', label: 'KyberSwap', badgeClass: 'bg-kyberswap', fallbackSlug: 'kyberswap' },
         { key: 'velora', label: 'Velora', badgeClass: 'bg-velora', fallbackSlug: 'velora' },
         { key: 'odos', label: 'ODOS', badgeClass: 'bg-odos', fallbackSlug: 'odos', skipDelay: true },
-       // { key: 'matcha', label: 'Matcha', badgeClass: 'bg-matcha', fallbackSlug: 'matcha' },
+        { key: 'matcha', label: 'Matcha', badgeClass: 'bg-matcha', fallbackSlug: 'matcha' },
         { key: 'okx', label: 'OKX', badgeClass: 'bg-okx', fallbackSlug: 'okx' },
         { key: '1inch', label: '1inch', badgeClass: 'bg-1inch', fallbackSlug: '1inch' },
         //{ key: 'sushi', label: 'SUSHI', badgeClass: 'bg-sushi', fallbackSlug: 'sushi' }
@@ -671,7 +671,7 @@ const CONFIG_DEXS = {
         label: 'Matcha',
         badgeClass: 'bg-matcha',
         proxy: true, // ✅ Enable proxy - 0x API has CORS restrictions for browser requests
-        warna: "#61ee73ff", // hitam abu-abu (Matcha/0x)
+        warna: "#61ee73ff", // hijau Matcha/0x
         builder: ({ chainName, tokenAddress, pairAddress, chainCode }) => {
             const isSolana = String(chainName || '').toLowerCase() === 'solana';
             if (isSolana) {
@@ -681,12 +681,8 @@ const CONFIG_DEXS = {
             return `https://matcha.xyz/tokens/${chainName}/${String(tokenAddress || '').toLowerCase()}?buyChain=${chainCode}&buyAddress=${String(pairAddress || '').toLowerCase()}`;
         },
         fetchdex: {
-            tokentopair: 'swoop',   // KIRI (CEX→DEX): SWOOP aggregator dengan 0x filter
-            pairtotoken: 'swoop'    // KANAN (DEX→CEX): SWOOP aggregator dengan 0x filter
-        },
-        filter: {
-            tokentopair: { exchange: '0x' },    // Filter SWOOP untuk hanya gunakan 0x
-            pairtotoken: { exchange: '0x' }     // Filter SWOOP untuk hanya gunakan 0x
+            tokentopair: 'matcha',   // KIRI (CEX→DEX): Matcha/0x Direct API
+            pairtotoken: 'matcha'    // KANAN (DEX→CEX): Matcha/0x Direct API
         }
     },
     odos: {

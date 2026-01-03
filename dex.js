@@ -468,10 +468,9 @@
         return { amount_out, FeeSwap, dexTitle: 'KYBER' };
       }
     },
-    // ⚠️ DISABLED: Direct Matcha/0x API no longer used as strategy
-    // Matcha DEX now uses: swoop (0x filter) for pairtotoken, lifi (0x filter) for tokentopair
-    // See config.js matcha.fetchdex for routing configuration
-    /*
+    // ✅ ENABLED: Direct Matcha/0x API with user-configured API keys
+    // Uses official 0x REST API endpoint with automatic key rotation
+    // See config.js matcha.fetchdex (both directions use 'matcha' strategy)
     matcha: {
       buildRequest: ({ chainName, sc_input_in, sc_output_in, amount_in_big, codeChain, sc_output, sc_input, SavedSettingData }) => {
         // Matcha API - Official 0x Documentation
@@ -496,9 +495,9 @@
         }
 
         // Build request URL with official 0x API endpoint
-        // ✅ UPDATED: Using /swap/allowance-holder/quote endpoint (official v2 API)
-        // Docs: https://0x.org/docs/api#tag/Swap/operation/swap::allowanceHolder::getQuote
-        const baseUrl = 'https://api.0x.org/swap/allowance-holder/quote';
+        // ✅ UPDATED: Using /swap/permit2/quote endpoint (official v2 API)
+        // Docs: https://0x.org/docs/api#tag/Swap/operation/swap::permit2::getQuote
+        const baseUrl = 'https://api.0x.org/swap/permit2/quote';
 
         const params = new URLSearchParams({
           chainId: String(codeChain),           // Chain ID as string (required)
@@ -523,7 +522,7 @@
       },
       parseResponse: (response, { des_output, des_input, chainName }) => {
         // Parse 0x API response (allowance-holder endpoint)
-        // Response format: https://0x.org/docs/api#tag/Swap/operation/swap::allowanceHolder::getQuote
+        // Response format: https://0x.org/docs/api#tag/Swap/operation/swap::permit2::getQuote
         //
         // Key fields:
         // - buyAmount: Amount of buyToken (in base units)
@@ -543,7 +542,7 @@
         const buyAmount = parseFloat(response.buyAmount);
         const amount_out = buyAmount / Math.pow(10, des_output);
 
-        // Calculate gas fee from response (if available)
+        // Calculate gas fee from response(if available)
         let FeeSwap = getFeeSwap(chainName);
         try {
           if (response.fees && response.fees.gasFee) {
@@ -598,7 +597,7 @@
         };
       }
     },
-    */
+
     'unidex-matcha': {
       buildRequest: ({ codeChain, sc_input_in, sc_output_in, amount_in_big, SavedSettingData, chainName }) => {
         const userAddr = SavedSettingData?.walletMeta || '0x0000000000000000000000000000000000000000';
@@ -2241,12 +2240,12 @@
 
       const SavedSettingData = getFromLocalStorage('SETTING_SCANNER', {});
 
-      // Timeout mengikuti setting user sepenuhnya (tanpa hardcode per-DEX)
+      // Timeout mengikuti setting user sepenuhnya (tidak ada hardcode per-DEX)
       const defaultTimeout = (root.CONFIG_UI && root.CONFIG_UI.SETTINGS && root.CONFIG_UI.SETTINGS.defaults && root.CONFIG_UI.SETTINGS.defaults.timeoutCount) || 10000;
       const speedScanMsFromSetting = Number.isFinite(SavedSettingData.speedScan) ? Math.round(SavedSettingData.speedScan * 1000) : null;
       const speedScanMsFromLegacy = Number.isFinite(SavedSettingData.TimeoutCount) ? Math.round(SavedSettingData.TimeoutCount) : null;
       const resolvedSpeedMs = speedScanMsFromSetting ?? speedScanMsFromLegacy ?? defaultTimeout;
-      // Minimal 1000ms agar XHR tidak tanpa timeout ketika user memasukkan 0/negatif
+      // Pastikan bernilai minimal 1000ms jika user memasukkan 0/negatif untuk mencegah hang ajax tanpa timeout
       const timeoutMilliseconds = Math.max(resolvedSpeedMs, 1000);
 
       const amount_in_big = BigInt(Math.round(Math.pow(10, des_input) * amount_in));
@@ -2625,7 +2624,8 @@
     // Alias mapping untuk normalize nama DEX yang berbeda
     const ALIASES = {
       'kyberswap': 'kyber',
-      'matcha': '0x',
+      // REMOVED: 'matcha': '0x' - This alias breaks routing by preventing CONFIG_DEXS['matcha'] lookup
+      // Matcha now uses swoop/lifi strategies with 0x filter, not direct 0x strategy
       '1inch': '1inch',
       'odos2': 'odos',
       'odos3': 'odos',

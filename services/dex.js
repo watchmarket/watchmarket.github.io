@@ -468,10 +468,9 @@
         return { amount_out, FeeSwap, dexTitle: 'KYBER' };
       }
     },
-    // ⚠️ DISABLED: Direct Matcha/0x API no longer used as strategy
-    // Matcha DEX now uses: swoop (0x filter) for pairtotoken, lifi (0x filter) for tokentopair
-    // See config.js matcha.fetchdex for routing configuration
-    /*
+    // ✅ ENABLED: Direct Matcha/0x API with user-configured API keys
+    // Uses official 0x REST API endpoint with automatic key rotation
+    // See config.js matcha.fetchdex (both directions use 'matcha' strategy)
     matcha: {
       buildRequest: ({ chainName, sc_input_in, sc_output_in, amount_in_big, codeChain, sc_output, sc_input, SavedSettingData }) => {
         // Matcha API - Official 0x Documentation
@@ -496,9 +495,9 @@
         }
 
         // Build request URL with official 0x API endpoint
-        // ✅ UPDATED: Using /swap/allowance-holder/quote endpoint (official v2 API)
-        // Docs: https://0x.org/docs/api#tag/Swap/operation/swap::allowanceHolder::getQuote
-        const baseUrl = 'https://api.0x.org/swap/allowance-holder/quote';
+        // ✅ UPDATED: Using /swap/permit2/quote endpoint (official v2 API)
+        // Docs: https://0x.org/docs/api#tag/Swap/operation/swap::permit2::getQuote
+        const baseUrl = 'https://api.0x.org/swap/permit2/quote';
 
         const params = new URLSearchParams({
           chainId: String(codeChain),           // Chain ID as string (required)
@@ -523,7 +522,7 @@
       },
       parseResponse: (response, { des_output, des_input, chainName }) => {
         // Parse 0x API response (allowance-holder endpoint)
-        // Response format: https://0x.org/docs/api#tag/Swap/operation/swap::allowanceHolder::getQuote
+        // Response format: https://0x.org/docs/api#tag/Swap/operation/swap::permit2::getQuote
         //
         // Key fields:
         // - buyAmount: Amount of buyToken (in base units)
@@ -535,70 +534,70 @@
         // - issues: { allowance, balance, simulationIncomplete, invalidSourcesPassed }
 
 
-    if(!response?.buyAmount) {
-      throw new Error("Invalid 0x API response - missing buyAmount");
-    }
+        if (!response?.buyAmount) {
+          throw new Error("Invalid 0x API response - missing buyAmount");
+        }
 
         // Parse buyAmount from response (already in base units)
         const buyAmount = parseFloat(response.buyAmount);
-    const amount_out = buyAmount / Math.pow(10, des_output);
+        const amount_out = buyAmount / Math.pow(10, des_output);
 
-    // Calculate gas fee from response (if available)
-    let FeeSwap = getFeeSwap(chainName);
-    try {
-      if(response.fees && response.fees.gasFee) {
-        const gasFeeUsd = parseFloat(response.fees.gasFee.amount || 0);
-  if (Number.isFinite(gasFeeUsd) && gasFeeUsd > 0) {
-    FeeSwap = gasFeeUsd;
-  }
-} else if (response.transaction && response.transaction.gas && response.transaction.gasPrice) {
-  // Fallback: Calculate from gas * gasPrice (need native token price)
-  const gasLimit = parseFloat(response.transaction.gas);
-  const gasPrice = parseFloat(response.transaction.gasPrice);
-  // This would need native token price conversion - skip for now
-}
+        // Calculate gas fee from response(if available)
+        let FeeSwap = getFeeSwap(chainName);
+        try {
+          if (response.fees && response.fees.gasFee) {
+            const gasFeeUsd = parseFloat(response.fees.gasFee.amount || 0);
+            if (Number.isFinite(gasFeeUsd) && gasFeeUsd > 0) {
+              FeeSwap = gasFeeUsd;
+            }
+          } else if (response.transaction && response.transaction.gas && response.transaction.gasPrice) {
+            // Fallback: Calculate from gas * gasPrice (need native token price)
+            const gasLimit = parseFloat(response.transaction.gas);
+            const gasPrice = parseFloat(response.transaction.gasPrice);
+            // This would need native token price conversion - skip for now
+          }
         } catch (e) {
-  console.warn('[0x API] Could not parse gas fee from response, using default');
-}
+          console.warn('[0x API] Could not parse gas fee from response, using default');
+        }
 
-// Log response details for debugging
-console.log(`[Matcha API] Response parsed:`, {
-  buyAmount: response.buyAmount,
-  minBuyAmount: response.minBuyAmount,
-  amountOut: amount_out.toFixed(6),
-  decimals: des_output,
-  gas: response.transaction?.gas,
-  gasPrice: response.transaction?.gasPrice,
-  sources: response.route?.fills?.length || 0,
-  chainName
-});
+        // Log response details for debugging
+        console.log(`[Matcha API] Response parsed:`, {
+          buyAmount: response.buyAmount,
+          minBuyAmount: response.minBuyAmount,
+          amountOut: amount_out.toFixed(6),
+          decimals: des_output,
+          gas: response.transaction?.gas,
+          gasPrice: response.transaction?.gasPrice,
+          sources: response.route?.fills?.length || 0,
+          chainName
+        });
 
-// Log warnings if present
-if (response.issues) {
-  const issueKeys = Object.keys(response.issues || {}).filter(k => response.issues[k]);
-  if (issueKeys.length > 0) {
-    console.warn(`[0x API] Response issues:`, issueKeys.join(', '));
-  }
-}
+        // Log warnings if present
+        if (response.issues) {
+          const issueKeys = Object.keys(response.issues || {}).filter(k => response.issues[k]);
+          if (issueKeys.length > 0) {
+            console.warn(`[0x API] Response issues:`, issueKeys.join(', '));
+          }
+        }
 
-// Log liquidity sources used
-if (response.route?.fills) {
-  const sources = response.route.fills
-    .map(f => f.source || f.type)
-    .filter((v, i, a) => v && a.indexOf(v) === i);
-  if (sources.length > 0) {
-    console.log(`[Matcha API] Liquidity sources:`, sources.join(', '));
-  }
-}
+        // Log liquidity sources used
+        if (response.route?.fills) {
+          const sources = response.route.fills
+            .map(f => f.source || f.type)
+            .filter((v, i, a) => v && a.indexOf(v) === i);
+          if (sources.length > 0) {
+            console.log(`[Matcha API] Liquidity sources:`, sources.join(', '));
+          }
+        }
 
-return {
-  amount_out,
-  FeeSwap,
-  dexTitle: 'MATCHA'
-};
+        return {
+          amount_out,
+          FeeSwap,
+          dexTitle: 'MATCHA'
+        };
       }
     },
-    */
+
     'unidex-matcha': {
       buildRequest: ({ codeChain, sc_input_in, sc_output_in, amount_in_big, SavedSettingData, chainName }) => {
         const userAddr = SavedSettingData?.walletMeta || '0x0000000000000000000000000000000000000000';

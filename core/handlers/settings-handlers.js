@@ -24,7 +24,7 @@
  * @module core/handlers/settings-handlers
  */
 
-(function() {
+(function () {
     'use strict';
 
     /**
@@ -33,7 +33,7 @@
      */
     $("#SettingConfig").on("click", function () {
         showMainSection('#form-setting-app');
-        try { document.getElementById('form-setting-app').scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch(_) {}
+        try { document.getElementById('form-setting-app').scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) { }
         renderSettingsForm();
     });
 
@@ -42,15 +42,15 @@
      * Restore without broadcasting to other tabs
      */
     $(document).on('click', '#btn-cancel-setting', function () {
-        try { sessionStorage.setItem('APP_FORCE_RUN_NO', '1'); } catch(_) {}
-        try { location.reload(); } catch(_) {}
+        try { sessionStorage.setItem('APP_FORCE_RUN_NO', '1'); } catch (_) { }
+        try { location.reload(); } catch (_) { }
     });
 
     /**
      * Save settings button handler
      * Validates and saves all settings to localStorage
      */
-    $('#btn-save-setting').on('click', async function() {
+    $('#btn-save-setting').on('click', async function () {
         const nickname = $('#user').val().trim();
         const jedaTimeGroup = parseInt($('#jeda-time-group').val(), 10);
         const jedaKoin = parseInt($('#jeda-koin').val(), 10);
@@ -59,15 +59,31 @@
         const scanPerKoin = $('input[name="koin-group"]:checked').val();
         const speedScan = $('input[name="waktu-tunggu"]:checked').val();
 
-        if (!nickname || nickname.length < 6) return UIkit.notification({message: 'Nickname harus diisi (minimal 6 karakter)!', status: 'danger'});
-        if (!/^[a-zA-Z\s]+$/.test(nickname)) return UIkit.notification({message: 'Nickname hanya boleh berisi huruf dan spasi!', status: 'danger'});
+        if (!nickname || nickname.length < 6) return UIkit.notification({ message: 'Nickname harus diisi (minimal 6 karakter)!', status: 'danger' });
+        if (!/^[a-zA-Z\s]+$/.test(nickname)) return UIkit.notification({ message: 'Nickname hanya boleh berisi huruf dan spasi!', status: 'danger' });
 
-        if (!jedaTimeGroup || jedaTimeGroup <= 0) return UIkit.notification({message: 'Jeda / Group harus lebih dari 0!', status: 'danger'});
-        if (!jedaKoin || jedaKoin <= 0) return UIkit.notification({message: 'Jeda / Koin harus lebih dari 0!', status: 'danger'});
-        if (!walletMeta || !walletMeta.startsWith('0x')) return UIkit.notification({message: 'Wallet Address harus valid!', status: 'danger'});
+        if (!jedaTimeGroup || jedaTimeGroup <= 0) return UIkit.notification({ message: 'Jeda / Group harus lebih dari 0!', status: 'danger' });
+        if (!jedaKoin || jedaKoin <= 0) return UIkit.notification({ message: 'Jeda / Koin harus lebih dari 0!', status: 'danger' });
+        if (!walletMeta || !walletMeta.startsWith('0x')) return UIkit.notification({ message: 'Wallet Address harus valid!', status: 'danger' });
+
+        // ✅ Parse Matcha API keys from textarea (one per line)
+        const matchaApiKeysRaw = $('#matcha-api-keys').val().trim();
+        const matchaApiKeys = matchaApiKeysRaw
+            .split('\n')
+            .map(k => k.trim())
+            .filter(k => k.length > 0);
+
+        // Optional validation: ensure at least 1 API key is provided
+        // if (matchaApiKeys.length === 0) {
+        //     return UIkit.notification({
+        //         message: '⚠️ Minimal 1 API key Matcha harus diisi!',
+        //         status: 'warning'
+        //     });
+        // }
+
 
         let JedaDexs = {};
-        $('.dex-delay-input').each(function() {
+        $('.dex-delay-input').each(function () {
             JedaDexs[$(this).data('dex')] = parseFloat($(this).val()) || 100;
         });
 
@@ -81,7 +97,7 @@
             return '';
         };
 
-        $('.rpc-input').each(function() {
+        $('.rpc-input').each(function () {
             const chain = $(this).data('chain');
             const rpc = $(this).val().trim();
 
@@ -113,14 +129,15 @@
             scanPerKoin: parseInt(scanPerKoin, 10),
             speedScan: parseFloat(speedScan),
             JedaDexs,
-            userRPCs  // NEW: hanya simpan RPC yang diinput user (1 per chain)
+            userRPCs,  // NEW: hanya simpan RPC yang diinput user (1 per chain)
+            matchaApiKeys  // ✅ NEW: Matcha API keys dari textarea
         };
 
         saveToLocalStorage('SETTING_SCANNER', settingData);
 
-        try { setLastAction("SIMPAN SETTING"); } catch(_) {}
+        try { setLastAction("SIMPAN SETTING"); } catch (_) { }
         if (typeof UIkit !== 'undefined' && UIkit.notification) {
-            UIkit.notification("✅ SETTING SCANNER BERHASIL DISIMPAN", {status:'success'});
+            UIkit.notification("✅ SETTING SCANNER BERHASIL DISIMPAN", { status: 'success' });
         } else if (typeof toast !== 'undefined' && toast.success) {
             toast.success("✅ SETTING SCANNER BERHASIL DISIMPAN");
         }
