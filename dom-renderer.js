@@ -297,8 +297,13 @@ function loadKointoTable(filteredData, tableBodyId = 'dataTableBody') {
       const rowId = `DETAIL_${String(data.cex).toUpperCase()}_${String(data.symbol_in).toUpperCase()}_${String(data.symbol_out).toUpperCase()}_${String(data.chain).toUpperCase()}`.replace(/[^A-Z0-9_]/g, '');
       const chainShort = (data.chain || '').substring(0, 3).toUpperCase();
 
+      // Check if any withdraw or deposit is off (WX/DX)
+      const hasOffStatus = data.withdrawToken === false || data.depositToken === false ||
+                           data.withdrawPair === false || data.depositPair === false;
+      const detailBgColor = hasOffStatus ? 'background-color: #fce0e0 !important;' : '';
+
       rowHtml += `
-            <td id="${idPrefix}${rowId}" class="uk-text-center uk-background td-detail" style="text-align: center; border:1px solid black; padding:10px;">
+            <td id="${idPrefix}${rowId}" class="uk-text-center uk-background td-detail" style="text-align: center; border:1px solid black; padding:10px; ${detailBgColor}">
              [${index + 1}]<span style="color: ${warnaCex}; font-weight:bolder;"> ${data.cex} </span> on <span style="color: ${warnaChain}; font-weight:bolder;">${chainShort} </span>
     
             <span class="detail-line">
@@ -326,7 +331,7 @@ function loadKointoTable(filteredData, tableBodyId = 'dataTableBody') {
                 <span class="detail-line uk-text-bolder">${WD_TOKEN}~ ${DP_TOKEN} | ${WD_PAIR}~ ${DP_PAIR}</span>
                 <span class="detail-line"><span class="uk-text-primary uk-text-bolder">${(data.symbol_in || '').toUpperCase()}</span> ${linkSCtoken} : ${linkStokToken}</span>
                 <span class="detail-line"><span class="uk-text-primary uk-text-bolder">${(data.symbol_out || '').toUpperCase()}</span> ${linkSCpair} : ${linkStokPair}</span>
-                <span class="detail-line"> ${linkRango} ${linkRBX} ${linkJumper} ${linkOKDEX} ${linkDEFIL} ${linkDZAP}</span>
+                <span class="detail-line"> ${linkRango} ${linkJumper} ${linkOKDEX} ${linkDEFIL} ${linkDZAP}</span>
             </td>`;
 
       // refactor: render slot DEX kanan via helper

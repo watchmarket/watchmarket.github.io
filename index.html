@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MULTICHECKER-PLUS</title>
+  <title>WATCHMARKET</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.6.22/css/uikit.min.css" />
   <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
     crossorigin="anonymous"></script>
@@ -36,7 +36,7 @@
           <div class="uk-flex uk-flex-middle uk-flex-wrap" style="align-items: center;">
             <h3 id="judul" class="uk-margin-remove"
               style="font-size: 18px; line-height: 1.4; color: #000; font-weight: bold; display: inline-flex; align-items: center;">
-              <span id="app-title">MULTIPLUS-SCANNER</span>
+              <span id="app-title">WATCHMARKET</span>
               <span id="current-chain-label" style="margin-left:3px;">[ALL]</span>
             </h3>
             &nbsp;&nbsp;
@@ -95,53 +95,56 @@
             <div class="uk-width-expand uk-flex uk-flex-middle uk-flex-wrap" style="gap: 8px;">
 
               <span class="uk-text-bolder scanner-label">
-                SCANNER [ <input class="uk-checkbox" type="checkbox" id="toggleScanLog"> Log ]:
-              </span>
-
-              <label class="scanner-control">
-                <input class="uk-checkbox" type="checkbox" id="autoRunToggle">
-                <span class="uk-text-success">Auto Run</span>
-              </label>
-
-              <label class="scanner-control">
-                <input class="uk-checkbox" type="checkbox" id="autoScrollCheckbox">
-                <span class="uk-text-warning">Auto Scroll</span>
-              </label>
-
-              <label class="scanner-control">
-                <input class="uk-checkbox vol-check" id="checkVOL" type="checkbox">
-                <span class="uk-text-danger">Vol Check</span>
-              </label>
-
-
+                SCANNER [ <input class="uk-checkbox" type="checkbox" id="toggleScanLog"> LOGGER 
+                
               <label class="scanner-control">
                 <input class="uk-checkbox posisi-check" type="checkbox" value="Actionkiri" checked>
-                <span>KIRI</span>
+                <span class="uk-text-success">KIRI</span>
               </label>
 
               <label class="scanner-control">
                 <input class="uk-checkbox posisi-check" type="checkbox" value="ActionKanan" checked>
-                <span>KANAN</span>
-              </label>
+                <span class="uk-text-danger">KANAN</span>
+              </label>]
+              </span>
+             
+              |
 
-              <label class="scanner-control">
-                <input class="uk-checkbox" id="checkWalletCEX" type="checkbox">
-                <span class="uk-text-primary">WALLET CEX</span>
-              </label>
+               <span class="uk-text-bolder scanner-label">
+                AUTO [ 
+             
+                    <label class="scanner-control">
+                      <input class="uk-checkbox" type="checkbox" id="autoRunToggle">
+                      <span class="uk-text-success">START</span>
+                    </label>
 
-              <!-- Search Input (moved from modal) -->
-              
+                    <label class="scanner-control">
+                      <input class="uk-checkbox" type="checkbox" id="autoScrollCheckbox">
+                      <span class="uk-text-warning">SCROLL</span>
+                    </label>
 
-              <label class="scanner-control">
-                <input class="uk-checkbox" id="autoVolToggle" type="checkbox">
-                <span class="uk-text-primary uk-text-bold">AUTO LEVEL</span>
-              </label>
+                    <label class="scanner-control">
+                      <input class="uk-checkbox vol-check" id="checkVOL" type="checkbox">
+                      <span class="uk-text-danger">VOL</span>
+                    </label>
 
-              <div class="scanner-control-inline" id="autoVolLevelInput" style="display:none;">
-                <input id="autoVolLevels" class="uk-input uk-form-small" type="number" min="1" max="4" value="1"
-                  placeholder="1-4" style="width:50px;">
-              </div>
+                    <label class="scanner-control">
+                      <input class="uk-checkbox" id="checkWalletCEX" type="checkbox">
+                      <span class="uk-text-primary">WALLET</span>
+                    </label>
+                    <!-- Search Input (moved from modal) -->
+                    
 
+                    <label class="scanner-control">
+                      <input class="uk-checkbox" id="autoVolToggle" type="checkbox">
+                      <span class="uk-text-primary uk-text-bold"> LEVEL</span>
+                    </label>
+
+                    <div class="scanner-control-inline" id="autoVolLevelInput" style="display:none;">
+                      <input id="autoVolLevels" class="uk-input uk-form-small" type="number" min="1" max="4" value="1"
+                        placeholder="1-4" style="width:50px;">
+                    </div>
+              ] </span>
               <div class="scanner-control-inline">
                 <span class="uk-text-success uk-text-bolder">PNL</span>
                 <input id="pnlFilterInput" class="uk-input uk-form-small" type="number" step="0.01" min="0"
