@@ -457,10 +457,16 @@
      * User pilih CEX mana yang ingin di-update via checkbox
      */
     function renderCexCards() {
+        console.log('[renderCexCards] Called!'); // DEBUG
         const $grid = $('#wallet-cex-grid');
-        if (!$grid.length) return;
+        console.log('[renderCexCards] Grid element found:', $grid.length); // DEBUG
+        if (!$grid.length) {
+            console.error('[renderCexCards] #wallet-cex-grid element not found!'); // DEBUG
+            return;
+        }
 
         $grid.empty();
+        console.log('[renderCexCards] Grid emptied, starting render...'); // DEBUG
 
         // Get active mode and chain
         const mode = (typeof getAppMode === 'function') ? getAppMode() : { type: 'multi' };
@@ -1106,10 +1112,14 @@
      * Show wallet exchanger section
      */
     function show() {
+        console.log('[WalletExchanger.show] Called!'); // DEBUG
+
         // Gunakan section manager terpusat untuk mencegah tumpang tindih
         if (typeof showMainSection === 'function') {
+            console.log('[WalletExchanger.show] Calling showMainSection...'); // DEBUG
             showMainSection('#update-wallet-section');
         } else {
+            console.log('[WalletExchanger.show] Fallback: Using jQuery show()'); // DEBUG
             // Fallback jika showMainSection tidak tersedia
             $('#update-wallet-section').show();
         }
@@ -1118,6 +1128,7 @@
         selectedCexList = [];
 
         // Render CEX cards dengan data dari storage
+        console.log('[WalletExchanger.show] Calling renderCexCards()...'); // DEBUG
         renderCexCards();
 
         // ✅ FIX: Restore saved report (jika ada) agar tetap tampil setelah reload/navigasi

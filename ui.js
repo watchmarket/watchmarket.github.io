@@ -3,6 +3,8 @@
  * @param {string | null} sectionIdToShow The ID of the section to show. If null, all main sections are hidden.
  */
 function showMainSection(sectionIdToShow) {
+    console.log('[showMainSection] Called with:', sectionIdToShow); // DEBUG
+
     const allSections = [
         '#database-viewer-section',
         '#token-management',
@@ -28,13 +30,25 @@ function showMainSection(sectionIdToShow) {
     const $sortToggles = $('.sort-toggle');
 
     // Hide all sections first
-    allSections.forEach(id => $(id).hide());
+    console.log('[showMainSection] Hiding all sections...'); // DEBUG
+    allSections.forEach(id => {
+        console.log('[showMainSection] Hiding:', id); // DEBUG
+        // Use .css('display', 'none') to override inline styles
+        $(id).css('display', 'none');
+    });
 
     if (sectionIdToShow === 'scanner') {
         // Special case for the main scanner view
-        $('#scanner-config, #sinyal-container, #filter-card, #monitoring-scroll').show();
+        console.log('[showMainSection] Showing scanner view'); // DEBUG
+        // Use .css('display', 'block') to override inline styles
+        $('#scanner-config, #sinyal-container, #filter-card, #monitoring-scroll').css('display', 'block');
     } else if (sectionIdToShow) {
-        $(sectionIdToShow).show();
+        console.log('[showMainSection] Showing section:', sectionIdToShow); // DEBUG
+        const $section = $(sectionIdToShow);
+        console.log('[showMainSection] Section found:', $section.length, 'Display before:', $section.css('display')); // DEBUG
+        // Use .css('display', 'block') to override inline style="display:none"
+        $section.css('display', 'block');
+        console.log('[showMainSection] Display after:', $section.css('display')); // DEBUG
     }
 }
 
@@ -621,8 +635,15 @@ function form_off() {
         $('#FormEditKoinModal').find('input, select, textarea, button').prop('disabled', false);
         $('#SaveEditkoin, #HapusEditkoin, #CopyToMultiBtn, #BatalEditkoin').prop('disabled', false);
 
-        // Explicitly disable management buttons during scan
-        $('#ManajemenKoin, #UpdateWalletCEX, #BulkModalScanner').css({
+        // ✅ KEEP ManajemenKoin and UpdateWalletCEX clickable during scan (sections will be read-only)
+        $('#ManajemenKoin, #UpdateWalletCEX').css({
+            'opacity': '1',
+            'pointer-events': 'auto',
+            'cursor': 'pointer'
+        });
+
+        // Disable BulkModalScanner during scan
+        $('#BulkModalScanner').css({
             'opacity': '0.5',
             'pointer-events': 'none',
             'cursor': 'not-allowed'
@@ -634,7 +655,7 @@ function form_off() {
 function form_on() {
     $('input, select, button').prop('disabled', false);
 
-    // Re-enable management buttons when scan stops
+    // Re-enable all management buttons when scan stops
     try {
         $('#ManajemenKoin, #UpdateWalletCEX, #BulkModalScanner').css({
             'opacity': '1',

@@ -491,7 +491,9 @@ function updateTokenStatsOnly() {
 }
 
 function renderTokenManagementList() {
+  console.log('[renderTokenManagementList] Called!'); // DEBUG
   const m = (typeof getAppMode === 'function') ? getAppMode() : { type: 'multi' };
+  console.log('[renderTokenManagementList] Mode:', m); // DEBUG
   let allTokens = (m.type === 'single')
     ? (getFromLocalStorage(`TOKEN_${String(m.chain).toUpperCase()}`, []) || [])
     : (getFromLocalStorage('TOKEN_MULTICHAIN', []) || []);
