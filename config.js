@@ -63,7 +63,9 @@ const CONFIG_CEX = {
             deposit: ({ pair }) => `https://www.mexc.com/assets/deposit/${String(pair || '').toUpperCase()}`
         },
         ORDERBOOK: {
-            urlTpl: ({ symbol }) => `https://api.mexc.com/api/v3/depth?symbol=${String(symbol || '')}USDT&limit=5`,
+                        urlTpl: ({ symbol }) => `${CONFIG_PROXY.PREFIX}https://api.mexc.com/api/v3/depth?symbol=${String(symbol || '')}USDT&limit=5`,
+
+//            urlTpl: ({ symbol }) => `https://api.mexc.com/api/v3/depth?symbol=${String(symbol || '')}USDT&limit=5`,
             parser: 'standard'
         }
     },
