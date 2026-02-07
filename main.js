@@ -502,6 +502,91 @@ function hasValidTokens() {
 }
 
 /**
+ * Dynamically render CEX API key input fields based on CONFIG_CEX
+ * Generates input cards for each CEX with proper styling and passphrase support
+ */
+function renderCEXAPIKeyInputs() {
+    const container = document.getElementById('cex-api-keys-container');
+    if (!container) {
+        console.warn('[CEX Settings] Container #cex-api-keys-container not found');
+        return;
+    }
+
+    const cexList = (typeof CONFIG_CEX !== 'undefined') ? Object.keys(CONFIG_CEX) : [];
+
+    if (cexList.length === 0) {
+        container.innerHTML = '<p class="uk-text-muted uk-text-small">No CEX configured in CONFIG_CEX</p>';
+        return;
+    }
+
+    const requiresPassphrase = ['KUCOIN', 'BITGET'];
+
+    const hexToRgba = (hex, alpha = 0.08) => {
+        hex = hex.replace('#', '');
+        if (hex.length > 6) hex = hex.substring(0, 6);
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    };
+
+    let html = '<div class="uk-grid-small uk-child-width-1-2@s" uk-grid>';
+    cexList.forEach(cex => {
+        const cexConfig = CONFIG_CEX[cex];
+        const color = cexConfig.WARNA || '#333';
+        const needsPassphrase = requiresPassphrase.includes(cex);
+
+        html += `
+            <div>
+              <div style="background: ${hexToRgba(color)}; border-left: 3px solid ${color}; padding: 6px 8px; margin-bottom: 4px; border-radius: 4px;">
+                <div class="uk-text-small uk-text-bold" style="color: ${color}; margin-bottom: 4px;">
+                  <span uk-icon="icon: credit-card; ratio: 0.7"></span> ${cex}
+                </div>
+                <input type="text" class="uk-input uk-form-small" style="margin-bottom: 3px; font-size: 0.78rem;" id="cex_apikey_${cex}"
+                  placeholder="API Key" aria-label="${cex} API Key">
+                <input type="password" class="uk-input uk-form-small" style="margin-bottom: ${needsPassphrase ? '3px' : '0'}; font-size: 0.78rem;" id="cex_secret_${cex}" placeholder="Secret Key"
+                  aria-label="${cex} Secret">
+                ${needsPassphrase ? `<input type="password" class="uk-input uk-form-small" style="font-size: 0.78rem;" id="cex_passphrase_${cex}"
+                  placeholder="Passphrase (Required)" aria-label="${cex} Passphrase">` : ''}
+              </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+
+    container.innerHTML = html;
+    console.log(`[CEX Settings] Generated ${cexList.length} CEX input field(s):`, cexList);
+
+    loadCEXApiKeys();
+}
+
+/**
+ * Load CEX API Keys from IndexedDB and populate input fields
+ */
+function loadCEXApiKeys() {
+    try {
+        const cexKeys = getFromLocalStorage('CEX_API_KEYS', {});
+        const loadedCount = Object.keys(cexKeys).length;
+
+        if (loadedCount > 0) {
+            console.log(`[CEX Settings] Loading ${loadedCount} CEX API key(s):`, Object.keys(cexKeys));
+
+            Object.entries(cexKeys).forEach(([cex, credentials]) => {
+                $(`#cex_apikey_${cex}`).val(credentials.ApiKey || '');
+                $(`#cex_secret_${cex}`).val(credentials.ApiSecret || '');
+                if (credentials.Passphrase) {
+                    $(`#cex_passphrase_${cex}`).val(credentials.Passphrase);
+                }
+            });
+        } else {
+            console.log('[CEX Settings] No CEX API keys configured yet');
+        }
+    } catch (error) {
+        console.error('[CEX Settings] Failed to load CEX API keys:', error);
+    }
+}
+
+/**
  * Renders the Settings form: generates CEX/DEX delay inputs and API key fields,
  * and preloads saved values from storage.
  */
@@ -619,6 +704,9 @@ function renderSettingsForm() {
 
     // ✅ Verify field exists in DOM
     console.log('[SETTINGS LOAD] matchaApiKeys field exists:', $('#matchaApiKeys').length > 0);
+
+    // ✅ NEW: Render CEX API Key inputs and load saved values
+    renderCEXAPIKeyInputs();
 
     $(`input[name=\"koin-group\"][value=\"${appSettings.scanPerKoin || 5}\"]`).prop('checked', true);
 

@@ -67,7 +67,7 @@
 
             <!-- <img class="icon" id="reload" data-feature="reload" title="RESET PROSES" width="24px" src="https://cdn-icons-png.flaticon.com/256/10264/10264169.png" /> -->
 
-            <a href="extra/modal.html" target="_blank" data-feature="assets"><img class="icon" title="PORTOFOLIO ASSET"
+            <a href="portofolio.html" target="_blank" data-feature="assets"><img class="icon" title="PORTOFOLIO ASSET"
                 width="24px" src="assets/icons/settings.png" /></a>
             <a href="#" id="openDatabaseViewer" title="MANAJEMEN DATABASE"><img class="icon" width="24"
                 src="assets/icons/signal.png" /></a>
@@ -253,64 +253,54 @@
     <!-- SECTION: PENGATURAN SCANNING APLIKASI -->
     <section id="form-setting-app"
       class="uk-card uk-card-default uk-card-body uk-padding-small uk-card-hover uk-margin-small" style="display:none;">
-      <!-- Header Section -->
-      <div class="uk-card uk-card-default uk-card-body uk-padding-small uk-margin-small">
+      <!-- Header + Save Button (sticky top bar) -->
+      <div class="uk-card uk-card-default uk-card-body uk-padding-small uk-margin-small"
+        style="position: sticky; top: 0; z-index: 10; background: #fff;">
         <div class="uk-flex uk-flex-between uk-flex-middle">
-          <h4 class="uk-heading-bullet uk-margin-remove ">
+          <h4 class="uk-heading-bullet uk-margin-remove">
             <span uk-icon="icon: settings; ratio: 1.2"></span> PENGATURAN SCANNER
           </h4>
-          <button type="button" id="btn-cancel-setting" class="uk-button uk-button-danger uk-button-small">
-            <span uk-icon="icon: close"></span> TUTUP
-          </button>
+          <div class="uk-flex" style="gap: 8px;">
+            <button type="button" id="btn-save-setting"
+              class="uk-button uk-button-primary uk-button-small uk-border-pill">
+              <span uk-icon="check"></span> SIMPAN PENGATURAN
+            </button>
+            <button type="button" id="btn-cancel-setting" class="uk-button uk-button-danger uk-button-small">
+              <span uk-icon="icon: close"></span> TUTUP
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- 3 Column Layout with Cards -->
-      <form class="uk-form-stacked uk-margin">
+      <form class="uk-form-stacked uk-margin-small">
 
-        <!-- GRID 3:4:5 (uk-grid-match agar card sama tinggi) -->
-        <div class="uk-grid-small uk-grid-match" uk-grid>
+        <!-- GRID 3 Columns -->
+        <div class="uk-grid-small" uk-grid>
 
-          <!-- COLUMN 1 (3) - JEDA DEX -->
-          <div class="uk-width-1-4@m">
-            <div class="uk-card uk-card-default uk-card-body uk-card-hover">
-              <h5 class="uk-h5 uk-text-primary uk-text-bolder">
+          <!-- COLUMN 1 - JEDA DEX -->
+          <div class="uk-width-1-5@m">
+            <div class="uk-card uk-card-default uk-card-body uk-card-hover uk-padding-small">
+              <h5 class="uk-h5 uk-text-primary uk-text-bolder uk-margin-small-bottom">
                 <span uk-icon="clock"></span> JEDA DEX
               </h5>
               <div id="dex-delay-group">
-                <!-- contoh item (JS akan populate) -->
-                <div class="uk-card uk-card-small uk-card-body uk-margin-small-bottom">
-                  <div class="uk-flex uk-flex-between uk-flex-middle">
-                    <div>
-                      <div class="uk-text-small uk-text-bold">MATCHA</div>
-                      <div class="uk-text-meta uk-text-truncate">Keterangan singkat</div>
-                    </div>
-                    <div class="uk-width-small">
-                      <input class="uk-input uk-form-small" type="number" value="50" aria-label="matcha delay">
-                    </div>
-                  </div>
-                </div>
-                <!-- tambahkan item lainnya -->
+                <!-- JS akan populate -->
               </div>
-
             </div>
           </div>
 
-          <!-- COLUMN 2 (4) - PENGATURAN SCANNER -->
+          <!-- COLUMN 2 - PENGATURAN SCANNER + RPC -->
           <div class="uk-width-1-3@m">
-            <div class="uk-card uk-card-default uk-card-body uk-card-hover">
-              <h5 class="uk-h5 uk-text-primary uk-text-bolder">
+            <div class="uk-card uk-card-default uk-card-body uk-card-hover uk-padding-small">
+              <h5 class="uk-h5 uk-text-primary uk-text-bolder uk-margin-small-bottom">
                 <span uk-icon="cog"></span> PENGATURAN SCANNER
               </h5>
 
-
-              <div class="uk-grid-small uk-margin-small-top" uk-grid>
+              <div class="uk-grid-small" uk-grid>
                 <div class="uk-width-1-2">
                   <label class="uk-form-label uk-text-small uk-text-bolder">NICK NAME</label>
-                  <div class="uk-form-controls">
-                    <input type="text" id="user" class="uk-input uk-form-small" placeholder="Masukkan nickname"
-                      required>
-                  </div>
+                  <input type="text" id="user" class="uk-input uk-form-small" placeholder="Masukkan nickname" required>
                 </div>
                 <div class="uk-width-1-2">
                   <label class="uk-form-label uk-text-small uk-text-bolder">SCANNER KOIN / GRUP</label>
@@ -324,21 +314,18 @@
 
               <div class="uk-margin-small">
                 <label class="uk-form-label uk-text-small uk-text-danger uk-text-bolder">WALLET ADDRESS</label>
-                <div class="uk-form-controls">
-                  <input class="uk-input uk-form-small" type="text" id="walletMeta" name="walletMeta"
-                    placeholder="0x..." aria-label="wallet address">
-                </div>
+                <input class="uk-input uk-form-small" type="text" id="walletMeta" name="walletMeta" placeholder="0x..."
+                  aria-label="wallet address">
               </div>
 
-              <!-- Matcha (0x) API Keys Input (Multiple) -->
+              <!-- Matcha (0x) API Keys Input -->
               <div class="uk-margin-small">
                 <label class="uk-form-label uk-text-small uk-text-danger uk-text-bolder">
                   MATCHA API KEYS (Required) ⚠️
                 </label>
-                <div class="uk-form-controls">
-                  <textarea class="uk-textarea uk-form-small" id="matchaApiKeys" name="matchaApiKeys" rows="14"
-                    placeholder="key1,key2,key3 atau pisahkan dengan enter&#10; daftar di: https://dashboard.0x.org"
-                    aria-label="Matcha API Keys">b52adb8e-aa3b-45ab-8341-dc27e006f945
+                <textarea class="uk-textarea uk-form-small" id="matchaApiKeys" name="matchaApiKeys" rows="8"
+                  placeholder="key1,key2,key3 atau pisahkan dengan enter&#10; daftar di: https://dashboard.0x.org"
+                  aria-label="Matcha API Keys">b52adb8e-aa3b-45ab-8341-dc27e006f945
 fb46960e-2bc2-4b64-a9a0-c02278a7ace6
 b51ebca4-6cb5-4eb3-8d8a-23052b770eca
 1acb6d53-00bc-496d-8d1e-31004b0cfdbb
@@ -350,74 +337,54 @@ e112a25f-c671-47db-9ab2-630871bb4437
 fbce1ee3-18f2-4550-8e28-28ad4cdfbee9
 a57447d9-46e4-452b-b593-5399179c43c0
 e15090b8-8438-42e5-ac3f-59b855cc2912</textarea>
-                </div>
                 <div class="uk-text-meta uk-text-small uk-text-warning">
                   ⚠️ WAJIB diisi! Pisahkan dengan koma (,) atau Enter untuk multiple keys
                 </div>
               </div>
 
-
-              <div class="uk-grid-small uk-margin-small-top" uk-grid>
+              <div class="uk-grid-small" uk-grid>
                 <div class="uk-width-1-2">
                   <label class="uk-form-label uk-text-small uk-text-bolder">JEDA / GRUP (ms)</label>
-                  <div class="uk-form-controls">
-                    <input class="uk-input uk-form-small" id="jeda-time-group" type="number" value="2000" min="500">
-                  </div>
+                  <input class="uk-input uk-form-small" id="jeda-time-group" type="number" value="2000" min="500">
                   <div class="uk-text-meta uk-text-small uk-text-muted">Waktu jeda antar grup</div>
                 </div>
                 <div class="uk-width-1-2">
                   <label class="uk-form-label uk-text-small uk-text-bolder">JEDA / KOIN (ms)</label>
-                  <div class="uk-form-controls">
-                    <input class="uk-input uk-form-small" id="jeda-koin" type="number" value="900" min="300">
-                  </div>
+                  <input class="uk-input uk-form-small" id="jeda-koin" type="number" value="900" min="300">
                   <div class="uk-text-meta uk-text-small uk-text-muted">Waktu jeda antar koin di grup</div>
                 </div>
               </div>
 
+            </div>
 
-
+            <!-- PENGATURAN RPC (below PENGATURAN SCANNER) -->
+            <div class="uk-card uk-card-default uk-card-body uk-card-hover uk-padding-small uk-margin-small-top">
+              <h5 class="uk-h5 uk-text-primary uk-text-bolder uk-margin-small-bottom">
+                <span uk-icon="cloud-download"></span> PENGATURAN RPC
+              </h5>
+              <div id="rpc-settings-group" style="max-height: 300px; overflow-y: auto;">
+                <!-- JS append real list -->
+              </div>
+              <div class="uk-text-meta uk-text-small uk-text-danger uk-margin-small-top">
+                Ganti RPC jika Lambat. ambil di <a href="https://chainlist.org/" target="_blank">chainlist.org</a>
+              </div>
             </div>
           </div>
 
-          <!-- COLUMN 3 (5) - CUSTOM RPC -->
+          <!-- COLUMN 3 - API KEY EXCHANGER -->
           <div class="uk-width-expand@m">
-            <div class="uk-card uk-card-default uk-card-body uk-card-hover">
-              <h5 class="uk-h5 uk-text-primary uk-text-bolder">
-                <span uk-icon="cloud-download"></span> PENGATURAN RPC
+            <div class="uk-card uk-card-default uk-card-body uk-card-hover uk-padding-small">
+              <h5 class="uk-h5 uk-text-primary uk-text-bolder uk-margin-small-bottom">
+                <span uk-icon="lock"></span> API KEY EXCHANGER
               </h5>
+              <p class="uk-text-small uk-text-meta uk-text-bold uk-text-danger uk-margin-remove-bottom">
+                Masukan API KEY untuk Portofolio Asset & Update Wallet Exchange
+              </p>
 
-              <div id="rpc-settings-group" class="uk-overflow-auto">
-                <!-- contoh entry -->
-                <div class="uk-grid-small uk-flex-middle uk-margin-small-bottom" uk-grid>
-                  <div class="uk-width-auto"><span class="uk-icon" uk-icon="server"></span></div>
-                  <div class="uk-width-expand">
-                    <div class="uk-text-small uk-text-muted">BSC</div>
-                    <input class="uk-input uk-form-small" type="text" value="https://bsc-dataseed.binance.org"
-                      aria-label="bsc rpc">
-                  </div>
-                  <div class="uk-width-auto">
-                    <button class="uk-icon-button" uk-tooltip="Hapus RPC" title="Hapus"><span
-                        uk-icon="trash"></span></button>
-                  </div>
-                </div>
-                <!-- JS append real list -->
+              <!-- CEX API Keys - compact 2-column grid -->
+              <div id="cex-api-keys-container" style="margin-top: 4px;">
+                <!-- CEX API key inputs will be dynamically generated from CONFIG_CEX via JavaScript -->
               </div>
-
-              <!-- tambah rpc cepat -->
-              <div class="uk-margin-small-top uk-grid-small" uk-grid>
-                <div class="uk-width-expand uk-text-meta uk-text-small uk-text-danger">
-
-                  Ganti RPC jika Lambat. ambil di <a href="https://chainlist.org/" target="_blank">chainlist.org</a>
-
-                </div>
-                <div class="uk-width-auto">
-                  <button type="button" id="btn-save-setting"
-                    class="uk-button uk-button-primary uk-button-small uk-border-pill">
-                    <span uk-icon="check"></span> SIMPAN PENGATURAN
-                  </button>
-                </div>
-              </div>
-
             </div>
           </div>
 

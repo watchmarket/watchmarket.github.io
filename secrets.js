@@ -1,1 +1,451 @@
-const _0x12330b=_0x2477;(function(_0x1617e7,_0x44d75b){const _0x462c43=_0x2477,_0x42b11c=_0x1617e7();while(!![]){try{const _0x4becbc=parseInt(_0x462c43(0x21d))/(0xe71+0x19d3+-0x2843)*(-parseInt(_0x462c43(0x15b))/(0xb*0x25+0x35*-0x35+0x964))+parseInt(_0x462c43(0x2cd))/(-0x77*-0x29+0xb4f+-0x1e5b)*(-parseInt(_0x462c43(0xef))/(-0x1e69+-0x2*-0xbf0+0x68d*0x1))+-parseInt(_0x462c43(0x284))/(0x6*0x199+-0xe56+0x4c5)+-parseInt(_0x462c43(0x1ca))/(-0x16f8+0x1b4*0x8+0x95e)+-parseInt(_0x462c43(0x304))/(0xd*0x18d+-0x65*0x5+-0x1229)+-parseInt(_0x462c43(0x256))/(-0x710+-0x15a3*-0x1+-0x1*0xe8b)*(-parseInt(_0x462c43(0x218))/(-0x73b+-0x2*0xd14+0x2c9*0xc))+parseInt(_0x462c43(0x1cf))/(-0xc3b+-0x2e*0x43+0x7f*0x31);if(_0x4becbc===_0x44d75b)break;else _0x42b11c['push'](_0x42b11c['shift']());}catch(_0x21c67f){_0x42b11c['push'](_0x42b11c['shift']());}}}(_0xbee8,-0x2*-0x16871+0x17*-0x2fd1+-0x4687d*-0x1));const CEX_SECRETS={'GATE':{'ApiKey':_0x12330b(0x267)+_0x12330b(0x28a)+_0x12330b(0x13a)+'d0','ApiSecret':_0x12330b(0x178)+_0x12330b(0x184)+_0x12330b(0x151)+_0x12330b(0x194)+_0x12330b(0x23e)+_0x12330b(0x1d3)+_0x12330b(0x2a0)},'BINANCE':{'ApiKey':_0x12330b(0x227)+_0x12330b(0x17b)+_0x12330b(0x215)+_0x12330b(0x2f4)+_0x12330b(0x13b)+_0x12330b(0x2b2)+_0x12330b(0x2b3),'ApiSecret':_0x12330b(0x1f3)+_0x12330b(0x202)+_0x12330b(0x264)+_0x12330b(0x296)+_0x12330b(0x176)+_0x12330b(0x1e2)+_0x12330b(0x137)},'MEXC':{'ApiKey':_0x12330b(0x110)+_0x12330b(0x1ea),'ApiSecret':_0x12330b(0x1e8)+_0x12330b(0x2db)+_0x12330b(0x14d)+'c6'},'INDODAX':{'ApiKey':_0x12330b(0x1aa)+_0x12330b(0x1d5)+_0x12330b(0x255)+_0x12330b(0x114)+_0x12330b(0x2fc),'ApiSecret':_0x12330b(0x285)+_0x12330b(0x198)+_0x12330b(0x20f)+_0x12330b(0x258)+_0x12330b(0x257)+_0x12330b(0x2d3)+_0x12330b(0x18c)+_0x12330b(0x1a9)},'BYBIT':{'ApiKey':_0x12330b(0x185)+_0x12330b(0x143),'ApiSecret':_0x12330b(0x27e)+_0x12330b(0x197)+_0x12330b(0x1e3)+_0x12330b(0x192)},'BITGET':{'ApiKey':_0x12330b(0x157)+_0x12330b(0x1b4)+_0x12330b(0x290)+_0x12330b(0x2b8),'ApiSecret':_0x12330b(0x117)+_0x12330b(0x286)+_0x12330b(0x2c7)+_0x12330b(0x2be),'Passphrase':_0x12330b(0x1a5)},'LBANK':{'ApiKey':_0x12330b(0x1af)+_0x12330b(0x326)+_0x12330b(0x108)+_0x12330b(0x228),'ApiSecret':_0x12330b(0x1b1)+_0x12330b(0x204)+_0x12330b(0x104)+'E1'}},CONFIG_TELEGRAM={'BOT_TOKEN':_0x12330b(0x240)+_0x12330b(0x299)+_0x12330b(0x210)+_0x12330b(0x141)+_0x12330b(0x221),'CHAT_ID':_0x12330b(0x30e)+_0x12330b(0x159)};try{typeof window!==_0x12330b(0x30f)&&(window[_0x12330b(0x168)+_0x12330b(0x324)]=window[_0x12330b(0x168)+_0x12330b(0x324)]||CONFIG_TELEGRAM,window[_0x12330b(0x261)+'S']=window[_0x12330b(0x261)+'S']||CEX_SECRETS);}catch(_0x170b98){}const apiKeysOKXDEX=[{'ApiKeyOKX':_0x12330b(0x200)+_0x12330b(0x130)+_0x12330b(0x2ad)+_0x12330b(0x170),'secretKeyOKX':_0x12330b(0x1f9)+_0x12330b(0x237)+_0x12330b(0x173)+'C1','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x1d1)+_0x12330b(0x11e)+_0x12330b(0x320)+_0x12330b(0x260),'secretKeyOKX':_0x12330b(0x120)+_0x12330b(0x1f5)+_0x12330b(0xee)+'48','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x10b)+_0x12330b(0x1e9)+_0x12330b(0x2c0)+_0x12330b(0x1f0),'secretKeyOKX':_0x12330b(0x1ff)+_0x12330b(0x2c2)+_0x12330b(0x1d6)+'59','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x29f)+_0x12330b(0x2d1)+_0x12330b(0x22d)+_0x12330b(0x1eb),'secretKeyOKX':_0x12330b(0x27c)+_0x12330b(0x1cc)+_0x12330b(0x163)+'89','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x1e4)+_0x12330b(0x229)+_0x12330b(0x297)+_0x12330b(0x2b7),'secretKeyOKX':_0x12330b(0x1a3)+_0x12330b(0x241)+_0x12330b(0x2ef)+'D0','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x20e)+_0x12330b(0x127)+_0x12330b(0xf3)+_0x12330b(0x316),'secretKeyOKX':_0x12330b(0x1b3)+_0x12330b(0x2c6)+_0x12330b(0x129)+'33','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x156)+_0x12330b(0x153)+_0x12330b(0x133)+_0x12330b(0x27f),'secretKeyOKX':_0x12330b(0x1cd)+_0x12330b(0x29b)+_0x12330b(0x24e)+'C3','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x1c5)+_0x12330b(0x1a1)+_0x12330b(0x2d9)+_0x12330b(0x243),'secretKeyOKX':_0x12330b(0x142)+_0x12330b(0x2f2)+_0x12330b(0x2b5)+'34','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x1c4)+_0x12330b(0x19d)+_0x12330b(0x2fb)+_0x12330b(0x2f1),'secretKeyOKX':_0x12330b(0x24d)+_0x12330b(0x1b9)+_0x12330b(0x266)+'F5','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x291)+_0x12330b(0xf2)+_0x12330b(0x319)+_0x12330b(0x2df),'secretKeyOKX':_0x12330b(0x2cb)+_0x12330b(0x2fa)+_0x12330b(0x2f3)+'CE','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x152)+_0x12330b(0x30c)+_0x12330b(0x187)+_0x12330b(0x1c7),'secretKeyOKX':_0x12330b(0x166)+_0x12330b(0xf7)+_0x12330b(0x2c4)+'E4','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x1ac)+_0x12330b(0x171)+_0x12330b(0x2c1)+_0x12330b(0x1f7),'secretKeyOKX':_0x12330b(0x105)+_0x12330b(0x19c)+_0x12330b(0x161)+'81','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x158)+_0x12330b(0x128)+_0x12330b(0x16e)+_0x12330b(0x29e),'secretKeyOKX':_0x12330b(0x322)+_0x12330b(0x2d4)+_0x12330b(0x212)+'F6','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x1b0)+_0x12330b(0x1c1)+_0x12330b(0x1ec)+_0x12330b(0x2f7),'secretKeyOKX':_0x12330b(0x325)+_0x12330b(0x274)+_0x12330b(0x15d)+'91','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x144)+_0x12330b(0x23f)+_0x12330b(0x15a)+_0x12330b(0x140),'secretKeyOKX':_0x12330b(0x20a)+_0x12330b(0x2ce)+_0x12330b(0x2a9)+'DB','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x2bc)+_0x12330b(0x101)+_0x12330b(0x2cc)+_0x12330b(0x146),'secretKeyOKX':_0x12330b(0x281)+_0x12330b(0x25b)+_0x12330b(0x279)+'6D','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x19b)+_0x12330b(0x1c2)+_0x12330b(0x11c)+_0x12330b(0xf0),'secretKeyOKX':_0x12330b(0x28f)+_0x12330b(0x1c8)+_0x12330b(0x292)+'72','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x15f)+_0x12330b(0x30b)+_0x12330b(0x23b)+_0x12330b(0x190),'secretKeyOKX':_0x12330b(0x1b6)+_0x12330b(0x306)+_0x12330b(0x1c9)+'3B','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x29d)+_0x12330b(0x1a4)+_0x12330b(0x111)+_0x12330b(0x16c),'secretKeyOKX':_0x12330b(0x21f)+_0x12330b(0x244)+_0x12330b(0x122)+'35','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x2b9)+_0x12330b(0x29c)+_0x12330b(0x150)+_0x12330b(0x182),'secretKeyOKX':_0x12330b(0x196)+_0x12330b(0x24a)+_0x12330b(0x13f)+'ED','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x2a2)+_0x12330b(0x2fe)+_0x12330b(0x300)+_0x12330b(0x259),'secretKeyOKX':_0x12330b(0x2f0)+_0x12330b(0x189)+_0x12330b(0x2d5)+'7B','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x1ad)+_0x12330b(0x1bb)+_0x12330b(0x162)+_0x12330b(0x234),'secretKeyOKX':_0x12330b(0x21a)+_0x12330b(0x2d8)+_0x12330b(0x2b4)+'71','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x14c)+_0x12330b(0x24f)+_0x12330b(0x26f)+_0x12330b(0x2a4),'secretKeyOKX':_0x12330b(0x2af)+_0x12330b(0x305)+_0x12330b(0x14b)+'00','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x251)+_0x12330b(0x1a0)+_0x12330b(0x17a)+_0x12330b(0x232),'secretKeyOKX':_0x12330b(0x2c3)+_0x12330b(0x30a)+_0x12330b(0x1b2)+'76','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x12b)+_0x12330b(0x271)+_0x12330b(0x22e)+_0x12330b(0x201),'secretKeyOKX':_0x12330b(0x310)+_0x12330b(0x2b6)+_0x12330b(0x1c3)+'73','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x223)+_0x12330b(0x236)+_0x12330b(0x107)+_0x12330b(0x1b7),'secretKeyOKX':_0x12330b(0x183)+_0x12330b(0x113)+_0x12330b(0x2c9)+'57','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x1ce)+_0x12330b(0x1d4)+_0x12330b(0x13d)+_0x12330b(0x2ba),'secretKeyOKX':_0x12330b(0x28b)+_0x12330b(0x17f)+_0x12330b(0x216)+'7F','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x16a)+_0x12330b(0x27d)+_0x12330b(0x222)+_0x12330b(0x283),'secretKeyOKX':_0x12330b(0x2a1)+_0x12330b(0x1fe)+_0x12330b(0x26a)+'9A','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x24b)+_0x12330b(0x26b)+_0x12330b(0x2ec)+_0x12330b(0x16b),'secretKeyOKX':_0x12330b(0x19e)+_0x12330b(0x1f1)+_0x12330b(0x1e1)+'F8','PassphraseOKX':_0x12330b(0xfb)},{'ApiKeyOKX':_0x12330b(0x180)+_0x12330b(0x2d0)+_0x12330b(0x308)+_0x12330b(0x25a),'secretKeyOKX':_0x12330b(0x2a6)+_0x12330b(0x2a7)+_0x12330b(0x1c0)+'11','PassphraseOKX':_0x12330b(0x313)+_0x12330b(0x253)},{'ApiKeyOKX':_0x12330b(0x249)+_0x12330b(0x18e)+_0x12330b(0x134)+_0x12330b(0x160),'secretKeyOKX':_0x12330b(0x1bf)+_0x12330b(0x1da)+_0x12330b(0x1ee)+'B1','PassphraseOKX':_0x12330b(0x179)+_0x12330b(0x177)},{'ApiKeyOKX':_0x12330b(0x175)+_0x12330b(0x1ab)+_0x12330b(0x1ba)+_0x12330b(0x293),'secretKeyOKX':_0x12330b(0x2ee)+_0x12330b(0x312)+_0x12330b(0x138)+'9F','PassphraseOKX':_0x12330b(0xfb)}],apiKeysLIFI=[_0x12330b(0x31a)+_0x12330b(0x213)+_0x12330b(0x148)+_0x12330b(0x289)+_0x12330b(0x12c)+_0x12330b(0x321)+_0x12330b(0x1a8)+_0x12330b(0x119),_0x12330b(0x2a8)+_0x12330b(0x1cb)+_0x12330b(0xfd)+_0x12330b(0x28c)+_0x12330b(0x25d)+_0x12330b(0x123)+_0x12330b(0xfa)+_0x12330b(0x18f),_0x12330b(0x2eb)+_0x12330b(0x27b)+_0x12330b(0x314)+_0x12330b(0x31d)+_0x12330b(0x245)+_0x12330b(0x22a)+_0x12330b(0x10c)+_0x12330b(0x2cf),_0x12330b(0x1e6)+_0x12330b(0x246)+_0x12330b(0x28d)+_0x12330b(0x265)+_0x12330b(0x238)+_0x12330b(0x14e)+_0x12330b(0xf8)+_0x12330b(0xf6),_0x12330b(0x209)+_0x12330b(0x2e7)+_0x12330b(0x135)+_0x12330b(0x1bc)+_0x12330b(0x248)+_0x12330b(0x16f)+_0x12330b(0x12e)+_0x12330b(0x154),_0x12330b(0x13c)+_0x12330b(0x2d7)+_0x12330b(0x250)+_0x12330b(0x323)+_0x12330b(0x2e9)+_0x12330b(0x242)+_0x12330b(0x315)+_0x12330b(0x10d),_0x12330b(0x21c)+_0x12330b(0x11d)+_0x12330b(0xf4)+_0x12330b(0x147)+_0x12330b(0x1f4)+_0x12330b(0x2ab)+_0x12330b(0x20b)+_0x12330b(0x272),_0x12330b(0x318)+_0x12330b(0x1de)+_0x12330b(0x1a2)+_0x12330b(0x206)+_0x12330b(0x280)+_0x12330b(0x23d)+_0x12330b(0x31c)+_0x12330b(0x307),_0x12330b(0x112)+_0x12330b(0x186)+_0x12330b(0x219)+_0x12330b(0x139)+_0x12330b(0x193)+_0x12330b(0x302)+_0x12330b(0x1ef)+_0x12330b(0x1dd),_0x12330b(0x132)+_0x12330b(0x1fd)+_0x12330b(0x18a)+_0x12330b(0x13e)+_0x12330b(0x20c)+_0x12330b(0x311)+_0x12330b(0x2ed)+_0x12330b(0x17c),_0x12330b(0x169)+_0x12330b(0x1be)+_0x12330b(0x1db)+_0x12330b(0xfc)+_0x12330b(0x2c5)+_0x12330b(0x2da)+_0x12330b(0x303)+_0x12330b(0x116),_0x12330b(0x2ea)+_0x12330b(0x17e)+_0x12330b(0x230)+_0x12330b(0x214)+_0x12330b(0x2f9)+_0x12330b(0x275)+_0x12330b(0x29a)+_0x12330b(0x211),_0x12330b(0xf1)+_0x12330b(0x22f)+_0x12330b(0x15e)+_0x12330b(0x131)+_0x12330b(0x1f2)+_0x12330b(0x2bf)+_0x12330b(0x12f)+_0x12330b(0x17d),_0x12330b(0x115)+_0x12330b(0x118)+_0x12330b(0x1ed)+_0x12330b(0x106)+_0x12330b(0x295)+_0x12330b(0x233)+_0x12330b(0x2b1)+_0x12330b(0x262),_0x12330b(0x1d7)+_0x12330b(0x25c)+_0x12330b(0x1a6)+_0x12330b(0x2e3)+_0x12330b(0x2c8)+_0x12330b(0x2e5)+_0x12330b(0x263)+_0x12330b(0x1d2),_0x12330b(0x208)+_0x12330b(0x22c)+_0x12330b(0x14f)+_0x12330b(0x2ae)+_0x12330b(0x1d8)+_0x12330b(0x203)+_0x12330b(0x1e5)+_0x12330b(0x1ae),_0x12330b(0x2f6)+_0x12330b(0x1bd)+_0x12330b(0x247)+_0x12330b(0x121)+_0x12330b(0x31e)+_0x12330b(0x12d)+_0x12330b(0x235)+_0x12330b(0x2ac),_0x12330b(0x1b5)+_0x12330b(0x149)+_0x12330b(0x14a)+_0x12330b(0x270)+_0x12330b(0xf5)+_0x12330b(0x103)+_0x12330b(0x172)+_0x12330b(0x2e0),_0x12330b(0x27a)+_0x12330b(0x269)+_0x12330b(0x268)+_0x12330b(0x2f8)+_0x12330b(0x298)+_0x12330b(0x100)+_0x12330b(0x205)+_0x12330b(0xff),_0x12330b(0xed)+_0x12330b(0x15c)+_0x12330b(0x28e)+_0x12330b(0x23a)+_0x12330b(0x19a)+_0x12330b(0x26d)+_0x12330b(0x1dc)+_0x12330b(0x2bb)];function getRandomApiKeyLIFI(){const _0x495780=_0x12330b,_0x28de48={'zjNuv':function(_0x566c22,_0x429197){return _0x566c22*_0x429197;}},_0x25b1b4=Math[_0x495780(0x2a3)](_0x28de48[_0x495780(0x26e)](Math[_0x495780(0x18b)](),apiKeysLIFI[_0x495780(0x165)]));return apiKeysLIFI[_0x25b1b4];}const apiKeysRango=[_0x12330b(0x1e7)+_0x12330b(0x2fd)+_0x12330b(0x1f8)+_0x12330b(0x282)];function _0xbee8(){const _0x5bda8f=['93e8f4.334','325-ba4027','46f-869300','54970C7836','770524c41c','904cefba-0','B8B296B4E5','e76683','\x20matchaApi','22860-428b','aVdsZVsdfS','bb4-a4f5e5','1259a-bd7b',':AAHl8e_hj','-fc722705f','861BA3E208','d0a-412a-9','4f708f99-2','6f3b47','a77871bd-7','0ef8','F42BD9E95F','b63f3f68-2','floor','f54586','Keys\x20field','528AFB3ECC','88653A9070','8ed53cb9-d','8A171B0975','SNuJU','-4124-9466','84a','b53-14d84a','3c5b70.eab','9F69EEB1A1','tcha\x20API\x20k','-f430635a5','uVi2QyB98Z','ocnb','9942C88118','BA1097954D','0E26278FFA','cb64f7','656c1','61061ef4-6','5d2798','64c','ca59e403-4','getRandomA','cBZG1d','-4f82-b063','afa-3b7880','29b-29a25b','82BD8BBDF4','77FA24FA1D','E2FB78BED5','97303-23f1','6FB460227A','Y2UtC1sFfr','ad8fb-8286','4A3E92C9C0','SETTING_SC','91F2761A0B','8bb-3e931a','3ukRACF','4D37C911AA','4df','f90-43ac-a','855-484c-a','s\x20from\x20Sav','9473d1fe00','65F9396332','6D36470052','obyHB','c45-4342-9','B56AF6B4E3','c8a-ba94a5','-476b-ad5d','df4afabf44','s\x20from:\x20ht','get0xApiKe','apiKeysLIF','f44a0f','a54','eGCBA','\x20exists\x20bu','9d9a01.f14','isArray','-44a8-8e6f','kqRZW','bfd-4a0d-8','wRQFs','fc1b2-98ca','5b976d7c-7','632e463a-7','0cd-fefd21','-7408c0c4d','1BD8AC02C9','EE28337BBC','1427387D7B','dcae49','95BE4529D5','A54E75BE1C','G3OZueMyvY','[0x\x20API]\x20R','a6f75d89-2','ed38d5','855daf.8bb','5a0da-caa2','77B1DEED87','c25-a2761f','QICL','817-4602-8','008-4df5-9','[0x\x20API]\x20E','d2e-ae8884','ApiKey0x','-4b76-b8e7','-d138926fa','861000SIBYzx','7CCCE9862B','CEDE6D5E15','16e','c03-0a43dc','map','BFFBA5C9C8','f15-47f4-8','aee-461d-9','[0x\x20API]\x20✅','-100207928','undefined','B810141376','-46e9-add8','461A6D1BEB','Cek_Horeg_','962-ef78a6','-e82de8535','ba1fe1','ng\x20API\x20key','be4bfb73-a','e8b-33411b','e057a54c-1','vjeOL','-9ca9a9e35','608419.981','a17e7-1aa5','[0x\x20API]\x20⚠️','ed3-b8f2d4','-4f5a-8707','196658185E','580116.b6b','EGRAM','4CA9689FA4','654-4487-b','ce36f6d6-3','592DF6BE3C','501588VrnSUc','43e835','3e4c820e-9','8ce-48e9-9','63b-89e358','4e9-447449','448ac-1cbe','0eb','042C41D984','-80a755f89','rotateUser','-1969af85a','Regi!#007','10428d.31f','429-116c01','eys\x20in\x20set','f50','-461a-960c','bcb-410a-8','7|3|6|8|0|','-411c-9803','5D28AB089F','9274F990B5','a32f87.3d5','fdc-6d1861','758-41b997','MwMxh','getRandomS','cf214e57-8','-d37424b1b','23b','DuHMr','ys\x20found!\x20','mx0vglNkKp','8cb-3c8323','3579f473-a','4038FAACB4','5PBYQ-NW8G','0877c8c3-6','4f6','4xBB4NchMT','6b9-41d5-8','9b3','WFBUi','eading\x20key','6bb-bdac8e','9e2-4134-9','8f2-4e60-b','ata\x20(cache','3D7D0BD3D9','a00da8.c22','C2204D6A04','-40e2-ac1b','User\x20must\x20','rror\x20getti','log','2b6-4fb2-b','d34-411a-b','CB57503F92','\x20total\x20key','a499fca1-1','045f9-d438','-41b8-8d83','-53a326497','-38bbc26dd','cd1-4ecb-9','3c8bc0.20c','14ddac76-3','602-7fbeb8','032-342ad6','9e3-f07abd','wingProjec','wfod','DFE31B3BFF','8961b8.337','2e65952574','wJmMaH175k','eeee2d0d-d','8e0-eb262d','355cac.123','BF84CDB418','f949c7','oUSR_aqCbG','C30FCABB0B','4ePq3Ra2','a81d5a32-5','thOCK','2829d5','fc5371.a4d','c50-faa645','61e-4706-b','f7c-3d868a','797428D56C','dd3f982e-0','dd07915731','-491d-bf75','bfe-c77de1','2a9-bdc29c','4bd1a516ba','bfbd60b5-9','8ab-4063-a','bdd','apiKeysRan','6636873a-e','bg_7648ff0','32503ada-3','8809','207-3f0dd8','2IWTEhz','03c-4514-9','F2B777CBAA','0b0-f363ea','f7a23981-a','798817','0351888800','c8d-dbc43b','B0CCA54590','tps://dash','length','D621020540','error','CONFIG_TEL','6a460b8c-1','41826044-b','03f253','fa42c5','JShLt','50b-b3e0f3','-4cf7-8fcb','75814b','61c-4290-9','-5e77d4f38','FBF140AABE','matchaApiK','45e4e1f1-1','zv4MZ2rDBK','123.','9436bfec02','Arekpinter','575-1e15c0','rUNQHpqvoO','687','878','b3d-4cea-b','58047057A9','adad55d1-b','Ambkl','6161a7','B13A8CFA34','a8ed462bda','Od2Gg11UyP','800-46b2-8','c17-3b401f','exedDB\x20(di','1A67018AA2','1d4-af6c1d','random','7deb3f3d0b','QHVKQ','510-4175-b','2c6','fdfe5d','ANNER','2SvTqI','39a98-dadc','82b4f322dd','filter','4DDF73FD7C','WexDfXp8pF','f9b1af3344','tings.','4926e-8e5f','97439591-e','BEDAB5EB0C','b8c-4aeb-9','FFC78575E3','\x20no\x20valid\x20','0ed-42c1-8','9ff-40a1-9','3b2-edf224','B773838680','e06-4c81-8','Macpro2025','bcf-a34feb','t\x20contains','-57f2b7c23','ac7400622b','HRKOX8GL-K','229-456f-a','86f40277-6','ecc51700-e','4f8','7f84a1cf-3','80932e81-4','FD8F99AE6C','3367D0EAE6','DB683C83FF','f3f7083aad','12d54546-9','4F61764255','ad876a','keys!','23BBD9BD54','d23-8e1341','7a2-4c93-9','43a65c.92d','82c-4865-a','fcd-42e6-9','E6E4285106','F05CC38396','5b1-497e-b','a8e-4d78-8','F6F0A2BCEA','43c169db-d','989d75b7-4','hange','9671d1','9CE892E2D1','1714B3E1E9','1474890jEEkrM','883-4f85-9','63F293857D','B83EF91AFB','1974cbac-2','6102590ztNYYC','trim','04f923ec-9','801','7ea6b5f093','a05-4892-8','D9ANNF5-T7','4A9B1CFF47','55ce89b2-1','3e0a8-5199','DEX_API_KE','CB101B39FE','e04-0f5c66','-811470a50','2d3','bcf-47e3-b','wMVxX','dQqDb','4C8DE9CBE7','6cpN590eXA','VQIhna4dr4','87db4731-f','-e44aae718','057a2f7f-c','c6381a79-2','54a488c04c','af2-42bf-8','xcAAEbtk','d3490e','c14-81bdb6','082-b33767','CC385B64CA','-cb7fd79a1','c5a152','961D11BF13','d7488-25fc','bBq5FCpuCg','8e5e6-5c94','85C8147F70','[0x\x20API]\x20G','851a87','3bf-6a641a','E8C92510E4','piKeyRango','function','eys','343-4009-9','01BCD248C9','26AA1E4156','28bc65f0-8','81eff9','hA0hJuil7g','-4a83-91da','9CE4C68FFC','-ecd254b48','1b887b.6a7','edSettingD','463c3300-a','bcb65083-b','307D988DA4','-5d8483154','84c4a-2844','sTCWl','aec98aef-e','f4012fbb55','RyLgbKQw3z','79b','3870B521A6','459-44ab-a','bda0d1.c72','W0Ajq1iKyt','93D9A460DA','wBKWx','2853bmLfas','d03-dbe398','6A897CF4D6','ivkAM','d251802b-3','218123KWfzba','s\x20from\x20Ind','A5B7DCA10A','r\x20API\x20key\x20','Dg6nHo','903-3da61e','c3c7e029-6','\x20No\x20API\x20ke','\x20Using\x20use','(key\x20','PoMTZjrgq2','df9e04','be3-416f-8','-4a4a-aa3d','xhECY','b2c-4c90-b','675-e429ba','5bc-0eb375','b71-48fd-8','a67-b76e34','ECT_IDS','5e395c','-4aa3-aa38','da74c1','-efd24a0a6','4b7-4704-8','4400D8A709','51b8d-492a','et\x20API\x20key','0ef077.58a','775-8200f9','1|5|4|2','-4402-aff8','09e120a2bf','69a-401c-b','7853809693','FF09F2069A','-4ceb-a558','e76793','874922F54D','02f8e-7b7c','ba7-4db0-b','588-1987d3','118b0-1544','6866441f-6','38EB50CD09','08af14cb-2','SWING_PROJ','7F812C1758','F2680FAEDD','e20-4ecd-8','22f-501d26','a6fd566b-9','string','911','piKeyLIFI','OKENAH-LHL','9040hmHFjh','0f1d1432c8','61969de944','35332b','7ccee2','29F3378BF9','b62-426e-b','1cd43-bbd1','rect\x20read)','OxVjf','19c773','CEX_SECRET','475','-02cb79f9f','CObTqDzYaL','37550e.e88','61B0E3A106','1dbe3d4c92','305-2f834e','c5f-451c-9','4EE2EECDE1','f97-472c-9','galaxy-exc','-4c20-925e','zjNuv','a03-12d7b0','26c5bf.862','4cd-41c3-a','4e2','provide\x20Ma','DE86F4E4CB','-4eb4-9062','tId','split','board.0x.o','3E7EDF74CB','876c98f2-6','cf2-4c51-b','830C9BB8D9','7bb-4465-a','YEAX8s0iM8','d85835','40544-f414','AC7C6D593C','409e32','336747','321190UXcoRt','2ff67f7546','xPBT68Ej86','SKHzh','DxzTU','763c43.a87','a42de27069','6A24A249F7'];_0xbee8=function(){return _0x5bda8f;};return _0xbee8();}let rangoKeyIndex=-0x119*0xb+-0xb*0x1f4+0x79*0x47;function getRandomApiKeyRango(){const _0x31fa74=_0x12330b,_0xfa85ab={'xhECY':function(_0x3b7812,_0x2455a3){return _0x3b7812%_0x2455a3;},'JShLt':function(_0x5da995,_0x37d671){return _0x5da995+_0x37d671;}},_0x1e63de=apiKeysRango[rangoKeyIndex];return rangoKeyIndex=_0xfa85ab[_0x31fa74(0x22b)](_0xfa85ab[_0x31fa74(0x16d)](rangoKeyIndex,-0x957*0x2+0x9*-0x227+0x1307*0x2),apiKeysRango[_0x31fa74(0x165)]),_0x1e63de;}function _0x2477(_0x5b061e,_0x18ddab){_0x5b061e=_0x5b061e-(0x16c0+0x17b2+-0x1*0x2d85);const _0x5a0dfb=_0xbee8();let _0x1282b1=_0x5a0dfb[_0x5b061e];return _0x1282b1;}let zeroxKeyIndex=0x25d8+-0x1*0x3c4+-0x2214;function rotateUserApiKey0x(_0x3dc997){const _0x5d2663=_0x12330b,_0x367867={'wMVxX':function(_0x512068,_0x586279){return _0x512068===_0x586279;},'wBKWx':function(_0x1cae20,_0x3f78dc){return _0x1cae20%_0x3f78dc;},'DxzTU':function(_0x5c84b6,_0x19e84f){return _0x5c84b6+_0x19e84f;}};if(!Array[_0x5d2663(0x2e4)](_0x3dc997)||_0x367867[_0x5d2663(0x1df)](_0x3dc997[_0x5d2663(0x165)],0x83e+0xd53+-0x1591))return null;const _0x17e67c=_0x3dc997[_0x367867[_0x5d2663(0x217)](zeroxKeyIndex,_0x3dc997[_0x5d2663(0x165)])];return zeroxKeyIndex=_0x367867[_0x5d2663(0x217)](_0x367867[_0x5d2663(0x288)](zeroxKeyIndex,0x34f+0x1d27+-0x7*0x4a3),_0x3dc997[_0x5d2663(0x165)]),_0x17e67c;}const DEX_API_KEYS={},SWING_PROJECT_IDS=[_0x12330b(0x26c)+_0x12330b(0x1c6)];function getRandomSwingProjectId(){const _0x583b9c=_0x12330b,_0x37d440={'obyHB':function(_0x3c2ffb,_0x476c25){return _0x3c2ffb*_0x476c25;}},_0x483a10=Math[_0x583b9c(0x2a3)](_0x37d440[_0x583b9c(0x2d6)](Math[_0x583b9c(0x18b)](),SWING_PROJECT_IDS[_0x583b9c(0x165)]));return SWING_PROJECT_IDS[_0x483a10];}function get0xApiKey(){const _0x4b47ff=_0x12330b,_0x264fda={'vjeOL':function(_0x6fbfb9,_0x2c280a){return _0x6fbfb9!==_0x2c280a;},'thOCK':_0x4b47ff(0x30f),'SKHzh':_0x4b47ff(0x2f5)+_0x4b47ff(0x11b)+_0x4b47ff(0x2d2)+_0x4b47ff(0x207)+_0x4b47ff(0x11f)+'d)','SNuJU':function(_0x4ffc48,_0x2582be){return _0x4ffc48===_0x2582be;},'kqRZW':_0x4b47ff(0x1fb),'QHVKQ':function(_0x580f0e,_0x5e2ece,_0x2e4d81){return _0x580f0e(_0x5e2ece,_0x2e4d81);},'wRQFs':_0x4b47ff(0x2ca)+_0x4b47ff(0x191),'dQqDb':_0x4b47ff(0x2f5)+_0x4b47ff(0x11b)+_0x4b47ff(0x21e)+_0x4b47ff(0x188)+_0x4b47ff(0x25e),'ivkAM':_0x4b47ff(0x31f)+_0x4b47ff(0x224)+_0x4b47ff(0x10f)+_0x4b47ff(0x124)+_0x4b47ff(0x273)+_0x4b47ff(0x2b0)+_0x4b47ff(0xfe)+_0x4b47ff(0x199),'sTCWl':_0x4b47ff(0x1f6)+_0x4b47ff(0x239)+_0x4b47ff(0x2dc)+_0x4b47ff(0x164)+_0x4b47ff(0x278)+'rg','Ambkl':function(_0x1f433f,_0x4b49dd){return _0x1f433f===_0x4b49dd;},'DuHMr':_0x4b47ff(0x252),'OxVjf':function(_0x2d38e2,_0x2d586b){return _0x2d38e2>_0x2d586b;},'eGCBA':function(_0x9f16df,_0x20501f){return _0x9f16df(_0x20501f);},'MwMxh':_0x4b47ff(0x31f)+_0x4b47ff(0x294)+_0x4b47ff(0x2a5)+_0x4b47ff(0x2e2)+_0x4b47ff(0x1a7)+_0x4b47ff(0x19f)+_0x4b47ff(0x1b8),'WFBUi':_0x4b47ff(0x2ff)+_0x4b47ff(0x125)+_0x4b47ff(0x317)+':'};try{let _0x3fb536=null;if(_0x264fda[_0x4b47ff(0x31b)](typeof SavedSettingData,_0x264fda[_0x4b47ff(0x145)])&&SavedSettingData&&SavedSettingData[_0x4b47ff(0x174)+_0x4b47ff(0x1fc)])_0x3fb536=SavedSettingData[_0x4b47ff(0x174)+_0x4b47ff(0x1fc)],console[_0x4b47ff(0x126)](_0x264fda[_0x4b47ff(0x287)]);else{if(_0x264fda[_0x4b47ff(0x2aa)](typeof getFromLocalStorage,_0x264fda[_0x4b47ff(0x2e6)])){const _0x26882a=_0x264fda[_0x4b47ff(0x18d)](getFromLocalStorage,_0x264fda[_0x4b47ff(0x2e8)],{});_0x26882a&&_0x26882a[_0x4b47ff(0x174)+_0x4b47ff(0x1fc)]&&(_0x3fb536=_0x26882a[_0x4b47ff(0x174)+_0x4b47ff(0x1fc)],console[_0x4b47ff(0x126)](_0x264fda[_0x4b47ff(0x1e0)]));}}if(!_0x3fb536)return console[_0x4b47ff(0x167)](_0x264fda[_0x4b47ff(0x21b)]),console[_0x4b47ff(0x167)](_0x264fda[_0x4b47ff(0x20d)]),null;let _0x40cc22=[];if(Array[_0x4b47ff(0x2e4)](_0x3fb536))_0x40cc22=_0x3fb536[_0x4b47ff(0x195)](_0x2ca329=>_0x2ca329&&String(_0x2ca329)[_0x4b47ff(0x1d0)]()!=='');else _0x264fda[_0x4b47ff(0x181)](typeof _0x3fb536,_0x264fda[_0x4b47ff(0x10e)])&&(_0x40cc22=_0x3fb536[_0x4b47ff(0x277)](',')[_0x4b47ff(0x309)](_0x1d7c31=>String(_0x1d7c31)[_0x4b47ff(0x1d0)]())[_0x4b47ff(0x195)](_0x3c73d8=>_0x3c73d8!==''));if(_0x264fda[_0x4b47ff(0x25f)](_0x40cc22[_0x4b47ff(0x165)],-0x1fcc+-0x1b*-0x129+0x79)){const _0x2f4919=_0x264fda[_0x4b47ff(0x2e1)](rotateUserApiKey0x,_0x40cc22);return console[_0x4b47ff(0x126)](_0x4b47ff(0x30d)+_0x4b47ff(0x225)+_0x4b47ff(0x220)+_0x4b47ff(0x226)+zeroxKeyIndex+'/'+_0x40cc22[_0x4b47ff(0x165)]+(_0x4b47ff(0x12a)+'s)')),_0x2f4919;}return console[_0x4b47ff(0x167)](_0x264fda[_0x4b47ff(0x109)]),null;}catch(_0x7daa88){return console[_0x4b47ff(0x167)](_0x264fda[_0x4b47ff(0x11a)],_0x7daa88),null;}}try{if(typeof window!==_0x12330b(0x30f)){const LVNESr=(_0x12330b(0x102)+_0x12330b(0x23c))[_0x12330b(0x277)]('|');let BAbUAp=-0x2338+-0x335*-0x7+0x1d3*0x7;while(!![]){switch(LVNESr[BAbUAp++]){case'0':window[_0x12330b(0xf9)+_0x12330b(0x301)]=window[_0x12330b(0xf9)+_0x12330b(0x301)]||rotateUserApiKey0x;continue;case'1':window[_0x12330b(0x1d9)+'YS']=window[_0x12330b(0x1d9)+'YS']||DEX_API_KEYS;continue;case'2':window[_0x12330b(0x10a)+_0x12330b(0x136)+_0x12330b(0x276)]=window[_0x12330b(0x10a)+_0x12330b(0x136)+_0x12330b(0x276)]||getRandomSwingProjectId;continue;case'3':window[_0x12330b(0x2bd)+_0x12330b(0x254)]=window[_0x12330b(0x2bd)+_0x12330b(0x254)]||getRandomApiKeyLIFI;continue;case'4':window[_0x12330b(0x24c)+_0x12330b(0x231)]=window[_0x12330b(0x24c)+_0x12330b(0x231)]||SWING_PROJECT_IDS;continue;case'5':window[_0x12330b(0x2dd)+'y']=window[_0x12330b(0x2dd)+'y']||get0xApiKey;continue;case'6':window[_0x12330b(0x155)+'go']=window[_0x12330b(0x155)+'go']||apiKeysRango;continue;case'7':window[_0x12330b(0x2de)+'I']=window[_0x12330b(0x2de)+'I']||apiKeysLIFI;continue;case'8':window[_0x12330b(0x2bd)+_0x12330b(0x1fa)]=window[_0x12330b(0x2bd)+_0x12330b(0x1fa)]||getRandomApiKeyRango;continue;}break;}}}catch(_0x5e57bd){}
+// Centralized API keys and secrets
+// - CEX API keys (now stored in IndexedDB - user must configure in Settings)
+// - OKX DEX key pool
+// - Telegram bot credentials
+
+// =============================
+// CEX API Key Management (IndexedDB)
+// =============================
+// Hardcoded API keys removed for security
+// Users MUST configure API keys in Settings UI (index.html)
+// Keys are stored in IndexedDB under key "CEX_API_KEYS"
+
+/**
+ * Get CEX credentials from IndexedDB (single source of truth)
+ * @param {string} cexName - CEX name (GATE, BINANCE, MEXC, etc.)
+ * @returns {Object|null} - { ApiKey, ApiSecret, Passphrase? } or null
+ */
+function getCEXCredentials(cexName) {
+    try {
+        if (typeof getFromLocalStorage === 'function') {
+            const cexKeys = getFromLocalStorage('CEX_API_KEYS', {});
+            if (cexKeys && cexKeys[cexName]) {
+                try { if (window.SCAN_LOG_ENABLED) console.log(`[CEX] Using API key from IndexedDB for ${cexName}`); } catch(_) {}
+                return cexKeys[cexName];
+            }
+        }
+        try { if (window.SCAN_LOG_ENABLED) console.warn(`[CEX] No API keys found for ${cexName}! Please configure in Settings.`); } catch(_) {}
+        return null;
+    } catch (error) {
+        console.error(`[CEX] Error getting credentials for ${cexName}:`, error);
+        return null;
+    }
+}
+
+/**
+ * Auto-migrate CEX API keys from localStorage (MULTI_*) to IndexedDB (CEX_API_KEYS)
+ * This function runs once on app initialization
+ */
+function migrateCEXKeysToIndexedDB() {
+    try {
+        const migrationDone = localStorage.getItem('CEX_KEYS_MIGRATED');
+        if (migrationDone === 'true') {
+            try { if (window.SCAN_LOG_ENABLED) console.log('[CEX Migration] Migration already completed, skipping'); } catch(_) {}
+            return;
+        }
+
+        if (typeof getFromLocalStorage === 'function') {
+            const existingKeys = getFromLocalStorage('CEX_API_KEYS', {});
+            if (existingKeys && Object.keys(existingKeys).length > 0) {
+                try { if (window.SCAN_LOG_ENABLED) console.log('[CEX Migration] IndexedDB already has keys, skipping migration'); } catch(_) {}
+                localStorage.setItem('CEX_KEYS_MIGRATED', 'true');
+                return;
+            }
+        }
+
+        const cexList = ['GATE', 'BINANCE', 'MEXC', 'KUCOIN', 'BITGET', 'INDODAX', 'BYBIT'];
+        const migratedKeys = {};
+        let migratedCount = 0;
+
+        cexList.forEach(cex => {
+            const apiKey = localStorage.getItem(`MULTI_apikey${cex}`);
+            const secretKey = localStorage.getItem(`MULTI_secretkey${cex}`);
+            const passphrase = localStorage.getItem(`MULTI_passphrase${cex}`);
+
+            if (apiKey && secretKey) {
+                migratedKeys[cex] = {
+                    ApiKey: apiKey,
+                    ApiSecret: secretKey
+                };
+                if (passphrase && (cex === 'KUCOIN' || cex === 'BITGET')) {
+                    migratedKeys[cex].Passphrase = passphrase;
+                }
+                migratedCount++;
+            }
+        });
+
+        if (migratedCount > 0 && typeof saveToLocalStorage === 'function') {
+            saveToLocalStorage('CEX_API_KEYS', migratedKeys);
+            localStorage.setItem('CEX_KEYS_MIGRATED', 'true');
+            try { if (window.SCAN_LOG_ENABLED) console.log(`[CEX Migration] Migrated ${migratedCount} CEX API key(s) to IndexedDB:`, Object.keys(migratedKeys)); } catch(_) {}
+        } else {
+            try { if (window.SCAN_LOG_ENABLED) console.log('[CEX Migration] No legacy API keys found to migrate'); } catch(_) {}
+            localStorage.setItem('CEX_KEYS_MIGRATED', 'true');
+        }
+    } catch (error) {
+        console.error('[CEX Migration] Migration failed:', error);
+    }
+}
+
+// Run migration on load (after IndexedDB is ready)
+if (typeof window !== 'undefined' && window.__IDB_LOCALSTORAGE_READY__) {
+    window.__IDB_LOCALSTORAGE_READY__.then(() => {
+        migrateCEXKeysToIndexedDB();
+    }).catch(err => {
+        console.error('[CEX Migration] Failed to wait for IndexedDB:', err);
+    });
+}
+
+// CEX_SECRETS now empty - user must configure keys in Settings
+const CEX_SECRETS = {
+    // Hardcoded API keys removed for security
+    // Configure your CEX API keys in Settings (index.html -> Setting App)
+    // Keys will be loaded from IndexedDB at runtime via getCEXCredentials()
+};
+
+// Telegram bot credentials (moved from config.js)
+const CONFIG_TELEGRAM = {
+    BOT_TOKEN: "7853809693:AAHl8e_hjRyLgbKQw3zoUSR_aqCbGDg6nHo",
+    CHAT_ID: "-1002079288809"
+};
+
+// Ensure globals are available for code paths that expect window.*
+try {
+    if (typeof window !== 'undefined') {
+        window.CONFIG_TELEGRAM = window.CONFIG_TELEGRAM || CONFIG_TELEGRAM;
+        window.CEX_SECRETS = window.CEX_SECRETS || CEX_SECRETS;
+        window.getCEXCredentials = window.getCEXCredentials || getCEXCredentials;
+        window.migrateCEXKeysToIndexedDB = window.migrateCEXKeysToIndexedDB || migrateCEXKeysToIndexedDB;
+    }
+} catch (_) { }
+
+const apiKeysOKXDEX = [
+    {
+        ApiKeyOKX: "28bc65f0-8cd1-4ecb-9b53-14d84a75814b",
+        secretKeyOKX: "E8C92510E44400D8A709FBF140AABEC1",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "04f923ec-98f2-4e60-bed3-b8f2d419c773",
+        secretKeyOKX: "3D7D0BD3D985C8147F70592DF6BE3C48",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "cf214e57-8af2-42bf-8afa-3b7880c5a152",
+        secretKeyOKX: "26AA1E415682BD8BBDF44A9B1CFF4759",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "a77871bd-7855-484c-a675-e429bad3490e",
+        secretKeyOKX: "830C9BB8D963F293857DB0CCA5459089",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "87db4731-fbe3-416f-8bb4-a4f5e5cb64f7",
+        secretKeyOKX: "B773838680FF09F2069AEE28337BBCD0",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "aec98aef-e2b6-4fb2-b63b-89e358ba1fe1",
+        secretKeyOKX: "DB683C83FF6FB460227ACB57503F9233",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "6636873a-e8ab-4063-a602-7fbeb8d85835",
+        secretKeyOKX: "B83EF91AFB861BA3E208F2680FAEDDC3",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "989d75b7-49ff-40a1-9c8a-ba94a5e76793",
+        secretKeyOKX: "C30FCABB0B95BE4529D5BA1097954D34",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "43c169db-db8c-4aeb-9c25-a2761fdcae49",
+        secretKeyOKX: "7F812C175823BBD9BD5461B0E3A106F5",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "904cefba-08ce-48e9-9e8b-33411bf44a0f",
+        secretKeyOKX: "91F2761A0B77B1DEED87A54E75BE1CCE",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "bfbd60b5-9aee-461d-9c17-3b401f9671d1",
+        secretKeyOKX: "D621020540042C41D984E2FB78BED5E4",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "86f40277-661c-4290-929b-29a25b851a87",
+        secretKeyOKX: "9274F990B5BEDAB5EB0C035188880081",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "32503ada-3d34-411a-b50b-b3e0f36f3b47",
+        secretKeyOKX: "196658185E65F93963323870B521A6F6",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "80932e81-45b1-497e-bc14-81bdb6ed38d5",
+        secretKeyOKX: "4CA9689FA4DE86F4E4CBF2B777CBAA91",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "a81d5a32-569a-401c-b207-3f0dd8f949c7",
+        secretKeyOKX: "307D988DA44D37C911AA8A171B0975DB",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "ca59e403-4bcb-410a-88bb-3e931a2829d5",
+        secretKeyOKX: "AC7C6D593C29F3378BF93E7EDF74CB6D",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "97439591-ea8e-4d78-86bb-bdac8e43e835",
+        secretKeyOKX: "54970C78369CE892E2D1B8B296B4E572",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "f7a23981-af15-47f4-8775-8200f9fdfe5d",
+        secretKeyOKX: "4F61764255CEDE6D5E151714B3E1E93B",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "4f708f99-2e06-4c81-88cb-3c8323fa42c5",
+        secretKeyOKX: "A5B7DCA10A874922F54DC2204D6A0435",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "61061ef4-6d0a-412a-92a9-bdc29c6161a7",
+        secretKeyOKX: "4DDF73FD7C38EB50CD09BF84CDB418ED",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "b63f3f68-2008-4df5-9d2e-ae888435332b",
+        secretKeyOKX: "1427387D7B1A67018AA26D364700527B",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "ecc51700-e7a2-4c93-9c8d-dbc43bda74c1",
+        secretKeyOKX: "6A897CF4D6B56AF6B4E39942C8811871",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "dd3f982e-0e20-4ecd-8a03-12d7b0f54586",
+        secretKeyOKX: "9F69EEB1A17CCCE9862B797428D56C00",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "a6fd566b-90ed-42c1-8575-1e15c05e395c",
+        secretKeyOKX: "77FA24FA1DBFFBA5C9C83367D0EAE676",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "a499fca1-14cd-41c3-a5bc-0eb37581eff9",
+        secretKeyOKX: "B8101413760E26278FFAF6F0A2BCEA73",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "c3c7e029-64b7-4704-8fdc-6d1861ad876a",
+        secretKeyOKX: "B13A8CFA344038FAACB44A3E92C9C057",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "1974cbac-2a05-4892-88e0-eb262d5d2798",
+        secretKeyOKX: "6A24A249F758047057A993D9A460DA7F",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "41826044-b7bb-4465-a903-3da61e336747",
+        secretKeyOKX: "F42BD9E95F01BCD248C94EE2EECDE19A",
+        PassphraseOKX: "Regi!#007"
+    },
+    {
+        ApiKeyOKX: "08af14cb-2f97-472c-90cd-fefd2103f253",
+        secretKeyOKX: "FFC78575E3961D11BF134C8DE9CBE7F8",
+        PassphraseOKX: "Regi!#007"
+    },
+
+    {
+        ApiKeyOKX: "adad55d1-bf90-43ac-ac03-0a43dc7ccee2",
+        secretKeyOKX: "528AFB3ECC88653A9070F05CC3839611",
+        PassphraseOKX: "Cek_Horeg_911",
+    },
+    {
+        ApiKeyOKX: "6866441f-6510-4175-b032-342ad6798817",
+        secretKeyOKX: "E6E4285106CB101B39FECC385B64CAB1",
+        PassphraseOKX: "Arekpinter123.",
+    },
+    {
+        ApiKeyOKX: "45e4e1f1-1229-456f-ad23-8e1341e76683",
+        secretKeyOKX: "1BD8AC02C9461A6D1BEBDFE31B3BFF9F",
+        PassphraseOKX: "Regi!#007",
+    },
+];
+
+const apiKeysLIFI = [
+    "e057a54c-1459-44ab-ac50-faa645763c43.a87045f9-d438-4f5a-8707-57f2b7c239b3",
+    "8ed53cb9-d883-4f85-9429-116c0193e8f4.3341cd43-bbd1-40e2-ac1b-1969af85a2c6",
+    "632e463a-7cf2-4c51-b962-ef78a6608419.98102f8e-7b7c-4a4a-aa3d-d37424b1b4df",
+    "057a2f7f-cba7-4db0-b325-ba402737550e.e8851b8d-492a-491d-bf75-80a755f890eb",
+    "bcb65083-bbfd-4a0d-89e3-f07abd43a65c.92d118b0-1544-4cf7-8fcb-53a326497bdd",
+    "eeee2d0d-dc45-4342-922f-501d26580116.b6bfc1b2-98ca-4ceb-a558-e82de853523b",
+    "d251802b-39e2-4134-94e9-447449fc5371.a4d8e5e6-5c94-4124-9466-5d84831544e2",
+    "be4bfb73-abcf-47e3-b3b2-edf2241b887b.6a740544-f414-4402-aff8-9ca9a9e3516e",
+    "3579f473-a800-46b2-8d03-dbe3988961b8.33739a98-dadc-4b76-b8e7-cb7fd79a12d3",
+    "14ddac76-3343-4009-91d4-af6c1d355cac.12384c4a-2844-46e9-add8-7408c0c4d687",
+    "6a460b8c-1fcd-42e6-9e04-0f5c6610428d.31f97303-23f1-476b-ad5d-d138926fa4f6",
+    "5b976d7c-7b3d-4cea-ba67-b76e34bda0d1.c725a0da-caa2-4eb4-9062-fc722705f79b",
+    "3e4c820e-9b71-48fd-80b0-f363ea3c8bc0.20cd7488-25fc-4f82-b063-38bbc26dd878",
+    "0877c8c3-66b9-41d5-8082-b33767a32f87.3d522860-428b-4aa3-aa38-f430635a5475",
+    "55ce89b2-1b62-426e-bbcf-a34feb9d9a01.f14ad8fb-8286-44a8-8e6f-02cb79f9f801",
+    "463c3300-ab2c-4c90-bbfe-c77de13c5b70.eab3e0a8-5199-4a83-91da-e44aae7184f8",
+    "a6f75d89-282c-4865-a588-1987d3a00da8.c22a17e7-1aa5-41b8-8d83-efd24a0a684a",
+    "12d54546-961e-4706-bf7c-3d868a26c5bf.862448ac-1cbe-411c-9803-5e77d4f38a54",
+    "876c98f2-6c5f-451c-9305-2f834e855daf.8bb1259a-bd7b-461a-960c-ecd254b48f50",
+    "ce36f6d6-303c-4514-946f-8693000ef077.58a4926e-8e5f-4c20-925e-811470a5064c"
+];
+
+// Helper function to get random LIFI API key
+function getRandomApiKeyLIFI() {
+    const idx = Math.floor(Math.random() * apiKeysLIFI.length);
+    return apiKeysLIFI[idx];
+}
+
+// =============================
+// Rango API Keys (Multi-Chain DEX Aggregator)
+// =============================
+// Using Rango's official test API key for development
+// Source: https://docs.rango.exchange/api-integration/api-key-and-rate-limits
+// Note: This test key has low rate limits - request production key for live usage
+const apiKeysRango = [
+    'c6381a79-2817-4602-83bf-6a641a409e32'  // ✅ Official Rango test API key
+];
+
+let rangoKeyIndex = 0;
+function getRandomApiKeyRango() {
+    const key = apiKeysRango[rangoKeyIndex];
+    rangoKeyIndex = (rangoKeyIndex + 1) % apiKeysRango.length;
+    return key;
+}
+
+// =============================
+// DEX API Keys (Centralized)
+// =============================
+// All DEX API keys stored in one place for better security and management
+
+// 0x (Matcha) API Keys Pool - NO DEFAULT KEYS (User must provide their own)
+// Endpoint: https://api.0x.org/swap/allowance-handler/quote
+// Headers: 0x-api-key, 0x-version: v2
+// Get from: https://dashboard.0x.org
+// ⚠️ Default keys removed - user MUST input API keys in settings
+
+// Helper function for user API key rotation
+let zeroxKeyIndex = 0;
+function rotateUserApiKey0x(keys) {
+    if (!Array.isArray(keys) || keys.length === 0) {
+        return null;
+    }
+    const key = keys[zeroxKeyIndex % keys.length];
+    zeroxKeyIndex = (zeroxKeyIndex + 1) % keys.length;
+    return key;
+}
+
+const DEX_API_KEYS = {
+    // 0x (Matcha) API Key - Handled by get0xApiKey() with rotation
+    // Use get0xApiKey() to get rotating keys from pool
+};
+
+// =============================
+// Swing Project IDs
+// =============================
+// IMPORTANT: Custom project IDs must be configured at https://platform.swing.xyz/
+// Each project must enable the chains you want to use (BSC, Ethereum, Polygon, etc.)
+// Error "bsc is not a valid chain or is disabled by this project" means the project
+// hasn't enabled that chain in the Swing dashboard settings.
+//
+// Using only 'galaxy-exchange' (demo project) - pre-configured for all chains
+const SWING_PROJECT_IDS = [
+    'galaxy-exchange'  // ✅ Public demo project - all chains enabled
+
+    // ❌ Custom project IDs disabled - not configured for all chains:
+    // 'swing-62370183-4923-4b32-8806-c8729d4d6a2d',  // percobaan1 - BSC disabled
+    // 'swing-11f7b12d-4624-4805-8a6c-7ce40a111ec7',  // percobaan1a - BSC disabled
+    // 'swing-381b973d-adce-4c6b-8005-4347bab98543',  // percobaan1b - BSC disabled
+    // 'swing-a2646b38-c907-443b-9440-2830683e2cf6',  // percobaan2 - BSC disabled
+    // 'swing-b7e3b703-224b-4cc9-897d-7a963602fc33',  // percobaan2a - BSC disabled
+    // 'swing-067ad581-1328-42df-bd35-29e1c3b888ed'   // percobaan2b - BSC disabled
+];
+
+// Helper function to get random Swing project ID
+function getRandomSwingProjectId() {
+    const idx = Math.floor(Math.random() * SWING_PROJECT_IDS.length);
+    return SWING_PROJECT_IDS[idx];
+}
+
+// Helper function to get 0x API key (with rotation)
+// ⚠️ NO DEFAULT KEYS - User MUST provide API keys in settings
+// Supports multiple keys (comma-separated) with automatic rotation
+function get0xApiKey() {
+    try {
+        let userInput = null;
+
+        // 1. Try from window.SavedSettingData (in-memory cache)
+        if (typeof SavedSettingData !== 'undefined' && SavedSettingData && SavedSettingData.matchaApiKeys) {
+            userInput = SavedSettingData.matchaApiKeys;
+            console.log('[0x API] Reading keys from SavedSettingData (cached)');
+        }
+        // 2. Fallback: Read directly from IndexedDB/localStorage
+        else if (typeof getFromLocalStorage === 'function') {
+            const settings = getFromLocalStorage('SETTING_SCANNER', {});
+            if (settings && settings.matchaApiKeys) {
+                userInput = settings.matchaApiKeys;
+                console.log('[0x API] Reading keys from IndexedDB (direct read)');
+            }
+        }
+
+        if (!userInput) {
+            // No user keys found - return null (scanner will handle error)
+            console.error('[0x API] ⚠️ No API keys found! User must provide Matcha API keys in settings.');
+            console.error('[0x API] Get API keys from: https://dashboard.0x.org');
+            return null;
+        }
+
+        // Support both array and string (comma-separated)
+        let keys = [];
+        if (Array.isArray(userInput)) {
+            keys = userInput.filter(k => k && String(k).trim() !== '');
+        } else if (typeof userInput === 'string') {
+            keys = userInput.split(',')
+                .map(k => String(k).trim())
+                .filter(k => k !== '');
+        }
+
+        if (keys.length > 0) {
+            const rotatedKey = rotateUserApiKey0x(keys);
+            console.log(`[0x API] ✅ Using user API key (key ${zeroxKeyIndex}/${keys.length} total keys)`);
+            return rotatedKey;
+        }
+
+        // Empty keys array
+        console.error('[0x API] ⚠️ matchaApiKeys field exists but contains no valid keys!');
+        return null;
+    } catch (error) {
+        console.error('[0x API] Error getting API key:', error);
+        return null;
+    }
+}
+
+try {
+    if (typeof window !== 'undefined') {
+        window.apiKeysLIFI = window.apiKeysLIFI || apiKeysLIFI;
+        window.getRandomApiKeyLIFI = window.getRandomApiKeyLIFI || getRandomApiKeyLIFI;
+        window.apiKeysRango = window.apiKeysRango || apiKeysRango;
+        window.getRandomApiKeyRango = window.getRandomApiKeyRango || getRandomApiKeyRango;
+        window.rotateUserApiKey0x = window.rotateUserApiKey0x || rotateUserApiKey0x;  // ✅ User key rotation
+        window.DEX_API_KEYS = window.DEX_API_KEYS || DEX_API_KEYS;
+        window.get0xApiKey = window.get0xApiKey || get0xApiKey;
+        window.SWING_PROJECT_IDS = window.SWING_PROJECT_IDS || SWING_PROJECT_IDS;
+        window.getRandomSwingProjectId = window.getRandomSwingProjectId || getRandomSwingProjectId;
+    }
+} catch (_) { }

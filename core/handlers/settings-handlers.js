@@ -148,14 +148,46 @@
             return;
         }
 
+        // ✅ NEW: Collect CEX API Keys (dynamically from CONFIG_CEX)
+        const cexList = (typeof CONFIG_CEX !== 'undefined') ? Object.keys(CONFIG_CEX) : [];
+        const cexKeys = {};
+        let cexSavedCount = 0;
+
+        cexList.forEach(cex => {
+            const apiKey = $(`#cex_apikey_${cex}`).val()?.trim();
+            const secretKey = $(`#cex_secret_${cex}`).val()?.trim();
+            const passphrase = $(`#cex_passphrase_${cex}`).val()?.trim();
+
+            if (apiKey && secretKey) {
+                cexKeys[cex] = {
+                    ApiKey: apiKey,
+                    ApiSecret: secretKey
+                };
+
+                if (cex === 'KUCOIN' || cex === 'BITGET') {
+                    if (passphrase) {
+                        cexKeys[cex].Passphrase = passphrase;
+                        cexSavedCount++;
+                    } else {
+                        UIkit.notification({
+                            message: `⚠️ ${cex} memerlukan Passphrase!`,
+                            status: 'warning',
+                            timeout: 3000
+                        });
+                        return;
+                    }
+                } else {
+                    cexSavedCount++;
+                }
+            }
+        });
+
         const settingData = {
             nickname, jedaTimeGroup, jedaKoin, walletMeta,
-            matchaApiKeys,  // ✅ Save user-defined Matcha API keys (REQUIRED, multiple keys with rotation)
+            matchaApiKeys,
             scanPerKoin: parseInt(scanPerKoin, 10),
             JedaDexs,
-            userRPCs  // NEW: hanya simpan RPC yang diinput user (1 per chain)
-            // ✅ REMOVED: Checkbox preferences (now stored per-chain in FILTER_*)
-            // autoRun, autoVol, walletCex, autoLevel, autoLevelValue
+            userRPCs
         };
 
         console.log('[SETTINGS] Data to save:', settingData);
@@ -163,13 +195,34 @@
 
         saveToLocalStorage('SETTING_SCANNER', settingData);
 
-        try { setLastAction("SIMPAN SETTING"); } catch (_) { }
-        if (typeof UIkit !== 'undefined' && UIkit.notification) {
-            UIkit.notification("✅ SETTING SCANNER BERHASIL DISIMPAN", { status: 'success' });
-        } else if (typeof toast !== 'undefined' && toast.success) {
-            toast.success("✅ SETTING SCANNER BERHASIL DISIMPAN");
+        // ✅ Save CEX API keys to IndexedDB (separate from SETTING_SCANNER)
+        if (Object.keys(cexKeys).length > 0) {
+            saveToLocalStorage('CEX_API_KEYS', cexKeys);
+            localStorage.setItem('CEX_KEYS_MIGRATED', 'true');
+            console.log(`[SETTINGS] Saved ${cexSavedCount} CEX API key(s) to IndexedDB`);
+
+            // Cleanup legacy localStorage MULTI_* keys
+            const allCexList = ['GATE', 'BINANCE', 'MEXC', 'KUCOIN', 'BITGET', 'INDODAX', 'BYBIT', 'LBANK', 'HTX'];
+            allCexList.forEach(cex => {
+                localStorage.removeItem(`MULTI_apikey${cex}`);
+                localStorage.removeItem(`MULTI_secretkey${cex}`);
+                localStorage.removeItem(`MULTI_passphrase${cex}`);
+            });
+            console.log('[SETTINGS] Cleaned up legacy localStorage MULTI_* keys');
         }
-        setTimeout(() => location.reload(), 500);
+
+        try { setLastAction("SIMPAN SETTING"); } catch (_) { }
+
+        const successMsg = cexSavedCount > 0
+            ? `✅ SETTING SCANNER & ${cexSavedCount} CEX API KEY BERHASIL DISIMPAN`
+            : '✅ SETTING SCANNER BERHASIL DISIMPAN';
+
+        if (typeof UIkit !== 'undefined' && UIkit.notification) {
+            UIkit.notification(successMsg, { status: 'success' });
+        } else if (typeof toast !== 'undefined' && toast.success) {
+            toast.success(successMsg);
+        }
+        setTimeout(() => location.reload(), 2000);
     });
 
 })();

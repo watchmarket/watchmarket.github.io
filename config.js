@@ -1,7 +1,7 @@
 const CONFIG_APP = {
     APP: {
         NAME: "WATCHMARKET",
-        VERSION: "2026.02.06",
+        VERSION: "2026.02.07",
         SCAN_LIMIT: true,
         AUTORUN: false,
         AUTO_VOLUME: false,   // Set false untuk menyembunyikan & menonaktifkan fitur auto volume
@@ -163,7 +163,8 @@ const CONFIG_CEX = {
     }
 };
 
-// Merge secrets into CONFIG_CEX (legacy secrets.js)
+// CEX_SECRETS now empty - keys loaded from IndexedDB at runtime via getCEXCredentials()
+// Legacy merge kept for backward compatibility (will be no-op since CEX_SECRETS is empty)
 if (typeof CEX_SECRETS !== 'undefined') {
     for (const cex in CONFIG_CEX) {
         if (CEX_SECRETS[cex]) {

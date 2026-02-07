@@ -322,11 +322,33 @@
     // =================================================================================
     /** Fetch DP/WD statuses and fees for a given CEX (per token/chain). */
     async function fetchWalletStatus(cex) {
-        const cfg = CONFIG_CEX?.[cex] || {};
-        const secretSrc = (typeof CEX_SECRETS !== 'undefined' && CEX_SECRETS?.[cex]) ? CEX_SECRETS[cex]
-            : ((typeof window !== 'undefined' && window.CEX_SECRETS && window.CEX_SECRETS[cex]) ? window.CEX_SECRETS[cex] : {});
-        const ApiKey = cfg.ApiKey || secretSrc?.ApiKey;
-        const ApiSecret = cfg.ApiSecret || secretSrc?.ApiSecret;
+        // CEX yang menggunakan PUBLIC API (tidak perlu API Key)
+        const publicApiCex = ['HTX', 'HUOBI', 'INDODAX', 'KUCOIN', 'BITGET', 'LBANK'];
+        const cexUpper = String(cex || '').toUpperCase();
+
+        // Get API keys from IndexedDB via getCEXCredentials()
+        let ApiKey, ApiSecret, Passphrase;
+
+        if (!publicApiCex.includes(cexUpper)) {
+            if (typeof getCEXCredentials === 'function') {
+                const credentials = getCEXCredentials(cex);
+                if (!credentials) {
+                    throw new Error(`${cex} API Key/Secret not configured. Please configure in Settings.`);
+                }
+                ApiKey = credentials.ApiKey;
+                ApiSecret = credentials.ApiSecret;
+                Passphrase = credentials.Passphrase;
+            } else {
+                // Fallback to old method
+                const cfg = CONFIG_CEX?.[cex] || {};
+                const secretSrc = (typeof CEX_SECRETS !== 'undefined' && CEX_SECRETS?.[cex]) ? CEX_SECRETS[cex]
+                    : ((typeof window !== 'undefined' && window.CEX_SECRETS && window.CEX_SECRETS[cex]) ? window.CEX_SECRETS[cex] : {});
+                ApiKey = cfg.ApiKey || secretSrc?.ApiKey;
+                ApiSecret = cfg.ApiSecret || secretSrc?.ApiSecret;
+                Passphrase = cfg.Passphrase || secretSrc?.Passphrase;
+            }
+        }
+
         const hasKeys = !!(ApiKey && ApiSecret);
         const timestamp = Date.now();
 
