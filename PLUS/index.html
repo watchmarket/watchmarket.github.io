@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>SCANNER PRICE CRYPTO</title>
+    <title>SCANNER MOBILE</title>
     <link rel="icon" href="icons/favicon.png">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -19,7 +19,7 @@
 ═══════════════════════════════════════ -->
     <div class="onboard-overlay" id="onboardOverlay">
         <div class="onboard-card">
-            <div class="onboard-logo">SCANNER PRICE CRYPTO</div>
+            <div class="onboard-logo">SCANNER MOBILE</div>
             <div class="onboard-sub">CEX vs DEX Price Comparator</div>
             <div class="onboard-form-group">
                 <label class="form-label">Username</label>
@@ -43,7 +43,7 @@
     <div class="top-bar">
         <div class="app-name">
             <img src="icons/favicon.png" class="app-logo" alt="">
-            SCANNER PRICE CRYPTO
+            SCANNER MOBILE
         </div>
         <!-- Tab pills — visible in landscape only -->
         <div class="top-tabs" id="topTabs">
@@ -79,7 +79,8 @@
             <div class="scan-progress-bar" id="scanBar"></div>
         </div>
         <div class="monitor-cards" id="monitorList">
-            <div class="token-list-empty">JIKA BELUM ADA TOKEN DATA KOIN. <br/>MASUK MENU TOKEN LALU TEKAN + UNTUK MENAMBAH. <br/>JIKA SUDAH ADA KOIN SILAKAN TEKAN START</div>
+            <div class="token-list-empty">Jika belum ada token, masuk menu TOKEN lalu tekan + untuk menambah.<br>Jika
+                sudah ada koin, tekan START.</div>
         </div>
     </div>
 
@@ -116,10 +117,6 @@
             </div>
             <div class="settings-card">
                 <h3>Scan</h3>
-                <div class="settings-row">
-                    <label class="settings-label">Min PnL Signal ($)</label>
-                    <input class="settings-input" id="setMinPnl" type="number" step="0.1" value="1">
-                </div>
                 <div class="settings-row">
                     <label class="settings-label">Interval antar Token (ms)</label>
                     <input class="settings-input" id="setInterval" type="number" step="100" value="700">
@@ -168,33 +165,36 @@
     <div class="sheet-overlay" id="sheetOverlay"></div>
     <div class="bottom-sheet" id="tokenSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-title" id="sheetTitle">Tambah Token</div>
+        <div class="sheet-title" id="sheetTitle">Tambah KOIN</div>
         <input type="hidden" id="editId">
 
         <div class="sheet-body">
 
-            <div class="form-group">
-                <label class="form-label">Network</label>
-                <div class="chip-group" id="chainChips"></div>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Exchanger</label>
-                <div class="chip-group" id="cexChips"></div>
+            <!-- Network & CEX chips in one row -->
+            <div class="form-row-ts">
+                <div class="form-group">
+                    <label class="form-label">Network</label>
+                    <div class="chip-group" id="chainChips"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Exchanger</label>
+                    <div class="chip-group" id="cexChips"></div>
+                </div>
             </div>
 
-            <!-- Section: Token (Koin A — beli/jual di CEX) -->
-            <div class="sheet-section-title">TOKEN (Koin A — CEX)</div>
+            <!-- TOKEN Section -->
+            <div class="sheet-section-title">TOKEN (Koin CEX)</div>
 
             <div class="form-row-ts">
                 <div class="form-group ac-wrap">
                     <label class="form-label">Symbol TOKEN</label>
-                    <input class="form-input" id="fTicker" type="text" placeholder="SAND" autocomplete="off"
+                    <input class="form-input" id="fTicker" type="text" placeholder="symbol TOKEN" autocomplete="off"
                         oninput="onTickerInput('token')">
                     <div class="ac-box" id="acToken"></div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Ticker CEX</label>
-                    <input class="form-input" id="fSymbolToken" type="text" placeholder="sandIDR">
+                    <input class="form-input" id="fSymbolToken" type="text" placeholder="Ticker CEX">
                 </div>
             </div>
 
@@ -209,19 +209,19 @@
                 </div>
             </div>
 
-            <!-- Section: Pair (Koin B — output swap DEX) -->
-            <div class="sheet-section-title">PAIR (Koin B — DEX)</div>
+            <!-- PAIR Section -->
+            <div class="sheet-section-title">PAIR (Koin DEX)</div>
 
             <div class="form-row-ts">
                 <div class="form-group ac-wrap">
                     <label class="form-label">Symbol PAIR</label>
-                    <input class="form-input" id="fTickerPair" type="text" placeholder="EDU"
-                        autocomplete="off" oninput="onTickerInput('pair')">
+                    <input class="form-input" id="fTickerPair" type="text" placeholder="Symbol PAIR" autocomplete="off"
+                        oninput="onTickerInput('pair')">
                     <div class="ac-box" id="acPair"></div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Ticker CEX</label>
-                    <input class="form-input" id="fSymbolPair" type="text" placeholder="eduIDR">
+                    <input class="form-input" id="fSymbolPair" type="text" placeholder="Pair DEX">
                 </div>
             </div>
 
@@ -236,23 +236,21 @@
                 </div>
             </div>
 
-            <!-- Chain & Modal -->
-            <div class="sheet-section-title" style="padding-top:6px">Chain &amp; Modal</div>
+            <!-- Modal & PNL -->
+            <div class="sheet-section-title" style="padding-top:6px">Modal & PNL</div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Modal CEX→DEX:KIRI ($)</label>
-                    <input class="form-input" id="fModalCtD" type="number" value="100">
+                    <label class="form-label">CEX→DEX ($)</label>
+                    <input class="form-input" id="fModalCtD" type="number" placeholder="Modal CDX" value="100">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Modal DEX→CEX:KANAN ($)</label>
-                    <input class="form-input" id="fModalDtC" type="number" value="80">
+                    <label class="form-label">DEX→CEX ($)</label>
+                    <input class="form-input" id="fModalDtC" type="number" placeholder="Modal DXC" value="80">
                 </div>
-            </div>
-            <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Min PnL Signal ($) — kosong = pakai global</label>
-                    <input class="form-input" id="fMinPnl" type="number" step="0.1" placeholder="pakai global">
+                    <label class="form-label">Min PnL ($)</label>
+                    <input class="form-input" id="fMinPnl" type="number" step="0.1" placeholder="Min PnL">
                 </div>
             </div>
 
