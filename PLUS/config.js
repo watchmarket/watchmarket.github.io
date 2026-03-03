@@ -43,7 +43,7 @@ const CONFIG_CEX = {
     ORDERBOOK: {
       urlTpl: (symbol) => `https://api.gateio.ws/api/v4/spot/order_book?limit=5&currency_pair=${symbol.toUpperCase()}`,
       parser: "standard",
-      proxy: false,
+      proxy: true,
     },
     symbolFmt: (ticker) => ticker.toUpperCase() + "_USDT",
   },
