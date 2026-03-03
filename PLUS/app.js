@@ -15,7 +15,20 @@ let CFG = {
     sseTimeout: APP_DEV_CONFIG.defaultSseTimeout,
     quoteCount: 3,
     soundMuted: false,
+    activeCex: [],    // [] = semua aktif
+    activeChains: [], // [] = semua aktif
 };
+
+// Kembalikan token yang lolos filter CEX+chain, diurutkan A-Z
+function getFilteredTokens() {
+    return getTokens()
+        .filter(t => {
+            const cexOk    = CFG.activeCex.length    === 0 || CFG.activeCex.includes(t.cex);
+            const chainOk  = CFG.activeChains.length === 0 || CFG.activeChains.includes(t.chain);
+            return cexOk && chainOk;
+        })
+        .sort((a, b) => (a.ticker || '').localeCompare(b.ticker || ''));
+}
 
 // ─── Signal Sound ─────────────────────────────
 const _signalAudio = new Audio('audio.mp3');
@@ -72,23 +85,69 @@ function fmtCompact(v, sigfigs = 4) {
 }
 
 // ─── Settings ────────────────────────────────
+function renderFilterChips() {
+    // CEX filter chips (multi-select toggle)
+    $('#filterCexChips').html(Object.entries(CONFIG_CEX).map(([k, v]) => {
+        const on = CFG.activeCex.length === 0 || CFG.activeCex.includes(k);
+        return `<span class="fchip${on ? ' on' : ''}" data-key="${k}" data-type="cex"
+          style="${on ? `background:${v.WARNA};color:#fff;` : ''}"
+          onclick="toggleFilterChip(this,'cex')">
+          <img src="icons/cex/${k}.png" class="chip-icon" onerror="this.style.display='none'">
+          ${v.label}</span>`;
+    }).join(''));
+    // Chain filter chips (multi-select toggle)
+    $('#filterChainChips').html(Object.entries(CONFIG_CHAINS).map(([k, v]) => {
+        const on = CFG.activeChains.length === 0 || CFG.activeChains.includes(k);
+        return `<span class="fchip${on ? ' on' : ''}" data-key="${k}" data-type="chain"
+          style="${on ? `background:${v.WARNA};color:#fff;` : ''}"
+          onclick="toggleFilterChip(this,'chain')">
+          <img src="icons/chains/${k}.png" class="chip-icon" onerror="this.style.display='none'">
+          ${v.label}</span>`;
+    }).join(''));
+}
+function toggleFilterChip(el, type) {
+    const key = el.dataset.key;
+    const arr = type === 'cex' ? CFG.activeCex : CFG.activeChains;
+    const cfg = type === 'cex' ? CONFIG_CEX : CONFIG_CHAINS;
+    const idx = arr.indexOf(key);
+    // Jika semua aktif (arr kosong), berarti kita mulai dari "semua ON"
+    // Klik pertama pada salah satu = matikan yang lain, aktifkan hanya ini
+    if (arr.length === 0) {
+        // Set semua menjadi aktif, lalu matikan yang diklik
+        const all = Object.keys(cfg);
+        arr.push(...all.filter(k => k !== key));
+    } else if (idx >= 0) {
+        arr.splice(idx, 1);
+    } else {
+        arr.push(key);
+        // Jika semua aktif kembali → reset ke "semua" (arr kosong)
+        if (arr.length === Object.keys(cfg).length) arr.splice(0);
+    }
+    renderFilterChips();
+}
+
 function loadSettings() {
     try { const s = JSON.parse(localStorage.getItem(LS_SETTINGS)); if (s) Object.assign(CFG, s); } catch { }
+    if (!Array.isArray(CFG.activeCex))    CFG.activeCex    = [];
+    if (!Array.isArray(CFG.activeChains)) CFG.activeChains = [];
     $('#setUsername').val(CFG.username);
     $('#setWallet').val(CFG.wallet);
     $('#setInterval').val(CFG.interval);
     $('#setQuote').val(CFG.quoteCount);
     $('#setSoundMuted').prop('checked', !!CFG.soundMuted);
     $('#topUsername').text('@' + (CFG.username || '-'));
+    renderFilterChips();
 }
 function saveSettings() {
-    CFG.username = $('#setUsername').val().trim();
-    CFG.wallet = $('#setWallet').val().trim();
-    CFG.interval = parseInt($('#setInterval').val()) || 700;
+    CFG.username   = $('#setUsername').val().trim();
+    CFG.wallet     = $('#setWallet').val().trim();
+    CFG.interval   = parseInt($('#setInterval').val()) || 700;
     CFG.quoteCount = Math.min(5, Math.max(1, parseInt($('#setQuote').val()) || 3));
     CFG.soundMuted = $('#setSoundMuted').prop('checked');
+    // activeCex & activeChains sudah diupdate realtime oleh toggleFilterChip
     localStorage.setItem(LS_SETTINGS, JSON.stringify(CFG));
     $('#topUsername').text('@' + (CFG.username || '-'));
+    if (!scanning) { buildMonitorRows(); }
     $('#saveOk').show(); setTimeout(() => $('#saveOk').hide(), 2000);
 }
 
@@ -354,7 +413,7 @@ function isValidToken(t) {
 }
 
 function renderTokenList() {
-    const tokens = getTokens();
+    const tokens = getTokens().sort((a, b) => (a.ticker || '').localeCompare(b.ticker || ''));
     $('#tokenCount').text(tokens.length + ' token');
     if (!tokens.length) {
         $('#tokenList').html('<div class="token-list-empty">Belum ada token. Ketuk + untuk menambah.</div>');
@@ -755,7 +814,7 @@ const MON_CTD_COLOR = '#579a69'; // hijau CEXtoDEX
 const MON_DTC_COLOR = '#d56666'; // merah DEXtoCEX
 
 function buildMonitorRows() {
-    const tokens = getTokens();
+    const tokens = getFilteredTokens();
     if (!tokens.length) {
         $('#monitorList').html('<div class="token-list-empty">Tidak ada token. Tambahkan KOIN di menu KOIN.</div>');
         return;
@@ -935,8 +994,8 @@ async function runScan() {
     // Clear previous signal chips and reset table
     document.querySelectorAll('.signal-chip').forEach(c => c.remove());
     lockTabs();
-    const tokens = getTokens();
-    if (!tokens.length) { showToast('Tidak ada token! Tambahkan KOIN dulu.'); stopScan(); return; }
+    const tokens = getFilteredTokens();
+    if (!tokens.length) { showToast('Tidak ada token aktif! Periksa filter di Pengaturan.'); stopScan(); return; }
     showToast('▶ Scanning dimulai…');
     await fetchUsdtRate();
 
