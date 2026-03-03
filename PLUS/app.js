@@ -630,9 +630,9 @@ async function scanToken(tok) {
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
             if (hdrEl) { hdrEl.textContent = r.name; hdrEl.className = 'mon-dex-hdr'; }
-            if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(obToken.askPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
-            if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell ' + (r.effPrice >= obToken.askPrice ? 'mc-ask' : 'mc-bid') + sigCls; }
-            if (feeEl) { feeEl.textContent = `-${r.cexFee1.toFixed(2)} | ${r.cexFee2.toFixed(2)}`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
+            if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(obToken.askPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
+            if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell ' + (r.effPrice >= obToken.askPrice ? 'mc-ask' : 'mc-bid'); }
+            if (feeEl) { feeEl.textContent = `-${r.cexFee1.toFixed(2)} | ${r.cexFee2.toFixed(2)}`; feeEl.className = 'mon-dex-cell mc-recv'; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
         });
     }
@@ -689,9 +689,9 @@ async function scanToken(tok) {
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
             if (hdrEl) { hdrEl.textContent = r.name; hdrEl.className = 'mon-dex-hdr'; }
-            if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(obToken.bidPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
-            if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell ' + (r.effPrice <= obToken.bidPrice ? 'mc-ask' : 'mc-bid') + sigCls; }
-            if (feeEl) { feeEl.textContent = `-${r.cexFee1.toFixed(2)} | ${r.cexFee2.toFixed(2)}`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
+            if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(obToken.bidPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
+            if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell ' + (r.effPrice <= obToken.bidPrice ? 'mc-ask' : 'mc-bid'); }
+            if (feeEl) { feeEl.textContent = `-${r.cexFee1.toFixed(2)} | ${r.cexFee2.toFixed(2)}`; feeEl.className = 'mon-dex-cell mc-recv'; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
         });
     }
@@ -823,21 +823,21 @@ async function sendTelegram(tok, pnl, info) {
     if (now - last < APP_DEV_CONFIG.telegramCooldown * 60000) return;
     tgCooldown.set(tok.id, now);
 
-    const chain  = CONFIG_CHAINS[tok.chain]?.label || tok.chain;
+    const chain = CONFIG_CHAINS[tok.chain]?.label || tok.chain;
     const cexLbl = CONFIG_CEX[tok.cex]?.label || tok.cex;
     const dexLbl = info?.dexName || 'DEX';
-    const dir    = info?.dir || 'CEX↔DEX';
-    const fee    = info?.totalFee != null ? info.totalFee.toFixed(2) : '-';
-    const modal  = info?.modal ?? tok.modalCtD;
+    const dir = info?.dir || 'CEX↔DEX';
+    const fee = info?.totalFee != null ? info.totalFee.toFixed(2) : '-';
+    const modal = info?.modal ?? tok.modalCtD;
     const pairLbl = tok.tickerPair && tok.tickerPair !== tok.ticker ? tok.tickerPair : tok.ticker;
-    const wallet  = CFG.wallet
+    const wallet = CFG.wallet
         ? CFG.wallet.slice(0, 6) + '.....' + CFG.wallet.slice(-5)
         : '-';
 
     // ── Android native notification (via WebView JS Bridge) ──────────────
     if (window.AndroidBridge) {
         const title = `🟢 SIGNAL: ${tok.ticker}↔${pairLbl}`;
-        const body  = `${cexLbl}↔${dexLbl} [${dir}]\nPnL: ${fmtPnl(pnl)}$  |  Modal: $${modal}`;
+        const body = `${cexLbl}↔${dexLbl} [${dir}]\nPnL: ${fmtPnl(pnl)}$  |  Modal: $${modal}`;
         window.AndroidBridge.showNotification(title, body);
     }
 
@@ -926,11 +926,14 @@ async function runScan() {
             if (!scanAbort) await new Promise(r => setTimeout(r, CFG.interval));
         }
         if (!scanAbort) {
-            // Bersihkan tabel & sinyal, lalu jeda 4 detik sebelum ronde berikutnya
-            resetMonitorCells();
+            // Jeda 10 detik dulu — tabel & sinyal masih tampil agar bisa dilihat
             $('#scanBar').css('width', '0%');
-            showToast(`♻ Ronde ${_scanRound} selesai — jeda 4 detik...`, 3800);
-            await new Promise(r => setTimeout(r, 4000));
+            showToast(`✅ Ronde ${_scanRound} selesai — jeda 10 detik...`, 9500);
+            await new Promise(r => setTimeout(r, 10000));
+            // Baru kosongkan tabel & notif sinyal, lalu mulai ronde berikutnya
+            if (!scanAbort) {
+                resetMonitorCells();
+            }
         }
     }
     stopScan();

@@ -593,7 +593,7 @@ body {
   width: 50px;
   height: 50px;
   border-radius: 25%;
-  background:#2631e2;
+  background: #2631e2;
   color: #fff;
   border: none;
   box-shadow: var(--accent-glow), var(--shadow);
@@ -642,7 +642,7 @@ body {
   justify-content: center;
   gap: 3px;
   cursor: pointer;
-  color:#2631e2;
+  color: #2631e2;
   font-size: 12px;
   font-weight: 600;
   font-family: 'Outfit', sans-serif;
@@ -849,6 +849,28 @@ body {
 .btn-outline:active {
   background: var(--glass-md);
   color: var(--accent-dk);
+}
+
+#btnExport {
+  background: #1a6fd4;
+  border-color: #1a6fd4;
+  color: #fff;
+}
+
+#btnExport:active {
+  background: #155bb5;
+  color: #fff;
+}
+
+#btnImportTrigger {
+  background: #18a55e;
+  border-color: #18a55e;
+  color: #fff;
+}
+
+#btnImportTrigger:active {
+  background: #13884d;
+  color: #fff;
 }
 
 .token-list {
