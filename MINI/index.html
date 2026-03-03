@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>MINI SCANNER MOBILE</title>
+    <link rel="icon" href="icons/favicon.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+
+<body>
+
+    <!-- ═══════════════════════════════════════
+     ONBOARDING MODAL
+═══════════════════════════════════════ -->
+    <div class="onboard-overlay" id="onboardOverlay">
+        <div class="onboard-card">
+            <div class="onboard-logo">MINI SCANNER MOBILE</div>
+            <div class="onboard-sub">CEX vs DEX Price Comparator</div>
+            <div class="onboard-form-group">
+                <label class="form-label">Username</label>
+                <input class="form-input" id="obUsername" type="text" placeholder="contoh: trader01" autocomplete="off">
+            </div>
+            <div class="onboard-form-group">
+                <label class="form-label">Wallet Address (EVM)</label>
+                <input class="form-input" id="obWallet" type="text" placeholder="0x..." autocomplete="off">
+            </div>
+
+            <button class="btn-onboard" id="btnOnboard">MULAI →</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+     TOP BAR
+═══════════════════════════════════════ -->
+    <div class="top-bar">
+        <div class="app-name">
+            <img src="icons/favicon.png" class="app-logo" alt="">
+            MINI SCANNER MOBILE
+        </div>
+        <!-- Tab pills — visible in landscape only -->
+        <div class="top-tabs" id="topTabs">
+            <button class="top-tab-btn active" data-tab="tabMonitor">
+                <img src="icons/monitoring.png" class="top-tab-icon" alt=""> Monitor
+            </button>
+            <button class="top-tab-btn" data-tab="tabToken">
+                <img src="icons/token.png" class="top-tab-icon" alt=""> KOIN
+            </button>
+            <button class="top-tab-btn" data-tab="tabSettings">
+                <img src="icons/setting.png" class="top-tab-icon" alt=""> Pengaturan
+            </button>
+            <button class="top-tab-btn tab-reload" onclick="reloadWithToast()">
+                <img src="icons/reload.png" class="top-tab-icon" alt=""> Reload
+            </button>
+        </div>
+        <div class="top-right">
+            <span class="scanning-badge" id="scanBadge">● scanning</span>
+            <span class="username-chip" id="topUsername">@-</span>
+        </div>
+        <!-- Progress bar — menempel di bawah top-bar, selalu terlihat -->
+        <div class="scan-progress-strip">
+            <div class="scan-progress-bar" id="scanBar"></div>
+        </div>
+    </div>
+
+    <!-- Signal Chips -->
+    <div class="signal-bar" id="signalBar"></div>
+
+    <!-- ═══════════════════════════════════════
+     TAB CONTENT
+═══════════════════════════════════════ -->
+
+    <!-- TAB MONITOR -->
+    <div id="tabMonitor" class="tab-pane active">
+        <div class="monitor-cards" id="monitorList">
+            <div class="token-list-empty">Jika belum ada koin, masuk menu KOIN lalu tekan + untuk menambah.<br>Jika
+                sudah ada koin, tekan START.</div>
+        </div>
+    </div>
+
+    <!-- TAB TOKEN -->
+    <div id="tabToken" class="tab-pane">
+        <div class="token-list-header">
+            <h2>DAFTAR KOIN :</h2>
+            <span class="token-count" id="tokenCount">Total 0 KOIN</span>
+        </div>
+        <div class="csv-bar">
+            <button class="btn-outline" id="btnExport"><i class="bi bi-download"></i> Export CSV</button>
+            <button class="btn-outline" id="btnImportTrigger"><i class="bi bi-upload"></i> Import CSV</button>
+            <input type="file" id="importFile"
+                accept=".csv,text/csv,text/plain,text/comma-separated-values,application/octet-stream"
+                style="display:none">
+        </div>
+        <div class="token-list" id="tokenList">
+            <div class="token-list-empty">Belum ada KOIN. Ketuk tombol + untuk menambah.</div>
+        </div>
+        <button class="fab" id="fabAdd">+</button>
+    </div>
+
+    <!-- TAB SETTINGS -->
+    <div id="tabSettings" class="tab-pane">
+        <div class="settings-content">
+            <div class="settings-card">
+                <h3>DATA PENGGUNA</h3>
+                <div class="settings-row">
+                    <label class="settings-label">Username</label>
+                    <input class="settings-input" id="setUsername" type="text" placeholder="trader01">
+                </div>
+                <div class="settings-row">
+                    <label class="settings-label">Wallet Address (EVM)</label>
+                    <input class="settings-input" id="setWallet" type="text" placeholder="0x...">
+                </div>
+            </div>
+            <div class="settings-card">
+                <h3>SETTING SCANNER</h3>
+                <div class="settings-row">
+                    <label class="settings-label">Interval antar KOIN (ms)</label>
+                    <input class="settings-input" id="setInterval" type="number" step="100" value="700">
+                </div>
+
+                <div class="settings-row">
+                    <label class="settings-label"><input type="checkbox" id="setSoundMuted"
+                            class="settings-checkbox">&nbsp; &nbsp;Sunyikan Notifikasi <span
+                            class="settings-hint"></span></label>
+
+                </div>
+            </div>
+            <div class="settings-card">
+                <h3>FILTER KOIN [<span id="filterCoinCount">0</span> KOIN ]</h3>
+
+                <div class="settings-row">
+                    <label class="settings-label">CEX Aktif <span class="settings-hint">(ketuk untuk
+                            nonaktifkan)</span></label>
+                    <div class="fchip-group" id="filterCexChips"></div>
+                </div>
+                <div class="settings-row">
+                    <label class="settings-label">Chain Aktif <span class="settings-hint">(ketuk untuk
+                            nonaktifkan)</span></label>
+                    <div class="fchip-group" id="filterChainChips"></div>
+                </div>
+
+            </div>
+            <button class="btn-save" id="btnSaveSettings">💾 Simpan Settings</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+     BOTTOM NAV
+═══════════════════════════════════════ -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-tab="tabMonitor" id="navMonitor">
+            <span class="nav-icon"><img src="icons/monitoring.png" class="nav-icon-img" alt="monitor"></span>
+            <span>Scanner</span>
+        </button>
+        <button class="nav-item" data-tab="tabToken" id="navToken">
+            <span class="nav-icon"><img src="icons/token.png" class="nav-icon-img" alt="token"></span>
+            <span>Koin</span>
+        </button>
+        <button class="nav-item" data-tab="tabSettings" id="navSettings">
+            <span class="nav-icon"><img src="icons/setting.png" class="nav-icon-img" alt="settings"></span>
+            <span>Pengaturan</span>
+        </button>
+        <button class="nav-item" id="navReload" onclick="reloadWithToast()">
+            <span class="nav-icon"><img src="icons/reload.png" class="nav-icon-img" alt="reload"></span>
+            <span>Refresh</span>
+        </button>
+    </nav>
+
+    <!-- FAB Scan (Monitor only) -->
+    <button class="fab-scan" id="btnScan">
+        <span id="btnScanIcon">▶</span>
+        <span id="btnScanLbl">START</span>
+        <span id="btnScanCount">[0]</span>
+    </button>
+
+    <!-- ═══════════════════════════════════════
+     BOTTOM SHEET — TOKEN FORM
+═══════════════════════════════════════ -->
+    <div class="sheet-overlay" id="sheetOverlay"></div>
+    <div class="bottom-sheet" id="tokenSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title" id="sheetTitle">Tambah KOIN</div>
+        <input type="hidden" id="editId">
+
+        <div class="sheet-body">
+
+            <!-- Network & CEX chips in one row -->
+            <div class="form-row-ts">
+                <div class="form-group">
+                    <label class="form-label">Network</label>
+                    <div class="chip-group" id="chainChips"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Exchanger</label>
+                    <div class="chip-group" id="cexChips"></div>
+                </div>
+            </div>
+
+            <!-- TOKEN Section -->
+            <div class="sheet-section-title">TOKEN (Koin CEX)</div>
+
+            <div class="form-row-ts">
+                <div class="form-group ac-wrap">
+                    <label class="form-label">Symbol TOKEN</label>
+                    <input class="form-input" id="fTicker" type="text" placeholder="symbol TOKEN" autocomplete="off"
+                        oninput="onTickerInput('token')">
+                    <div class="ac-box" id="acToken"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ticker CEX</label>
+                    <input class="form-input" id="fSymbolToken" type="text" placeholder="Ticker CEX">
+                </div>
+            </div>
+
+            <div class="form-row-scd">
+                <div class="form-group">
+                    <label class="form-label">SC Token</label>
+                    <input class="form-input" id="fScToken" type="text" placeholder="0x...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Dec</label>
+                    <input class="form-input" id="fDecToken" type="number" value="18">
+                </div>
+            </div>
+
+            <!-- PAIR Section -->
+            <div class="sheet-section-title">PAIR (Koin DEX)</div>
+
+            <div class="form-row-ts">
+                <div class="form-group ac-wrap">
+                    <label class="form-label">Symbol PAIR</label>
+                    <input class="form-input" id="fTickerPair" type="text" placeholder="Symbol PAIR" autocomplete="off"
+                        oninput="onTickerInput('pair')">
+                    <div class="ac-box" id="acPair"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ticker CEX</label>
+                    <input class="form-input" id="fSymbolPair" type="text" placeholder="Pair DEX">
+                </div>
+            </div>
+
+            <div class="form-row-scd">
+                <div class="form-group">
+                    <label class="form-label">SC Pair</label>
+                    <input class="form-input" id="fScPair" type="text" placeholder="0x...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Dec</label>
+                    <input class="form-input" id="fDecPair" type="number" value="18">
+                </div>
+            </div>
+
+            <!-- Modal & PNL -->
+            <div class="sheet-section-title" style="padding-top:6px">Modal & PNL</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">CEX→DEX ($)</label>
+                    <input class="form-input" id="fModalCtD" type="number" placeholder="Modal CDX" value="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">DEX→CEX ($)</label>
+                    <input class="form-input" id="fModalDtC" type="number" placeholder="Modal DXC" value="80">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Min PnL ($)</label>
+                    <input class="form-input" id="fMinPnl" type="number" step="0.1" placeholder="Min PnL">
+                </div>
+            </div>
+
+        </div><!-- /sheet-body -->
+
+        <div class="sheet-footer">
+            <button class="btn-cancel" id="btnSheetCancel">Batal</button>
+            <button class="btn-primary" id="btnSheetSave">💾 Simpan Token</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toastMsg"></div>
+
+    <script src="config.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
