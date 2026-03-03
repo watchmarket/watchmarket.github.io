@@ -760,9 +760,9 @@ function buildMonitorRows() {
       ${dexHdr('ctd', MON_CTD_COLOR)}
     </tr></thead>
     <tbody>
-      <tr class="mon-row-cex"><td class="mon-lbl-side">BELI CEX ↑</td>${dexRow('ctd', 'cex')}</tr>
-      <tr class="mon-row-dex"><td class="mon-lbl-side lbl-pair">${t.ticker}→${pairTk}</td>${dexRow('ctd', 'dex')}</tr>
-      <tr class="mon-row-recv"><td class="mon-lbl-side">FEE Trade&Swap</td>${dexRow('ctd', 'fee')}</tr>
+      <tr class="mon-row-cex"><td class="mon-lbl-side"><span style='color:green;'>BELI CEX ↑</span></td>${dexRow('ctd', 'cex')}</tr>
+      <tr class="mon-row-dex"><td class="mon-lbl-side">${t.ticker}→${pairTk}</td>${dexRow('ctd', 'dex')}</tr>
+      <tr class="mon-row-recv"><td class="mon-lbl-side">Trade & Swap</td>${dexRow('ctd', 'fee')}</tr>
       <tr class="mon-row-pnl"><td class="mon-lbl-side">💰 PNL</td>${dexRow('ctd', 'pnl')}</tr>
     </tbody>
   </table>
@@ -772,9 +772,9 @@ function buildMonitorRows() {
       ${dexHdr('dtc', MON_DTC_COLOR)}
     </tr></thead>
     <tbody>
-      <tr class="mon-row-cex"><td class="mon-lbl-side">JUAL CEX ↑</td>${dexRow('dtc', 'cex')}</tr>
-      <tr class="mon-row-dex"><td class="mon-lbl-side lbl-pair">${pairTk}→${t.ticker}</td>${dexRow('dtc', 'dex')}</tr>
-      <tr class="mon-row-recv"><td class="mon-lbl-side">FEE Trade&Swap</td>${dexRow('dtc', 'fee')}</tr>
+      <tr class="mon-row-cex"><td class="mon-lbl-side">${pairTk}→${t.ticker}</td>${dexRow('dtc', 'cex')}</tr>
+      <tr class="mon-row-dex"><td class="mon-lbl-side lbl-pair"><span style='color:red;'>JUAL CEX ↓</span></td>${dexRow('dtc', 'dex')}</tr>
+      <tr class="mon-row-recv"><td class="mon-lbl-side">Trade & Swap</td>${dexRow('dtc', 'fee')}</tr>
       <tr class="mon-row-pnl"><td class="mon-lbl-side">💰 PNL</td>${dexRow('dtc', 'pnl')}</tr>
     </tbody>
   </table>

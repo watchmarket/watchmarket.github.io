@@ -29,9 +29,9 @@ const CONFIG_CEX = {
     WARNA: "#e0a50c",
      
     ORDERBOOK: {
-      urlTpl: (symbol) => `https://api.binance.me/api/v3/depth?limit=5&symbol=${symbol.toUpperCase()}`,
+      urlTpl: (symbol) => `https://data-api.binance.vision/api/v3/depth?limit=5&symbol=${symbol.toUpperCase()}`,
       parser: "standard",
-      proxy: true,
+      proxy: false,
     },
     symbolFmt: (ticker) => ticker.toUpperCase() + "USDT",
   },
@@ -43,7 +43,7 @@ const CONFIG_CEX = {
     ORDERBOOK: {
       urlTpl: (symbol) => `https://api.gateio.ws/api/v4/spot/order_book?limit=5&currency_pair=${symbol.toUpperCase()}`,
       parser: "standard",
-      proxy: false,
+      proxy: true,
     },
     symbolFmt: (ticker) => ticker.toUpperCase() + "_USDT",
   },
