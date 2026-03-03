@@ -535,7 +535,7 @@ async function scanToken(tok) {
         obToken = { askPrice: 1.0, bidPrice: 1.0, bids: [], asks: [] };
     } else {
         obToken = await fetchOrderbook(tok.cex, tok.symbolToken);
-        if (!obToken || obToken.error) { setCardStatus(card, 'CEX err'); return; }
+        if (!obToken || obToken.error) { setCardStatus(card, 'ERROR: KONEKSI EXCHANGER'); return; }
     }
 
     // 2. Fetch CEX orderbook for PAIR (if triangular)

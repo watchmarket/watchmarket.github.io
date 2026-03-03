@@ -22,8 +22,7 @@ const APP_DEV_CONFIG = {
 // ============================================================
 // CONFIG_CEX — 4 Exchange
 // ============================================================
-
- const CONFIG_CEX = {
+const CONFIG_CEX = {
   binance: {
     label: "Binance",
     ICON: "icons/cex/binance.png",
@@ -35,7 +34,7 @@ const APP_DEV_CONFIG = {
       proxy: false,
     },
     symbolFmt: (ticker) => ticker.toUpperCase() + "USDT",
-  }, 
+  },
   gate: {
     label: "Gate",
     ICON: "icons/cex/gate.png",
