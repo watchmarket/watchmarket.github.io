@@ -27,7 +27,7 @@ const CONFIG_CEX = {
     label: "Binance",
     ICON: "icons/cex/binance.png",
     WARNA: "#e0a50c",
-     
+
     ORDERBOOK: {
       urlTpl: (symbol) => `https://data-api.binance.vision/api/v3/depth?limit=5&symbol=${symbol.toUpperCase()}`,
       parser: "standard",
@@ -39,7 +39,7 @@ const CONFIG_CEX = {
     label: "Gate",
     ICON: "icons/cex/gate.png",
     WARNA: "#D5006D",
-     
+
     ORDERBOOK: {
       urlTpl: (symbol) => `https://api.gateio.ws/api/v4/spot/order_book?limit=5&currency_pair=${symbol.toUpperCase()}`,
       parser: "standard",
@@ -51,7 +51,7 @@ const CONFIG_CEX = {
     label: "MEXC",
     ICON: "icons/cex/mexc.png",
     WARNA: "#1448ce",
-    
+
     ORDERBOOK: {
       urlTpl: (symbol) => `https://api.mexc.com/api/v3/depth?symbol=${symbol.toUpperCase()}&limit=5`,
       parser: "standard",
@@ -59,12 +59,12 @@ const CONFIG_CEX = {
     },
     symbolFmt: (ticker) => ticker.toUpperCase() + "USDT",
   },
-  
+
   indodax: {
     label: "Indodax",
     ICON: "icons/cex/indodax.png",
     WARNA: "#2eb5f2",
-    
+
     ORDERBOOK: {
       urlTpl: (symbol) => `https://indodax.com/api/depth/${symbol.toLowerCase()}`,
       parser: "indodax",
@@ -73,7 +73,7 @@ const CONFIG_CEX = {
     // auto-fill format: tickeridr
     symbolFmt: (ticker) => ticker.toLowerCase() + "idr",
   },
-  
+
 };
 
 // ============================================================
@@ -128,7 +128,7 @@ const CONFIG_CHAINS = {
       token: (addr) => `https://arbiscan.io/token/${addr}`,
     }
   },
-  
+
   base: {
     Kode_Chain: 8453,
     label: "Base",
@@ -148,18 +148,18 @@ const CONFIG_CHAINS = {
 // Used as fallback when user pairs TOKEN↔USDT and scPair is empty/wrong
 // ============================================================
 const USDT_SC = {
-  bsc:      '0x55d398326f99059fF775485246999027B3197955',
-  polygon:  '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
+  bsc: '0x55d398326f99059fF775485246999027B3197955',
+  polygon: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
   arbitrum: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
   ethereum: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-  base:     '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+  base: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
 };
 
 // Decimals for USDT per chain (BSC Binance-Peg USDT = 18; others = 6)
 const USDT_DEC = {
-  bsc:      18,
-  polygon:  6,
+  bsc: 18,
+  polygon: 6,
   arbitrum: 6,
   ethereum: 6,
-  base:     6,
+  base: 6,
 };
