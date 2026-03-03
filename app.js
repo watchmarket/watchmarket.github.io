@@ -535,7 +535,7 @@ async function scanToken(tok) {
         obToken = { askPrice: 1.0, bidPrice: 1.0, bids: [], asks: [] };
     } else {
         obToken = await fetchOrderbook(tok.cex, tok.symbolToken);
-        if (!obToken || obToken.error) { setCardStatus(card, 'CEX err'); return; }
+        if (!obToken || obToken.error) { setCardStatus(card, 'ERROR: KONEKSI EXCHANGER'); return; }
     }
 
     // 2. Fetch CEX orderbook for PAIR (if triangular)
@@ -806,26 +806,34 @@ function updateSignalChip(tok, pnl) {
     }
 }
 
-// ─── Telegram ────────────────────────────────
-// Kirim notifikasi ke Telegram saat ada signal PnL
-// Bot token & group ID dikonfigurasi di config.js
+// ─── Telegram + Android Notification ─────────────────────────────────────
+// Cooldown berlaku untuk keduanya (Telegram & Android bridge)
 async function sendTelegram(tok, pnl, info) {
-    if (!APP_DEV_CONFIG.telegramBotToken || APP_DEV_CONFIG.telegramBotToken.length < 20) return;
     const now = Date.now();
     const last = tgCooldown.get(tok.id) || 0;
     if (now - last < APP_DEV_CONFIG.telegramCooldown * 60000) return;
     tgCooldown.set(tok.id, now);
 
-    const chain = CONFIG_CHAINS[tok.chain]?.label || tok.chain;
+    const chain  = CONFIG_CHAINS[tok.chain]?.label || tok.chain;
     const cexLbl = CONFIG_CEX[tok.cex]?.label || tok.cex;
     const dexLbl = info?.dexName || 'DEX';
-    const dir = info?.dir || 'CEX↔DEX';
-    const fee = info?.totalFee != null ? info.totalFee.toFixed(2) : '-';
-    const modal = info?.modal ?? tok.modalCtD;
+    const dir    = info?.dir || 'CEX↔DEX';
+    const fee    = info?.totalFee != null ? info.totalFee.toFixed(2) : '-';
+    const modal  = info?.modal ?? tok.modalCtD;
     const pairLbl = tok.tickerPair && tok.tickerPair !== tok.ticker ? tok.tickerPair : tok.ticker;
-    const wallet = CFG.wallet
+    const wallet  = CFG.wallet
         ? CFG.wallet.slice(0, 6) + '.....' + CFG.wallet.slice(-5)
         : '-';
+
+    // ── Android native notification (via WebView JS Bridge) ──────────────
+    if (window.AndroidBridge) {
+        const title = `🟢 SIGNAL: ${tok.ticker}↔${pairLbl}`;
+        const body  = `${cexLbl}↔${dexLbl} [${dir}]\nPnL: ${fmtPnl(pnl)}$  |  Modal: $${modal}`;
+        window.AndroidBridge.showNotification(title, body);
+    }
+
+    // ── Telegram ──────────────────────────────────────────────────────────
+    if (!APP_DEV_CONFIG.telegramBotToken || APP_DEV_CONFIG.telegramBotToken.length < 20) return;
 
     const msg =
         `🟢 SIGNAL SCANNER | @${CFG.username || 'user'}
