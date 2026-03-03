@@ -88,8 +88,8 @@
     <!-- TAB TOKEN -->
     <div id="tabToken" class="tab-pane">
         <div class="token-list-header">
-            <h2>Daftar KOIN</h2>
-            <span class="token-count" id="tokenCount">0 KOIN</span>
+            <h2>DAFTAR KOIN :</h2>
+             <span class="token-count" id="tokenCount">Total 0 KOIN</span>
         </div>
         <div class="csv-bar">
             <button class="btn-outline" id="btnExport"><i class="bi bi-download"></i> Export CSV</button>
@@ -106,7 +106,7 @@
     <div id="tabSettings" class="tab-pane">
         <div class="settings-content">
             <div class="settings-card">
-                <h3>Akun</h3>
+                <h3>DATA PENGGUNA</h3>
                 <div class="settings-row">
                     <label class="settings-label">Username</label>
                     <input class="settings-input" id="setUsername" type="text" placeholder="trader01">
@@ -117,7 +117,7 @@
                 </div>
             </div>
             <div class="settings-card">
-                <h3>Scan</h3>
+                <h3>SETTING SCANNER</h3>
                 <div class="settings-row">
                     <label class="settings-label">Interval antar KOIN (ms)</label>
                     <input class="settings-input" id="setInterval" type="number" step="100" value="700">
@@ -132,7 +132,8 @@
                 </div>
             </div>
             <div class="settings-card">
-                <h3>Filter Scanner</h3>
+                <h3>FILTER KOIN  [<span id="filterCoinCount">0</span> KOIN ]</h3>
+                
                 <div class="settings-row">
                     <label class="settings-label">CEX Aktif <span class="settings-hint">(ketuk untuk nonaktifkan)</span></label>
                     <div class="fchip-group" id="filterCexChips"></div>
@@ -141,9 +142,9 @@
                     <label class="settings-label">Chain Aktif <span class="settings-hint">(ketuk untuk nonaktifkan)</span></label>
                     <div class="fchip-group" id="filterChainChips"></div>
                 </div>
+                
             </div>
             <button class="btn-save" id="btnSaveSettings">💾 Simpan Settings</button>
-            <div class="save-ok" id="saveOk">✓ Tersimpan!</div>
         </div>
     </div>
 
@@ -171,8 +172,9 @@
 
     <!-- FAB Scan (Monitor only) -->
     <button class="fab-scan" id="btnScan">
-        <span id="btnScanIcon" style="font-size:22px;line-height:1">▶</span>
-        <span id="btnScanLbl" style="font-size:9px;letter-spacing:1px;font-weight:700;line-height:1.2">START</span>
+        <span id="btnScanIcon">▶</span>
+        <span id="btnScanLbl">START</span>
+        <span id="btnScanCount">[0]</span>
     </button>
 
     <!-- ═══════════════════════════════════════

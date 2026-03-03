@@ -85,6 +85,12 @@ function fmtCompact(v, sigfigs = 4) {
 }
 
 // ─── Settings ────────────────────────────────
+function updateScanCount() {
+    const n = getFilteredTokens().length;
+    $('#filterCoinCount').text(n);
+    if (!scanning) $('#btnScanCount').text('['+ n +' KOIN ]');
+}
+
 function renderFilterChips() {
     // CEX filter chips (multi-select toggle)
     $('#filterCexChips').html(Object.entries(CONFIG_CEX).map(([k, v]) => {
@@ -124,6 +130,7 @@ function toggleFilterChip(el, type) {
         if (arr.length === Object.keys(cfg).length) arr.splice(0);
     }
     renderFilterChips();
+    updateScanCount();
 }
 
 function loadSettings() {
@@ -137,6 +144,7 @@ function loadSettings() {
     $('#setSoundMuted').prop('checked', !!CFG.soundMuted);
     $('#topUsername').text('@' + (CFG.username || '-'));
     renderFilterChips();
+    updateScanCount();
 }
 function saveSettings() {
     CFG.username   = $('#setUsername').val().trim();
@@ -148,7 +156,7 @@ function saveSettings() {
     localStorage.setItem(LS_SETTINGS, JSON.stringify(CFG));
     $('#topUsername').text('@' + (CFG.username || '-'));
     if (!scanning) { buildMonitorRows(); }
-    $('#saveOk').show(); setTimeout(() => $('#saveOk').hide(), 2000);
+    showToast('✓ Settings tersimpan!');
 }
 
 // ─── Onboarding ──────────────────────────────
@@ -414,7 +422,7 @@ function isValidToken(t) {
 
 function renderTokenList() {
     const tokens = getTokens().sort((a, b) => (a.ticker || '').localeCompare(b.ticker || ''));
-    $('#tokenCount').text(tokens.length + ' token');
+    $('#tokenCount').text('TOTAL '+ tokens.length + ' KOIN');
     if (!tokens.length) {
         $('#tokenList').html('<div class="token-list-empty">Belum ada token. Ketuk + untuk menambah.</div>');
     } else {
@@ -450,6 +458,7 @@ function renderTokenList() {
     }
     // Rebuild monitor skeleton whenever token list changes — skip during active scan
     if (!scanning) buildMonitorRows();
+    updateScanCount();
 }
 
 function deleteToken(id) {
@@ -990,6 +999,7 @@ async function runScan() {
     if (scanning) return;
     scanning = true; scanAbort = false;
     $('#btnScanIcon').text('■'); $('#btnScanLbl').text('STOP'); $('#btnScan').addClass('stop');
+    $('#btnScanCount').text('');
     $('#scanBadge').addClass('active');
     // Clear previous signal chips and reset table
     document.querySelectorAll('.signal-chip').forEach(c => c.remove());
@@ -1025,6 +1035,7 @@ async function runScan() {
 function stopScan() {
     scanning = false; scanAbort = false;
     $('#btnScanIcon').text('▶'); $('#btnScanLbl').text('START'); $('#btnScan').removeClass('stop');
+    updateScanCount();
     $('#scanBadge').removeClass('active');
     $('#scanBar').css('width', '0%');
     unlockTabs();
