@@ -322,6 +322,78 @@
     }
 
     // ====================
+    // DATAJSON TOKEN DATABASE LOADER
+    // ====================
+    // Memuat database token per-chain dari localStorage/DATAJSON sebagai sumber recovery
+    // Cache per-session agar tidak fetch ulang
+
+    let _chainTokenDbCache = new Map();
+
+    /**
+     * Load chain token database (DATAJSON) as symbol → { sc, decimals, name } map.
+     * Used for:
+     * 1. Token recovery: CEX tokens rejected by chain filter but exist in DATAJSON
+     * 2. INDODAX enrichment: Additional source for contract address lookup
+     * @param {string} chainKey - Chain key (e.g., 'ethereum', 'bsc')
+     * @returns {Promise<Map>} Map of symbol → { sc, decimals, name }
+     */
+    async function loadChainTokenDatabase(chainKey) {
+        const key = String(chainKey || '').toLowerCase();
+
+        // Return cached if available (per-session cache)
+        if (_chainTokenDbCache.has(key)) return _chainTokenDbCache.get(key);
+
+        const map = new Map();
+        const chainUpper = key.toUpperCase();
+        const tokenDbKey = `TOKEN_${chainUpper}`;
+        let tokenDatabase = [];
+
+        // Step 1: Try local TOKEN_<CHAIN> database (fastest)
+        try {
+            if (typeof window !== 'undefined' && typeof window.getFromLocalStorage === 'function') {
+                tokenDatabase = window.getFromLocalStorage(tokenDbKey, []);
+            }
+        } catch (_) { }
+
+        // Step 2: If empty, try fetching DATAJSON from remote
+        if (!Array.isArray(tokenDatabase) || tokenDatabase.length === 0) {
+            try {
+                const chainConfig = CONFIG_CHAINS[key];
+                if (chainConfig?.DATAJSON) {
+                    console.log(`[loadChainTokenDatabase] Fetching DATAJSON for ${key}...`);
+                    const resp = await fetch(chainConfig.DATAJSON);
+                    if (resp.ok) {
+                        tokenDatabase = await resp.json();
+                        console.log(`[loadChainTokenDatabase] Fetched ${tokenDatabase.length} tokens for ${key}`);
+                    }
+                }
+            } catch (e) {
+                console.warn('[loadChainTokenDatabase] Failed to fetch DATAJSON:', e.message);
+            }
+        }
+
+        // Build lookup: SYMBOL → { sc, decimals, name }
+        if (Array.isArray(tokenDatabase)) {
+            tokenDatabase.forEach(token => {
+                const symbol = String(token.ticker || token.symbol_in || token.symbol || '').toUpperCase();
+                const sc = String(token.sc || token.sc_in || '').trim();
+                const decimals = token.decimals || token.des_in || 18;
+                const name = token.nama_token || token.token_name || token.name || '';
+                if (symbol && sc && sc !== '0x' && sc.length > 6) {
+                    // Only store first match per symbol (higher priority token)
+                    if (!map.has(symbol)) {
+                        map.set(symbol, { sc, decimals, name });
+                    }
+                }
+            });
+        }
+
+        console.log(`[loadChainTokenDatabase] ${key}: ${map.size} unique tokens in database`);
+        _chainTokenDbCache.set(key, map);
+        return map;
+    }
+
+    // ====================
     // PRICE FETCH HELPERS
     // ====================
 
@@ -657,9 +729,9 @@
                     sc_out: String(token.sc_out || '').trim(),
                     des_out: Number(token.des_out || 0),
                     token_name: token.token_name || token.name || token.symbol_in,
-                    deposit: token.deposit,
-                    withdraw: token.withdraw,
-                    feeWD: token.feeWD,
+                    deposit: (token.deposit !== undefined && token.deposit !== null) ? token.deposit : (token.depositEnable ? '1' : '0'),
+                    withdraw: (token.withdraw !== undefined && token.withdraw !== null) ? token.withdraw : (token.withdrawEnable ? '1' : '0'),
+                    feeWD: token.feeWD || token.feeWDs || 0,
                     tradeable: token.tradeable,
                     current_price: Number.isFinite(Number(token.current_price)) ? Number(token.current_price) : 0,
                     price_currency: token.price_currency || defaultCurrency,
@@ -686,6 +758,164 @@
     // INDODAX ENRICHMENT FROM TOKEN DATABASE
     // ====================
 
+    /**
+     * Enrich Indodax tokens dengan data dari CEX lain (cross-CEX enrichment)
+     * @param {Array} indodaxTokens - Raw tokens dari Indodax API
+     * @param {string} chainKey - Chain key (ethereum, bsc, polygon)
+     * @returns {Promise<Array>} Enriched tokens dengan SC, decimals, dll
+     */
+    async function enrichIndodaxFromOtherCEX(indodaxTokens, chainKey) {
+        try {
+            // Load snapshot database
+            const snapshotMap = await snapshotDbGet(SNAPSHOT_DB_CONFIG.snapshotKey) || {};
+            const chainSnapshot = snapshotMap[chainKey] || [];
+
+            // NEW: Load DATAJSON as additional enrichment source
+            let tokenDbMap = new Map();
+            try {
+                tokenDbMap = await loadChainTokenDatabase(chainKey);
+            } catch (_) { }
+
+            // ✅ NEW: Load Portfolio Tokens for enrichment
+            const portfolioMap = new Map();
+            try {
+                const portfolioChain = (typeof getTokensChain === 'function') ? getTokensChain(chainKey) : [];
+                const portfolioMulti = (typeof getTokensMulti === 'function') ? getTokensMulti() : [];
+                const allPortfolio = [...portfolioChain, ...portfolioMulti.filter(t => String(t.chain).toLowerCase() === String(chainKey).toLowerCase())];
+
+                allPortfolio.forEach(token => {
+                    const sym = String(token.symbol_in || token.symbol || '').toUpperCase();
+                    if (sym && !portfolioMap.has(sym)) {
+                        portfolioMap.set(sym, token);
+                    }
+                });
+            } catch (e) { }
+
+            if ((!Array.isArray(chainSnapshot) || chainSnapshot.length === 0) && tokenDbMap.size === 0) {
+                console.warn(`[INDODAX] No snapshot data and no DATAJSON for chain ${chainKey}. Trying fallback to TOKEN database...`);
+                return await enrichIndodaxFromTokenDatabase(chainKey, indodaxTokens);
+            }
+
+            // CEX priority order (most reliable first)
+            const sourceCEXs = ['BINANCE', 'MEXC', 'GATE', 'KUCOIN', 'BITGET', 'BYBIT', 'OKX', 'HTX', 'LBANK'];
+
+            console.log(`[INDODAX] Enriching ${indodaxTokens.length} tokens from ${sourceCEXs.join(', ')} snapshots + DATAJSON (${tokenDbMap.size} entries)...`);
+
+            let matchCexCount = 0;
+            let matchDbCount = 0;
+            let noMatchCount = 0;
+            const enriched = indodaxTokens.map(indoToken => {
+                const symbol = String(indoToken.symbol_in || indoToken.tokenName || '').toUpperCase();
+
+                if (!symbol) return indoToken;
+
+                // Step 1: Try CEX snapshot (existing logic)
+                if (Array.isArray(chainSnapshot) && chainSnapshot.length > 0) {
+                    for (const cexName of sourceCEXs) {
+                        const match = chainSnapshot.find(t =>
+                            String(t.cex || '').toUpperCase() === cexName &&
+                            String(t.symbol_in || '').toUpperCase() === symbol &&
+                            t.sc_in && String(t.sc_in).trim() !== '' // Must have contract address
+                        );
+
+                        if (match) {
+                            matchCexCount++;
+
+                            return {
+                                ...indoToken,
+                                cex: 'INDODAX',
+                                symbol_in: symbol,
+                                sc_in: match.sc_in,
+                                des_in: match.des_in || match.decimals || 18,
+                                symbol_out: indoToken.symbol_out || 'USDT',
+                                sc_out: match.sc_out || '',
+                                des_out: match.des_out || 6,
+                                chain: chainKey,
+                                token_name: match.token_name || symbol,
+                                deposit: indoToken.deposit || (indoToken.depositEnable ? '1' : '0'),
+                                withdraw: indoToken.withdraw || (indoToken.withdrawEnable ? '1' : '0'),
+                                feeWD: indoToken.feeWD || indoToken.feeWDs || 0,
+                                tradeable: indoToken.tradeable !== undefined ? indoToken.tradeable : true,
+                                decimals: match.des_in || match.decimals || 18,
+                                enrichedFrom: cexName
+                            };
+                        }
+                    }
+                }
+
+                // Step 1.5: NEW — Try Portfolio Tokens
+                if (portfolioMap.has(symbol)) {
+                    matchCexCount++; // Reuse counter or create new one
+                    const match = portfolioMap.get(symbol);
+                    return {
+                        ...indoToken,
+                        cex: 'INDODAX',
+                        symbol_in: symbol,
+                        sc_in: match.sc_in || match.sc,
+                        des_in: match.des_in || match.decimals || 18,
+                        decimals: match.des_in || match.decimals || 18,
+                        token_name: match.token_name || match.name || symbol,
+                        symbol_out: indoToken.symbol_out || 'USDT',
+                        sc_out: match.sc_out || '',
+                        des_out: match.des_out || 6,
+                        chain: chainKey,
+                        deposit: indoToken.deposit || (indoToken.depositEnable ? '1' : '0'),
+                        withdraw: indoToken.withdraw || (indoToken.withdrawEnable ? '1' : '0'),
+                        feeWD: indoToken.feeWD || indoToken.feeWDs || 0,
+                        tradeable: true,
+                        enrichedFrom: 'PORTFOLIO'
+                    };
+                }
+
+                // Step 2: Try DATAJSON database
+                if (tokenDbMap.has(symbol)) {
+                    matchDbCount++;
+                    const dbEntry = tokenDbMap.get(symbol);
+                    return {
+                        ...indoToken,
+                        cex: 'INDODAX',
+                        symbol_in: symbol,
+                        sc_in: dbEntry.sc,
+                        des_in: dbEntry.decimals || 18,
+                        decimals: dbEntry.decimals || 18,
+                        token_name: dbEntry.name || symbol,
+                        symbol_out: indoToken.symbol_out || 'USDT',
+                        sc_out: '',
+                        des_out: 6,
+                        chain: chainKey,
+                        deposit: indoToken.deposit || (indoToken.depositEnable ? '1' : '0'),
+                        withdraw: indoToken.withdraw || (indoToken.withdrawEnable ? '1' : '0'),
+                        feeWD: indoToken.feeWD || indoToken.feeWDs || 0,
+                        tradeable: true,
+                        enrichedFrom: 'DATAJSON'
+                    };
+                }
+
+                // Step 3: Not found anywhere — return as-is (tanpa SC, CEX-only token)
+                noMatchCount++;
+                return indoToken;
+            });
+
+            console.log(`[INDODAX] Enrichment complete: CEX=${matchCexCount}, DATAJSON=${matchDbCount}, No Match=${noMatchCount} / ${indodaxTokens.length} total`);
+
+            // MODIFIED: Return ALL tokens (including those without SC)
+            // Tokens without SC will be included as "CEX-only" (tradeable on INDODAX but not on DEXes)
+            // Phase 2 filter will handle allowing INDODAX tokens without SC
+            return enriched;
+
+        } catch (error) {
+            console.error('[INDODAX] enrichIndodaxFromOtherCEX failed:', error);
+
+            // Fallback ke database lokal on error
+            console.warn('[INDODAX] Falling back to TOKEN database enrichment...');
+            return await enrichIndodaxFromTokenDatabase(chainKey, indodaxTokens);
+        }
+    }
+
+    /**
+     * FALLBACK: Enrich Indodax tokens dari TOKEN database (old logic)
+     * Digunakan jika snapshot CEX lain tidak tersedia
+     */
     async function enrichIndodaxFromTokenDatabase(chainKey, indodaxTokens) {
         try {
             // Get TOKEN database key
@@ -699,12 +929,9 @@
             try {
                 // Try to get from localStorage/indexedDB
                 if (typeof window !== 'undefined') {
-                    // Try window.getFromLocalStorage first (if available)
+                    // Load dari IndexedDB (via getFromLocalStorage with cache)
                     if (typeof window.getFromLocalStorage === 'function') {
                         tokenDatabase = window.getFromLocalStorage(tokenDbKey, []);
-                    } else if (typeof localStorage !== 'undefined') {
-                        const raw = localStorage.getItem(tokenDbKey);
-                        tokenDatabase = raw ? JSON.parse(raw) : [];
                     }
                 }
             } catch (err) {
@@ -717,7 +944,9 @@
                 return indodaxTokens;
             }
 
-            // console.log(`[INDODAX] Found ${tokenDatabase.length} tokens in ${tokenDbKey}`);
+            // console.log(`[INDODAX] Found ${tokenDatabase.length} tokens in ${tokenDbKey}`)
+
+            ;
 
             // Create lookup map by nama koin (case-insensitive)
             const tokenLookup = new Map();
@@ -815,47 +1044,93 @@
                             existingLookup.set(key, token);
                         });
 
-                        // Convert format dari services/cex.js ke format snapshot with enrichment
-                        coins = walletData
-                            .filter(item => {
-                                // Filter by chain using existing matchesCex logic
-                                return matchesCex(chainKey, item.chain);
-                            })
-                            .map(item => {
-                                const symbol = String(item.tokenName || '').toUpperCase();
-                                const lookupKey = `${cexUpper}_${symbol}`;
-                                const existing = existingLookup.get(lookupKey);
+                        // STEP 1: Separate matched vs rejected by chain synonym
+                        const chainMatched = [];
+                        const chainRejected = [];
+                        walletData.forEach(item => {
+                            if (matchesCex(chainKey, item.chain)) {
+                                chainMatched.push(item);
+                            } else {
+                                chainRejected.push(item);
+                            }
+                        });
 
-                                // Extract contract address from CEX response
-                                let contractAddress = '';
-                                if (item.contractAddress) {
-                                    // Direct field (from services/cex.js normalized response)
-                                    contractAddress = String(item.contractAddress).trim();
-                                } else if (existing?.sc_in) {
-                                    // Fallback to existing data
-                                    contractAddress = existing.sc_in;
+                        // STEP 2: DATAJSON recovery for rejected tokens
+                        // If a rejected token's symbol exists in DATAJSON for this chain,
+                        // it means the token IS on this chain — CEX just uses a different network name
+                        let recovered = [];
+                        if (chainRejected.length > 0) {
+                            try {
+                                const tokenDbMap = await loadChainTokenDatabase(chainKey);
+                                if (tokenDbMap.size > 0) {
+                                    const allChainKeys = Object.keys(
+                                        (typeof window !== 'undefined' && window.CHAIN_SYNONYMS) ? window.CHAIN_SYNONYMS : {}
+                                    );
+                                    chainRejected.forEach(item => {
+                                        const symbol = String(item.tokenName || '').toUpperCase();
+                                        if (tokenDbMap.has(symbol)) {
+                                            // Guard: skip if item.chain matches a different canonical chain
+                                            // (e.g. AI/BSC should NOT be recovered into ETH snapshot)
+                                            const itemChain = String(item.chain || '');
+                                            const belongsToOtherChain = allChainKeys.some(
+                                                otherKey => otherKey !== chainKey && matchesCex(otherKey, itemChain)
+                                            );
+                                            if (belongsToOtherChain) return;
+
+                                            const dbEntry = tokenDbMap.get(symbol);
+                                            recovered.push({
+                                                ...item,
+                                                contractAddress: dbEntry.sc,
+                                                _recoveredFromDb: true
+                                            });
+                                        }
+                                    });
+                                    if (recovered.length > 0) {
+                                        console.log(`[${cexUpper}] ✅ DATAJSON recovery: ${recovered.length} tokens recovered from ${chainRejected.length} rejected`);
+                                    }
                                 }
+                            } catch (dbErr) {
+                                console.warn(`[${cexUpper}] DATAJSON recovery failed:`, dbErr.message);
+                            }
+                        }
 
-                                return {
-                                    cex: cexUpper,
-                                    symbol_in: symbol,
-                                    tokenName: item.tokenName || symbol, // ✅ Preserve tokenName for enrichment
-                                    token_name: existing?.token_name || item.tokenName || '',
-                                    sc_in: contractAddress, // Use contract address from CEX API
-                                    contractAddress: contractAddress, // ✅ Preserve contractAddress field for enrichment
-                                    needsEnrichment: item.needsEnrichment || false, // ✅ Preserve needsEnrichment flag from services/cex.js
-                                    tradeable: item.trading !== undefined ? !!item.trading : true, // Use trading status dari CEX API, fallback true jika tidak ada
-                                    decimals: existing?.des_in || existing?.decimals || '',
-                                    des_in: existing?.des_in || existing?.decimals || '',
-                                    deposit: item.depositEnable ? '1' : '0',
-                                    // Perubahan: Kosongkan symbol_out dan sc_out saat mengambil data dari CEX
-                                    symbol_out: '',
-                                    sc_out: '',
-                                    des_out: 0,
-                                    withdraw: item.withdrawEnable ? '1' : '0',
-                                    feeWD: parseFloat(item.feeWDs || 0)
-                                };
-                            });
+                        // STEP 3: Combine matched + recovered, then map to snapshot format
+                        const allValid = [...chainMatched, ...recovered];
+                        coins = allValid.map(item => {
+                            const symbol = String(item.tokenName || '').toUpperCase();
+                            const lookupKey = `${cexUpper}_${symbol}`;
+                            const existing = existingLookup.get(lookupKey);
+
+                            // Extract contract address from CEX response
+                            let contractAddress = '';
+                            if (item.contractAddress) {
+                                // Direct field (from services/cex.js normalized response or DATAJSON recovery)
+                                contractAddress = String(item.contractAddress).trim();
+                            } else if (existing?.sc_in) {
+                                // Fallback to existing data
+                                contractAddress = existing.sc_in;
+                            }
+
+                            return {
+                                cex: cexUpper,
+                                symbol_in: symbol,
+                                tokenName: item.tokenName || symbol,
+                                token_name: existing?.token_name || item.tokenName || '',
+                                sc_in: contractAddress,
+                                contractAddress: contractAddress,
+                                needsEnrichment: item.needsEnrichment || false,
+                                tradeable: item.trading !== undefined ? !!item.trading : true,
+                                decimals: existing?.des_in || existing?.decimals || '',
+                                des_in: existing?.des_in || existing?.decimals || '',
+                                deposit: item.depositEnable ? '1' : '0',
+                                // Kosongkan symbol_out dan sc_out saat mengambil data dari CEX
+                                symbol_out: '',
+                                sc_out: '',
+                                des_out: 0,
+                                withdraw: item.withdrawEnable ? '1' : '0',
+                                feeWD: parseFloat(item.feeWDs || 0)
+                            };
+                        });
 
                         // console.log(`Converted ${coins.length} coins from ${cexUpper} wallet API data`);
                     } else {
@@ -905,7 +1180,7 @@
     // ====================
 
     // Enhanced validate token data with database optimization + AUTO-SAVE per-koin
-    async function validateTokenData(token, snapshotMap, symbolLookupMap, chainKey, progressCallback, errorCount, web3Cache = null) {
+    async function validateTokenData(token, snapshotMap, symbolLookupMap, chainKey, progressCallback, errorCount, web3Cache = null, tokenDbMap = null) {
         let sc = String(token.sc_in || '').toLowerCase().trim();
         const symbol = String(token.symbol_in || '').toUpperCase();
         const cexUp = String(token.cex || token.exchange || '').toUpperCase();
@@ -933,6 +1208,12 @@
                 }
             }
 
+            // ✅ NEW: Fallback ke master token database (DATAJSON) jika belum ketemu di snapshot
+            if (!matched && tokenDbMap instanceof Map && tokenDbMap.has(symbol)) {
+                matched = tokenDbMap.get(symbol);
+                // console.log(`✅ ${symbol}: SC resolved from master database (DATAJSON) lookup`);
+            }
+
             if (matched) {
                 const matchedSc = String(matched.sc_in || matched.sc || '').trim();
                 if (matchedSc && matchedSc !== '0x') {
@@ -949,6 +1230,10 @@
 
                     if (!token.token_name && matched.token_name) {
                         token.token_name = matched.token_name;
+                    }
+
+                    if (!token.token_name && matched.name) {
+                        token.token_name = matched.name;
                     }
 
                     // Perbarui cache untuk pencarian berikutnya
@@ -1307,7 +1592,7 @@
             );
 
             if (isNetworkError && typeof toast !== 'undefined' && toast.error) {
-                toast.error(`🌐 RPC Error (${chainKey}): ${error.message}`, {
+                toast.error(`🌐 RPC Error (${chainKey}): ${error.message}`, null, {
                     duration: 4000,
                     position: 'bottom-right'
                 });
@@ -1357,6 +1642,9 @@
 
         const chainConfig = CONFIG_CHAINS[chainKey];
         if (!chainConfig) return;
+
+        // Reset DATAJSON cache for fresh session
+        _chainTokenDbCache = new Map();
 
         // Get chain display name
         const chainDisplay = chainKey === 'multichain' ? 'MULTICHAIN' :
@@ -1409,6 +1697,40 @@
                     snapshotSymbolMap.set(`NAME:${nameKey}`, token);
                 }
             });
+
+            // ✅ NEW: Include Portfolio Tokens (Tokens already in the app) in the lookup map
+            // This ensures if the user already has a token, we reuse its SC/decimals
+            try {
+                const portfolioChain = (typeof getTokensChain === 'function') ? getTokensChain(chainKey) : [];
+                const portfolioMulti = (typeof getTokensMulti === 'function') ? getTokensMulti() : [];
+
+                // Merge portfolio tokens (preferring current chain)
+                const allPortfolio = [...portfolioChain, ...portfolioMulti.filter(t => String(t.chain).toLowerCase() === keyLower)];
+
+                allPortfolio.forEach(token => {
+                    const sym = String(token.symbol_in || token.symbol || '').toUpperCase();
+                    if (sym) {
+                        const symKey = `SYM:${sym}`;
+                        // Portfolio tokens have HIGHER priority than snapshot (possibly more recent)
+                        snapshotSymbolMap.set(symKey, {
+                            ...token,
+                            sc_in: token.sc_in || token.sc,
+                            des_in: token.des_in || token.decimals
+                        });
+                    }
+                });
+                // console.log(`[Snapshot] Loaded ${allPortfolio.length} portfolio tokens into lookup map`);
+            } catch (e) {
+                console.warn('[Snapshot] Failed to load portfolio tokens for enrichment:', e.message);
+            }
+
+            // ✅ NEW: Load master token database (DATAJSON) for ticker-based enrichment
+            let tokenDbMap = new Map();
+            try {
+                tokenDbMap = await loadChainTokenDatabase(chainKey);
+            } catch (e) {
+                console.warn(`[Snapshot] Failed to load master token database for ${chainKey}:`, e.message);
+            }
 
             // ========== PHASE 1: FETCH CEX DATA (WALLET STATUS) ==========
             // Process each CEX - INDODAX terakhir untuk lookup TOKEN database
@@ -1502,9 +1824,9 @@
                     );
                 }
 
-                // Special handling untuk INDODAX: lookup TOKEN database
+                // Special handling untuk INDODAX: cross-CEX enrichment
                 if (isIndodax && cexTokens.length > 0) {
-                    cexTokens = await enrichIndodaxFromTokenDatabase(chainKey, cexTokens);
+                    cexTokens = await enrichIndodaxFromOtherCEX(cexTokens, chainKey);
                 }
 
                 allTokens = allTokens.concat(cexTokens);
@@ -1579,7 +1901,7 @@
 
                 // Show warning toast dengan detail
                 if (typeof toast !== 'undefined' && toast.warning) {
-                    toast.warning(warningMsg, {
+                    toast.warning(warningMsg, null, {
                         duration: 10000,
                         position: 'top-center'
                     });
@@ -1720,8 +2042,8 @@
                         const hadDecimals = token.des_in && token.des_in > 0;
                         const hadCachedData = snapshotMap[String(token.sc_in || '').toLowerCase()];
 
-                        // Validate token (pass errorTracking for toast throttling + web3Cache)
-                        const validated = await validateTokenData(token, snapshotMap, snapshotSymbolMap, chainKey, progressCallback, errorTracking, web3Cache);
+                        // Validate token (pass errorTracking for toast throttling + web3Cache + tokenDbMap)
+                        const validated = await validateTokenData(token, snapshotMap, snapshotSymbolMap, chainKey, progressCallback, errorTracking, web3Cache, tokenDbMap);
 
                         return {
                             validated,
@@ -1748,7 +2070,13 @@
                         const hasValidSC = sc && sc !== '0x' && sc.length > 6;
 
                         if (!hasValidSC) {
-                            // console.log(`⚠️ Skipping ${validated.symbol_in || 'UNKNOWN'} from ${validated.cex || 'UNKNOWN'}: No valid contract address`);
+                            // INDODAX tokens tanpa SC tetap dimasukkan (CEX-only trading)
+                            // Token ini bisa dilihat harga & listing-nya, tapi tidak bisa scan DEX
+                            if (String(validated.cex || '').toUpperCase() === 'INDODAX') {
+                                enrichedTokens.push(validated);
+                                return;
+                            }
+                            // CEX lain: skip seperti biasa
                             errorCount++;
                             batchErrorCount++;
                             batchErrorTokens.push(`${validated.symbol_in || '???'} (No SC)`);
@@ -1790,7 +2118,7 @@
                         ? `⚠️ Batch ${batchNumber}: 1 token gagal validasi (${batchErrorTokens[0]})`
                         : `⚠️ Batch ${batchNumber}: ${batchErrorCount} token gagal validasi (${batchErrorTokens.slice(0, 3).join(', ')}${batchErrorCount > 3 ? '...' : ''})`;
 
-                    toast.warning(errorMsg, {
+                    toast.warning(errorMsg, null, {
                         duration: 4000,
                         position: 'bottom-right'
                     });
@@ -1915,7 +2243,7 @@
                 const warningMsg = `⚠️ ${failedPriceFetchList.length} CEX gagal fetch harga\n\nGagal: ${failedPriceFetchList.join(', ')}\nBerhasil: ${activeCexList.length - failedPriceFetchList.length} CEX\n\nHarga untuk CEX yang gagal akan diset ke 0.`;
 
                 if (typeof toast !== 'undefined' && toast.warning) {
-                    toast.warning(warningMsg, {
+                    toast.warning(warningMsg, null, {
                         duration: 6000,
                         position: 'top-center'
                     });
@@ -2101,6 +2429,35 @@
 
                 // Convert map back to array
                 mergedTokens = Array.from(tokenMap.values());
+
+                // ========== ENRICHMENT: CEX LISTINGS (CROSS-CEX) ==========
+                // Group tokens by unique identifier (Symbol + SC) to find all CEX listings
+                const tokenGroups = new Map();
+                mergedTokens.forEach(token => {
+                    // Use Symbol + SC as unique ID for the token asset
+                    const uniqueId = `${String(token.symbol_in).toUpperCase()}_${String(token.sc_in || '').toLowerCase()}`;
+                    if (!tokenGroups.has(uniqueId)) {
+                        tokenGroups.set(uniqueId, []);
+                    }
+                    tokenGroups.get(uniqueId).push(token);
+                });
+
+                // Calculate and apply cexListings for each group
+                tokenGroups.forEach(groupTokens => {
+                    // 1. Collect all CEXs where this token is listed
+                    const listings = {};
+                    groupTokens.forEach(t => {
+                        if (t.cex) listings[String(t.cex).toUpperCase()] = true;
+                        // Merge existing listings if any
+                        if (t.cexListings) Object.assign(listings, t.cexListings);
+                    });
+
+                    // 2. Apply combined listings to ALL tokens in the group
+                    groupTokens.forEach(t => {
+                        t.cexListings = { ...listings };
+                    });
+                });
+                // ==========================================================
 
                 if (window.SnapshotOverlay) {
                     window.SnapshotOverlay.updateProgress(
@@ -2365,9 +2722,9 @@
                                     };
                                 });
 
-                            // Special handling untuk INDODAX: lookup TOKEN database
+                            // Special handling untuk INDODAX: cross-CEX enrichment
                             if (isIndodax && cexTokens.length > 0) {
-                                cexTokens = await enrichIndodaxFromTokenDatabase(chainKey, cexTokens);
+                                cexTokens = await enrichIndodaxFromOtherCEX(cexTokens, chainKey);
                             }
 
                             allTokens = allTokens.concat(cexTokens);

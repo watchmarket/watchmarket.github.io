@@ -29,9 +29,9 @@ function getMonitoringColumnSpec(dexList) {
   const spec = [];
   const activeDexList = Array.isArray(dexList) ? dexList : [];
   spec.push({ type: 'orderbook-left', label: 'ORDERBOOK', classes: 'uk-text-center uk-text-bolder th-orderbook' });
-  activeDexList.forEach(d => spec.push({ type: 'dex', side: 'left', key: String(d).toLowerCase(), label: String(d).toUpperCase(), classes: 'uk-text-center uk-text-small th-dex' }));
+  activeDexList.forEach(d => { const cfgLbl = window.CONFIG_DEXS?.[String(d).toLowerCase()]?.label; const lbl = cfgLbl ? String(cfgLbl).toUpperCase() : String(d).toUpperCase(); spec.push({ type: 'dex', side: 'left', key: String(d).toLowerCase(), label: lbl, classes: 'uk-text-center uk-text-small th-dex' }); });
   spec.push({ type: 'detail', label: 'DETAIL TOKEN', classes: 'uk-text-center uk-text-bolder th-detail' });
-  activeDexList.forEach(d => spec.push({ type: 'dex', side: 'right', key: String(d).toLowerCase(), label: String(d).toUpperCase(), classes: 'uk-text-center uk-text-small th-dex' }));
+  activeDexList.forEach(d => { const cfgLbl = window.CONFIG_DEXS?.[String(d).toLowerCase()]?.label; const lbl = cfgLbl ? String(cfgLbl).toUpperCase() : String(d).toUpperCase(); spec.push({ type: 'dex', side: 'right', key: String(d).toLowerCase(), label: lbl, classes: 'uk-text-center uk-text-small th-dex' }); });
   spec.push({ type: 'orderbook-right', label: 'ORDERBOOK', classes: 'uk-text-center uk-text-bolder th-orderbook' });
   return spec;
 }
@@ -62,17 +62,22 @@ try { if (typeof window !== 'undefined') { window.renderMonitoringHeader = rende
 function loadKointoTable(filteredData, tableBodyId = 'dataTableBody') {
   // header helpers moved to top-level: computeActiveDexList(), renderMonitoringHeader()
   // refactor: pecah rendering row menjadi helper kecil agar lebih mudah dibaca/dirawat.
-  function buildOrderbookCell(side, data, idPrefix, warnaCex) {
-    const arrow = side === 'LEFT' ? `${(data.symbol_in || '').toUpperCase()} → ${(data.symbol_out || '').toUpperCase()}`
-      : `${(data.symbol_out || '').toUpperCase()} → ${(data.symbol_in || '').toUpperCase()}`;
+  function buildOrderbookCell(side, data, idPrefix, warnaCex, warnaChain, bgStyle) {
+    const symIn = (data.symbol_in || '').toUpperCase();
+    const symOut = (data.symbol_out || '').toUpperCase();
+    const cc = warnaChain || warnaCex;
+    const arrow = side === 'LEFT'
+      ? `<span style="color:${cc}">${symIn} → ${symOut}</span>`
+      : `<span style="color:${cc}">${symOut} → ${symIn}</span>`;
     const rawId = `${side}_` +
       `${String(data.cex).toUpperCase()}_` +
-      `${String(data.symbol_in || '').toUpperCase()}_` +
-      `${String(data.symbol_out || '').toUpperCase()}_` +
+      `${String(symIn)}_` +
+      `${String(symOut)}_` +
       `${String(data.chain).toUpperCase()}`;
     const id = idPrefix + rawId.replace(/[^A-Z0-9_]/g, '');
+    const extraBg = bgStyle ? ` ${bgStyle}` : '';
     return `
-            <td class="td-orderbook" style="color: ${warnaCex}; text-align: center; vertical-align: middle;">
+            <td class="td-orderbook" style="color: ${warnaCex}; text-align: center; vertical-align: middle;${extraBg}">
                 <div class="orderbook-wrap">
                     <div class="orderbook-scroll">
                         <span id="${id}">
@@ -83,8 +88,9 @@ function loadKointoTable(filteredData, tableBodyId = 'dataTableBody') {
             </td>`;
   }
 
-  function buildDexSlots(direction, data, dexList, idPrefix, rowIndex) {
+  function buildDexSlots(direction, data, dexList, idPrefix, rowIndex, bgStyle) {
     const isLeft = direction === 'LEFT';
+    const extraBg = bgStyle ? ` ${bgStyle}` : '';
     let html = '';
     const lowerDexs = (data.dexs || []).map(d => ({
       dex: String(d.dex || '').toLowerCase(),
@@ -137,12 +143,46 @@ function loadKointoTable(filteredData, tableBodyId = 'dataTableBody') {
                         data-sym2="${sym2}"
                         data-chain="${String(data.chain).toUpperCase()}"
                         data-row-index="${rowIndex}"
-                        style="text-align: center; vertical-align: middle;">
+                        style="text-align: center; vertical-align: middle;${extraBg}">
                     <strong class="uk-align-center" style="display:inline-block; margin:0;">${dexName.toUpperCase().substring(0, 6)} [$${modal}]</strong></br>
                         <span class="dex-status uk-text-muted"> 🔒 </span>
                     </td>`;
       } else {
-        html += '<td class="td-dex dex-slot-empty">-</td>';
+        // ✅ META-DEX: tidak disimpan di token.dexs[], tapi tetap buat cell ber-ID
+        // agar scanner bisa update hasilnya (sebelumnya cell tanpa ID → hasil scan dibuang)
+        const dexConfigElse = (typeof window !== 'undefined' && window.CONFIG_DEXS) ? window.CONFIG_DEXS[dexKeyLower] : null;
+        if (dexConfigElse && dexConfigElse.isMetaDex) {
+          let metaCanonical = dexKeyLower;
+          try { if (window.DEX && typeof window.DEX.normalize === 'function') metaCanonical = window.DEX.normalize(metaCanonical); } catch (_) { }
+          const sym1m = isLeft ? String(data.symbol_in || '').toUpperCase() : String(data.symbol_out || '').toUpperCase();
+          const sym2m = isLeft ? String(data.symbol_out || '').toUpperCase() : String(data.symbol_in || '').toUpperCase();
+          const tokenIdm = String(data.id || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+          const baseIdRawm = `${String(data.cex).toUpperCase()}_${metaCanonical.toUpperCase()}_${sym1m}_${sym2m}_${String(data.chain).toUpperCase()}_${tokenIdm}`;
+          const baseIdm = baseIdRawm.replace(/[^A-Z0-9_]/g, '');
+          const fullCellIdm = `${idPrefix}${baseIdm}`;
+          // Baca modal dari META_DEX_SETTINGS (per-chain) untuk tampilan awal
+          let modalMeta = 100;
+          try {
+            const gms = (typeof getFromLocalStorage === 'function') ? (getFromLocalStorage('META_DEX_SETTINGS') || {}) : {};
+            const ck = String(data.chain || '').toLowerCase();
+            modalMeta = isLeft ? (gms[ck]?.[dexKeyLower]?.left || 100) : (gms[ck]?.[dexKeyLower]?.right || 100);
+          } catch (_) { }
+          const dexNamem = (dexConfigElse.label) ? String(dexConfigElse.label) : String(dexKey).toUpperCase();
+          html += `
+                    <td class="td-dex" id="${fullCellIdm}"
+                        data-cex="${String(data.cex).toUpperCase()}"
+                        data-dex="${metaCanonical}"
+                        data-sym1="${sym1m}"
+                        data-sym2="${sym2m}"
+                        data-chain="${String(data.chain).toUpperCase()}"
+                        data-row-index="${rowIndex}"
+                        style="text-align: center; vertical-align: middle;${extraBg}">
+                    <strong class="uk-align-center" style="display:inline-block; margin:0;">${dexNamem.toUpperCase().substring(0, 6)} [$${modalMeta}]</strong></br>
+                        <span class="dex-status uk-text-muted"> 🔒 </span>
+                    </td>`;
+        } else {
+          html += '<td class="td-dex dex-slot-empty">-</td>';
+        }
       }
     });
     return html;
@@ -183,8 +223,123 @@ function loadKointoTable(filteredData, tableBodyId = 'dataTableBody') {
 
   if (!hasRows) {
     const totalCols = getTotalColumnCount(dexList);
-    if ($tableBody.length) $tableBody.html(`<tr><td colspan="${totalCols}" class="uk-text-center">No tokens to display.</td></tr>`);
+    if ($tableBody.length) {
+      let emptyMsg = 'Tidak ada koin yang ditampilkan.';
+      if (tableBodyId === 'dataTableBody') {
+        try {
+          const _m = (typeof getAppMode === 'function') ? getAppMode() : { type: 'multi' };
+          const _isCEX = window.CEXModeManager && window.CEXModeManager.isCEXMode();
+          const _activeCEX = _isCEX ? window.CEXModeManager.getSelectedCEX() : null;
+
+          if (_m.type === 'single') {
+            const _allChain = (typeof getTokensChain === 'function') ? getTokensChain(_m.chain) : [];
+            const _hasChain = Array.isArray(_allChain) && _allChain.length > 0;
+            const _savedF = (typeof getFromLocalStorage === 'function') ? getFromLocalStorage(`FILTER_${String(_m.chain).toUpperCase()}`, null) : null;
+            if (!_hasChain) {
+              emptyMsg = `<div style="padding:24px 16px; text-align:center;">
+                <div style="font-size:14px; font-weight:700; color:#e74c3c; margin-bottom:8px;">⚠️ Belum ada koin untuk chain <span style="text-transform:uppercase;">${_m.chain}</span></div>
+                <div style="font-size:12px; color:#666; margin-bottom:12px;">Tambahkan koin melalui <b>Manajemen Koin</b> atau gunakan tombol <b>SYNC</b>.</div>
+                <button onclick="try{$('#ManajemenKoin').trigger('click')}catch(_){}" class="uk-button uk-button-primary uk-button-small"><span uk-icon="plus-circle"></span> MANAJEMEN KOIN</button>
+              </div>`;
+            } else if (_savedF) {
+              emptyMsg = `<div style="padding:24px 16px; text-align:center;">
+                <div style="font-size:14px; font-weight:700; color:#f39c12; margin-bottom:8px;">🔍 Tidak ada koin yang sesuai filter aktif</div>
+                <div style="font-size:12px; color:#666;">Ubah filter <b>CEX / PAIR / DEX</b> melalui tombol <b>FILTER</b>.</div>
+              </div>`;
+            }
+          } else if (_isCEX) {
+            const _allFlat = (typeof window.getAllChainTokensFlat === 'function') ? window.getAllChainTokensFlat() : [];
+            const _hasCEXTokens = _allFlat.some(t => String(t.cex || '').toUpperCase() === _activeCEX);
+            const _cexFilt = (typeof getFilterCEX === 'function') ? getFilterCEX(_activeCEX) : {};
+            const _cexFilterEmpty = (_cexFilt.chains || []).length === 0 || (_cexFilt.dex || []).length === 0;
+            if (!_hasCEXTokens) {
+              emptyMsg = `<div style="padding:24px 16px; text-align:center;">
+                <div style="font-size:14px; font-weight:700; color:#e74c3c; margin-bottom:8px;">⚠️ Belum ada koin untuk EXCHANGER <b>${_activeCEX}</b></div>
+                <div style="font-size:12px; color:#666;">Tambahkan koin di mode chain dan set exchanger ke <b>${_activeCEX}</b>.</div>
+              </div>`;
+            } else if (_cexFilterEmpty) {
+              emptyMsg = `<div style="padding:40px 16px; text-align:center;">
+                <div style="font-size:28px; margin-bottom:12px;">🔧</div>
+                <div style="font-size:15px; font-weight:700; color:#2980b9; margin-bottom:8px;">Belum ada filter yang dipilih</div>
+                <div style="font-size:12px; color:#666; margin-bottom:16px;">Pilih <b>CHAIN</b> dan <b>DEX</b> pada filter scanner untuk menampilkan koin yang akan di-scan.</div>
+                <button onclick="try{$('#ScannerFilterModal').trigger('click')}catch(_){}" class="uk-button uk-button-primary uk-button-small">Buka Filter Scanner</button>
+              </div>`;
+            } else {
+              emptyMsg = `<div style="padding:24px 16px; text-align:center;">
+                <div style="font-size:14px; font-weight:700; color:#f39c12; margin-bottom:8px;">🔍 Tidak ada koin sesuai filter untuk <b>${_activeCEX}</b></div>
+                <div style="font-size:12px; color:#666;">Ubah filter <b>CHAIN / PAIR / DEX</b> melalui tombol <b>FILTER</b>.</div>
+              </div>`;
+            }
+          } else {
+            // Multichain mode
+            const _multiTokens = (typeof getTokensMulti === 'function') ? getTokensMulti() : [];
+            const _hasMulti = Array.isArray(_multiTokens) && _multiTokens.length > 0;
+            const _savedMultiF = (typeof getFromLocalStorage === 'function') ? getFromLocalStorage('FILTER_MULTICHAIN', null) : null;
+            if (!_hasMulti) {
+              emptyMsg = `<div style="padding:24px 16px; text-align:center;">
+                <div style="font-size:14px; font-weight:700; color:#e74c3c; margin-bottom:8px;">⚠️ Belum ada koin untuk mode <b>MULTICHAIN</b></div>
+                <div style="font-size:12px; color:#666; margin-bottom:12px;">Tambahkan koin melalui <b>Manajemen Koin</b> agar bisa mulai scanning.</div>
+                <button onclick="try{$('#ManajemenKoin').trigger('click')}catch(_){}" class="uk-button uk-button-primary uk-button-small"><span uk-icon="plus-circle"></span> MANAJEMEN KOIN</button>
+              </div>`;
+            } else if (_savedMultiF) {
+              // Check if filter selections are all empty (user saved filter but didn't pick any)
+              const _mf = (typeof getFilterMulti === 'function') ? getFilterMulti() : (_savedMultiF || {});
+              const _multiFilterEmpty = (_mf.chains || []).length === 0 || (_mf.cex || []).length === 0 || (_mf.dex || []).length === 0;
+              if (_multiFilterEmpty) {
+                emptyMsg = `<div style="padding:40px 16px; text-align:center;">
+                  <div style="font-size:28px; margin-bottom:12px;">🔧</div>
+                  <div style="font-size:15px; font-weight:700; color:#2980b9; margin-bottom:8px;">Belum ada filter yang dipilih</div>
+                  <div style="font-size:12px; color:#666; margin-bottom:16px;">Pilih <b>CHAIN</b>, <b>EXCHANGER</b>, dan <b>DEX</b> pada filter scanner untuk menampilkan koin yang akan di-scan.</div>
+                  <button onclick="try{$('#ScannerFilterModal').trigger('click')}catch(_){}" class="uk-button uk-button-primary uk-button-small">Buka Filter Scanner</button>
+                </div>`;
+              } else {
+                emptyMsg = `<div style="padding:24px 16px; text-align:center;">
+                  <div style="font-size:14px; font-weight:700; color:#f39c12; margin-bottom:8px;">🔍 Tidak ada koin yang sesuai filter aktif</div>
+                  <div style="font-size:12px; color:#666;">Ubah filter <b>CHAIN / EXCHANGER / DEX</b> melalui tombol <b>FILTER</b>.</div>
+                </div>`;
+              }
+            } else {
+              emptyMsg = `<div style="padding:40px 16px; text-align:center;">
+                <div style="font-size:28px; margin-bottom:12px;">🔧</div>
+                <div style="font-size:15px; font-weight:700; color:#2980b9; margin-bottom:8px;">Belum ada filter yang dipilih</div>
+                <div style="font-size:12px; color:#666; margin-bottom:16px;">Pilih <b>CHAIN</b>, <b>EXCHANGER</b>, dan <b>DEX</b> pada filter scanner untuk menampilkan koin yang akan di-scan.</div>
+                <button onclick="try{$('#ScannerFilterModal').trigger('click')}catch(_){}" class="uk-button uk-button-primary uk-button-small">Buka Filter Scanner</button>
+              </div>`;
+            }
+          }
+        } catch (_) { }
+      }
+      if (tableBodyId === 'dataTableBody') {
+        // Only manipulate scanner elements when scanner is the active section.
+        // Guards against race-condition where scan results arrive after user navigated to
+        // Manajemen Koin / Setting / other sections.
+        const _nonScannerActive = $('#token-management:visible, #form-setting-app:visible, #database-viewer-section:visible, #update-wallet-section:visible, #iframe-container:visible').length > 0;
+        if (!_nonScannerActive) {
+          // Hide table container, show standalone message outside table
+          $('#monitoring-scroll').hide();
+          let $ph = $('#scanner-empty-placeholder');
+          if (!$ph.length) {
+            $('#monitoring-scroll').after('<div id="scanner-empty-placeholder" style="margin-top:16px;"></div>');
+            $ph = $('#scanner-empty-placeholder');
+          }
+          $ph.html(emptyMsg).show();
+        }
+      } else {
+        $tableBody.html(`<tr><td colspan="${totalCols}" class="uk-text-center uk-padding-small">${emptyMsg}</td></tr>`);
+      }
+    }
     return;
+  }
+
+  // hasRows: make sure table is visible and placeholder is hidden.
+  // Only do this when scanner is the active section to avoid re-surfacing
+  // the table after the user navigated to Manajemen Koin / Setting / etc.
+  if (tableBodyId === 'dataTableBody') {
+    const _nonScannerActive = $('#token-management:visible, #form-setting-app:visible, #database-viewer-section:visible, #update-wallet-section:visible, #iframe-container:visible').length > 0;
+    if (!_nonScannerActive) {
+      $('#monitoring-scroll').show();
+      $('#scanner-empty-placeholder').hide();
+    }
   }
 
   // Manage concurrent renders per table body // REFACTORED
@@ -221,13 +376,24 @@ function loadKointoTable(filteredData, tableBodyId = 'dataTableBody') {
       const chainConfig = CONFIG_CHAINS[chainLower] || { URL_Chain: '', WARNA: '#000', Kode_Chain: '', Nama_Chain: '' };
       const warnaChain = chainConfig.WARNA || '#000';
 
-      // Start row
+      // Deteksi WX (withdraw disabled) dan DX (deposit disabled) untuk warna sisi baris
+      // WX → sisi KIRI merah | DX → sisi KANAN merah | keduanya → kedua sisi merah
+      // INDODAX: deposit/WD status tidak tersedia dari API → selalu anggap aktif
+      const isIndodax = String(data.cex || '').toUpperCase() === 'INDODAX';
+      const hasWX = !isIndodax && (data.withdrawToken === false || data.withdrawPair === false);
+      const hasDX = !isIndodax && (data.depositToken === false || data.depositPair === false);
+      const hasDisabledWallet = hasWX || hasDX;
+      const redBg = 'background-color: rgba(231,76,60,0.18) !important;';
+      const leftBg  = hasWX ? redBg : '';
+      const rightBg = hasDX ? redBg : '';
+
+      // Start row — plain, warna diterapkan per sel kiri/kanan
       let rowHtml = '<tr>';
 
       const idPrefix = tableBodyId + '_';
 
       // refactor: gunakan helper kecil untuk orderbook kiri
-      rowHtml += buildOrderbookCell('LEFT', data, idPrefix, warnaCex);
+      rowHtml += buildOrderbookCell('LEFT', data, idPrefix, warnaCex, warnaChain, leftBg);
 
       // refactor: render slot DEX kiri via helper (pass row index for unique IDs)
       rowHtml += buildDexSlots('LEFT', data, dexList, idPrefix, index);
@@ -252,16 +418,17 @@ function loadKointoTable(filteredData, tableBodyId = 'dataTableBody') {
       const WD_PAIR = linkifyStatus(data.withdrawPair, 'WD', withdrawPairUrl);
       const DP_PAIR = linkifyStatus(data.depositPair, 'DP', depositPairUrl);
 
-      // Check if any wallet status is disabled (false) to change background
-      // IMPORTANT: This works regardless of "WALLET CEX" checkbox status
-      const hasDisabledWallet = (
-        data.withdrawToken === false ||
-        data.depositToken === false ||
-        data.withdrawPair === false ||
-        data.depositPair === false
-      );
-      const detailBgColor = hasDisabledWallet ? '#fce0e0' : ''; // Warning pink/red background if disabled
-      const detailBgStyle = hasDisabledWallet ? `font-size:11px; background-color: ${detailBgColor} !important;` : '';
+      // Background kolom detail: merah jika ada WX/DX, warna chain jika normal
+      let detailBgStyle;
+      if (hasDisabledWallet) {
+        detailBgStyle = `font-size:11px; background-color: rgba(231,76,60,0.18) !important; border: 2px solid #e74c3c !important;`;
+      } else {
+        const _cHex = warnaChain.replace('#', '');
+        const _cR = parseInt(_cHex.substring(0, 2) || '0', 16) || 0;
+        const _cG = parseInt(_cHex.substring(2, 4) || '0', 16) || 0;
+        const _cB = parseInt(_cHex.substring(4, 6) || '0', 16) || 0;
+        detailBgStyle = `font-size:11px; background-color: rgba(${_cR},${_cG},${_cB},0.13) !important;`;
+      }
 
       const chainData = getChainData(data.chain);
       const walletObj = chainData?.CEXCHAIN?.[data.cex] || {};
@@ -308,12 +475,13 @@ function loadKointoTable(filteredData, tableBodyId = 'dataTableBody') {
       const linkRBX = createHoverLink(`https://app.rubic.exchange/?fromChain=${rubicChain}&toChain=${rubicChain}&from=${data.sc_in}&to=${data.sc_out}`, '#RBX', 'uk-text-secondary');
 
       const rowId = `DETAIL_${String(data.cex).toUpperCase()}_${String(data.symbol_in).toUpperCase()}_${String(data.symbol_out).toUpperCase()}_${String(data.chain).toUpperCase()}`.replace(/[^A-Z0-9_]/g, '');
-      const chainShort = (data.chain || '').substring(0, 3).toUpperCase();
+      const chainRaw = (data.chain || '').toUpperCase();
+      const chainShort = chainRaw === 'BASE' ? 'BASE' : chainRaw.substring(0, 3);
 
       rowHtml += `
-            <td id="${idPrefix}${rowId}" class="uk-text-center uk-background td-detail" style="text-align: center; border:1px solid black; padding:10px; ${detailBgStyle}">
+            <td id="${idPrefix}${rowId}" class="uk-text-center uk-background td-detail" style="text-align: center; border:1px solid black; padding:5px; ${detailBgStyle}">
              [${index + 1}]<span style="color: ${warnaCex}; font-weight:bolder; font-size:medium;"> ${data.cex} </span> on <span style="color: ${warnaChain}; font-weight:bolder; font-size:medium;">${chainShort} </span>
-    
+
             <span class="detail-line">
                 <span style="color: ${warnaChain}; font-weight:bolder; font-size:medium;"  >${linkToken} </span> ⇄ <span style="color: ${warnaChain}; font-weight:bolder; font-size:medium;">${linkPair} </span>
                 <span id="${idPrefix}EditMulti-${data.id}" data-id="${data.id}"
@@ -322,7 +490,7 @@ function loadKointoTable(filteredData, tableBodyId = 'dataTableBody') {
                       data-symbol-in="${String(data.symbol_in).toUpperCase()}"
                       data-symbol-out="${String(data.symbol_out).toUpperCase()}"
                        title="UBAH DATA KOIN" uk-icon="icon: settings; ratio: 0.7" class="uk-text-primary uk-text-bolder edit-token-button" style="cursor:pointer"></span>
-                
+
                 <span id="${idPrefix}DelMulti-${data.id}"
                       data-id="${data.id}"
                       data-chain="${String(data.chain).toLowerCase()}"
@@ -335,19 +503,19 @@ function loadKointoTable(filteredData, tableBodyId = 'dataTableBody') {
                       style="cursor:pointer;">
                 </span>
                 </span>
-                              
+
                 <span class="detail-line uk-text-bolder">${WD_TOKEN}~ ${DP_TOKEN} | ${WD_PAIR}~ ${DP_PAIR}</span>
-                <span class="detail-line"><span class="uk-text-primary uk-text-bolder">${(data.symbol_in || '').toUpperCase()}</span> ${linkSCtoken} : ${linkStokToken}</span>
-                <span class="detail-line"><span class="uk-text-primary uk-text-bolder">${(data.symbol_out || '').toUpperCase()}</span> ${linkSCpair} : ${linkStokPair}</span>
-                <span class="detail-line"> ${linkDLX} ${linkDEFIL} ${linkOKDEX}  ${linkDZAP}</span>
-                <span class="detail-line"> ${linkRango} ${linkJumper} ${linkRBX}</span>
+                <span class="detail-line"><span style="color:${warnaChain}; font-weight:bold;">${(data.symbol_in || '').toUpperCase()}</span> ${linkSCtoken} : ${linkStokToken}</span>
+                <span class="detail-line"><span style="color:${warnaChain}; font-weight:bold;">${(data.symbol_out || '').toUpperCase()}</span> ${linkSCpair} : ${linkStokPair}</span>
+                <span class="detail-line"> ${linkDLX} ${linkDEFIL} ${linkOKDEX} </span>
+                <span class="detail-line"> ${linkRango} ${linkJumper} ${linkRBX} ${linkDZAP}</span>
             </td>`;
 
       // refactor: render slot DEX kanan via helper
       rowHtml += buildDexSlots('RIGHT', data, dexList, idPrefix, index);
 
       // refactor: gunakan helper kecil untuk orderbook kanan
-      rowHtml += buildOrderbookCell('RIGHT', data, idPrefix, warnaCex);
+      rowHtml += buildOrderbookCell('RIGHT', data, idPrefix, warnaCex, warnaChain, rightBg);
 
       // End row
       rowHtml += '</tr>';
@@ -393,9 +561,18 @@ try { if (typeof window !== 'undefined') { window.prepareMonitoringSkeleton = pr
  */
 function updateTokenStatsOnly() {
   const m = (typeof getAppMode === 'function') ? getAppMode() : { type: 'multi' };
-  let allTokens = (m.type === 'single')
-    ? (getFromLocalStorage(`TOKEN_${String(m.chain).toUpperCase()}`, []) || [])
-    : (getFromLocalStorage('TOKEN_MULTICHAIN', []) || []);
+  const isCEXMode = window.CEXModeManager && window.CEXModeManager.isCEXMode();
+  const activeCEX = isCEXMode ? window.CEXModeManager.getSelectedCEX() : null;
+
+  let allTokens;
+  if (m.type === 'single') {
+    allTokens = getFromLocalStorage(`TOKEN_${String(m.chain).toUpperCase()}`, []) || [];
+  } else if (isCEXMode) {
+    const allFlat = typeof window.getAllChainTokensFlat === 'function' ? window.getAllChainTokensFlat() : [];
+    allTokens = allFlat.filter(t => String(t.cex || '').toUpperCase() === activeCEX);
+  } else {
+    allTokens = getFromLocalStorage('TOKEN_MULTICHAIN', []) || [];
+  }
   if (!Array.isArray(allTokens)) allTokens = [];
 
   // Apply active filters (Chain, CEX, Pair, DEX) to determine the base list for stats
@@ -420,6 +597,13 @@ function updateTokenStatsOnly() {
         .filter(t => (t.selectedDexs || []).some(d => filters.dex.includes(String(d).toLowerCase())));
     } else {
       filteredForStats = [];
+    }
+  } else if (isCEXMode) {
+    // CEX mode: filter by chain selection from CEX filter (if any)
+    const fCex = (typeof getFilterCEX === 'function') ? getFilterCEX(activeCEX) : { chains: [] };
+    const chainsSel = (fCex && fCex.chains || []).map(c => String(c).toLowerCase());
+    if (chainsSel.length > 0) {
+      filteredForStats = filteredForStats.filter(t => chainsSel.includes(String(t.chain || '').toLowerCase()));
     }
   } else { // multi-chain mode
     const saved = getFromLocalStorage('FILTER_MULTICHAIN', null);
@@ -470,6 +654,20 @@ function updateTokenStatsOnly() {
                 <b class="uk-text-primary uk-text-bolder">MANAJEMEN KOIN CHAIN ${chainKey.toUpperCase()} (Total: ${totalActive})</b>
                 <div class="uk-text-small"><b>CEX:</b> ${cexStatsHtml}</div>
                 <div class="uk-text-small"><b>PAIR:</b> ${pairStatsHtml}</div>
+            </div>
+        `;
+  } else if (isCEXMode) {
+    const countByChain = activeTokensForStats.reduce((acc, t) => { const k = String(t.chain || '').toLowerCase(); acc[k] = (acc[k] || 0) + 1; return acc; }, {});
+    const chainStatsHtml = Object.entries(countByChain).map(([chain, count]) => {
+      const cfg = CONFIG_CHAINS?.[chain] || {}; const color = cfg.WARNA || '#666';
+      const label = (cfg.Nama_Pendek || cfg.SHORT_NAME || chain).toUpperCase();
+      return `<span style="color:${color}; margin:2px; font-weight:bolder;">${label}</span> <span class="uk-text-dark uk-text-bolder">[${count}]</span>`;
+    }).join(' ') || '-';
+    const totalActive = activeTokensForStats.length;
+    statsHtml = `
+            <div style="display:flex; flex-direction:column; gap:4px;">
+                <b class="uk-text-primary uk-text-bolder">MANAJEMEN KOIN (EXCHANGER: ${activeCEX}) (Total: ${totalActive})</b>
+                <div class="uk-text-small"><b>CHAIN:</b> ${chainStatsHtml}</div>
             </div>
         `;
   } else { // multi-chain mode
@@ -506,9 +704,19 @@ function updateTokenStatsOnly() {
 
 function renderTokenManagementList() {
   const m = (typeof getAppMode === 'function') ? getAppMode() : { type: 'multi' };
-  let allTokens = (m.type === 'single')
-    ? (getFromLocalStorage(`TOKEN_${String(m.chain).toUpperCase()}`, []) || [])
-    : (getFromLocalStorage('TOKEN_MULTICHAIN', []) || []);
+  const isCEXMode = window.CEXModeManager && window.CEXModeManager.isCEXMode();
+  const activeCEX = isCEXMode ? window.CEXModeManager.getSelectedCEX() : null;
+
+  let allTokens;
+  if (m.type === 'single') {
+    allTokens = getFromLocalStorage(`TOKEN_${String(m.chain).toUpperCase()}`, []) || [];
+  } else if (isCEXMode) {
+    // CEX mode: baca dari per-chain DBs via getAllChainTokensFlat, filter by active CEX
+    const allFlat = typeof window.getAllChainTokensFlat === 'function' ? window.getAllChainTokensFlat() : [];
+    allTokens = allFlat.filter(t => String(t.cex || '').toUpperCase() === activeCEX);
+  } else {
+    allTokens = getFromLocalStorage('TOKEN_MULTICHAIN', []) || [];
+  }
   if (!Array.isArray(allTokens)) allTokens = [];
 
   // This variable will hold the list of tokens after applying chain/cex/pair filters.
@@ -535,6 +743,14 @@ function renderTokenManagementList() {
     } else {
       filteredForStats = [];
     }
+  } else if (isCEXMode) {
+    // CEX mode: filter by chain selection from CEX filter (if any)
+    const fCex = (typeof getFilterCEX === 'function') ? getFilterCEX(activeCEX) : { chains: [] };
+    const chainsSel = (fCex && fCex.chains || []).map(c => String(c).toLowerCase());
+    if (chainsSel.length > 0) {
+      filteredForStats = filteredForStats.filter(t => chainsSel.includes(String(t.chain || '').toLowerCase()));
+    }
+    // if no chain filter saved, keep all CEX tokens
   } else { // multi-chain mode
     const saved = getFromLocalStorage('FILTER_MULTICHAIN', null);
     const filters = getFilterMulti() || { chains: [], cex: [], dex: [] };
@@ -586,6 +802,20 @@ function renderTokenManagementList() {
                 <div class="uk-text-small"><b>PAIR:</b> ${pairStatsHtml}</div>
             </div>
         `;
+  } else if (isCEXMode) {
+    const countByChain = activeTokensForStats.reduce((acc, t) => { const k = String(t.chain || '').toLowerCase(); acc[k] = (acc[k] || 0) + 1; return acc; }, {});
+    const chainStatsHtml = Object.entries(countByChain).map(([chain, count]) => {
+      const cfg = CONFIG_CHAINS?.[chain] || {}; const color = cfg.WARNA || '#666';
+      const label = (cfg.Nama_Pendek || cfg.SHORT_NAME || chain).toUpperCase();
+      return `<span style="color:${color}; margin:2px; font-weight:bolder;">${label}</span> <span class="uk-text-dark uk-text-bolder">[${count}]</span>`;
+    }).join(' ') || '-';
+    const totalActive = activeTokensForStats.length;
+    statsHtml = `
+            <div style="display:flex; flex-direction:column; gap:4px;">
+                <b class="uk-text-primary uk-text-bolder">MANAJEMEN KOIN (EXCHANGER: ${activeCEX}) (Total: ${totalActive})</b>
+                <div class="uk-text-small"><b>CHAIN:</b> ${chainStatsHtml}</div>
+            </div>
+        `;
   } else { // multi-chain mode
     const countByChain = activeTokensForStats.reduce((acc, t) => { const k = String(t.chain || '').toLowerCase(); acc[k] = (acc[k] || 0) + 1; return acc; }, {});
     const countByCex = activeTokensForStats.reduce((acc, t) => { (t.selectedCexs || []).forEach(cx => { const u = String(cx).toUpperCase(); acc[u] = (acc[u] || 0) + 1; }); return acc; }, {});
@@ -617,16 +847,18 @@ function renderTokenManagementList() {
   const controls = (() => {
     const base = [
       `<input type="text" id="mgrSearchInput" class="uk-input uk-form-small" placeholder="🔍 Cari koin..." value="${currentQ}" style="width:180px; padding:4px 8px; font-size:12px; margin-right:8px;">`,
-      `<button id=\"btnNewToken\" class=\"uk-button uk-button-default uk-button-small\" title=\"Tambah Data Koin\"><span uk-icon=\"plus-circle\"></span> ADD COIN</button>`,
-      `<button id=\"btnToggleMgrFilter\" class=\"uk-button uk-button-small uk-button-primary\" title=\"Toggle Filter Setting\"><span uk-icon=\"settings\"></span> FILTER</button>`,
-      `<button id=\"btnExportTokens\" data-feature=\"export\" class=\"uk-button uk-button-small uk-button-secondary\" title=\"Export CSV\"><span uk-icon=\"download\"></span> Export</button>`,
-      `<button id=\"btnImportTokens\" data-feature=\"import\" class=\"uk-button uk-button-small uk-button-danger\" title=\"Import CSV\"><span uk-icon=\"upload\"></span> Import</button>`,
-      `<input type=\"file\" id=\"uploadJSON\" accept=\".csv,text/csv\" style=\"display:none;\" onchange=\"uploadTokenScannerCSV(event)\"> <button type="button" id="btn-cancel-setting" class="uk-button uk-button-muted uk-button-small">
-        <span uk-icon="icon:  arrow-left" class="uk-text-primary"></span>  <span class="uk-text-primary">KEMBALI</span>
-      </button>  `
     ];
-    // Add SYNC button only for single chain mode
-    // Note: BULK MODAL button moved to header toolbar (BulkModalScanner icon)
+    // ADD COIN and FILTER only for single chain mode; multichain management uses import/export only
+    if (m.type === 'single') {
+      base.push(`<button id=\"btnNewToken\" class=\"uk-button uk-button-default uk-button-small\" title=\"Tambah Data Koin\"><span uk-icon=\"plus-circle\"></span> ADD COIN</button>`);
+      base.push(`<button id=\"btnToggleMgrFilter\" class=\"uk-button uk-button-small uk-button-primary\" title=\"Toggle Filter Setting\"><span uk-icon=\"settings\"></span> FILTER</button>`);
+    }
+    base.push(`<button id=\"btnExportTokens\" data-feature=\"export\" class=\"uk-button uk-button-small uk-button-secondary\" title=\"Export CSV\"><span uk-icon=\"download\"></span> Export</button>`);
+    base.push(`<button id=\"btnImportTokens\" data-feature=\"import\" class=\"uk-button uk-button-small uk-button-danger\" title=\"Import CSV\"><span uk-icon=\"upload\"></span> Import</button>`);
+    base.push(`<input type=\"file\" id=\"uploadJSON\" accept=\".csv,text/csv\" style=\"display:none;\" onchange=\"uploadTokenScannerCSV(event)\"> <button type="button" id="btn-cancel-setting" class="uk-button uk-button-muted uk-button-small">
+        <span uk-icon="icon:  arrow-left" class="uk-text-primary"></span>  <span class="uk-text-primary">KEMBALI</span>
+      </button>  `);
+    // Add SYNC button only for single chain mode (after ADD COIN + FILTER = index 3)
     if (m.type === 'single') {
       base.splice(3, 0, `<button id=\"sync-tokens-btn\" class=\"uk-button uk-button-small uk-button-primary\" title=\"Sinkronisasi Data Koin\"><span uk-icon=\"database\"></span> SYNC</button>`);
     }
@@ -1159,15 +1391,25 @@ function DisplayPNL(data) {
       const dexColor = dexConfig?.warna || '#ff6b35';
       const dexLabel = dexConfig?.label || String(dextype).toUpperCase();
 
-      // ⚠️ READ maxProviders from config (default: 3, LIFI: 2)
-      const maxProviders = dexConfig?.maxProviders || 3;
-      console.log(`[Multi-DEX Render] ${dexLabel}: Display max ${maxProviders} providers`);
+      // ⚠️ READ maxProviders from user setting (SETTING_SCANNER.metaDex.topRoutes), fallback to config or 3
+      const maxProviders = (() => {
+        try {
+          const saved = (typeof getFromLocalStorage === 'function') ? getFromLocalStorage('SETTING_SCANNER') : null;
+          const v = parseInt(saved?.metaDex?.topRoutes);
+          if (v > 0) return v;
+        } catch (_) {}
+        return dexConfig?.maxProviders || 3;
+      })();
 
       // Base calculation values
       const baseModal = n(Modal);
       const baseFeeWD = n(FeeWD);
-      const baseFeeTrade = n(0.0014 * baseModal);
       const direction = String(trx || '').toLowerCase();
+      // Non-USDT pair = 2 transaksi CEX → 2x feeTrade
+      const _pairIsStableMulti = direction === 'tokentopair'
+        ? String(Name_out || '').toUpperCase() === 'USDT'
+        : String(Name_in || '').toUpperCase() === 'USDT';
+      const baseFeeTrade = n(0.0014 * baseModal * (_pairIsStableMulti ? 1 : 2));
 
       // CEX prices for calculation
       const buyPairCEX = n(priceBuyPair_CEX);
@@ -1187,12 +1429,43 @@ function DisplayPNL(data) {
         : (cexUrls?.tradePair || cexUrls?.tradeUrl || '#');
       const dexLink = linkDEX || '#';
 
+      // WD/DP flags + URLs for meta-DEX sub-columns (same as regular DEX)
+      let metaWdFlag, metaDpFlag;
+      try {
+        const _list = (Array.isArray(window.singleChainTokensCurrent) && window.singleChainTokensCurrent.length)
+          ? window.singleChainTokensCurrent
+          : (Array.isArray(window.currentListOrderMulti) ? window.currentListOrderMulti : []);
+        const _keyIn = (direction === 'tokentopair') ? upper(Name_in) : upper(Name_out);
+        const _keyOut = (direction === 'tokentopair') ? upper(Name_out) : upper(Name_in);
+        const _hit = (_list || []).find(t => String(t.cex).toUpperCase() === upper(cex)
+          && String(t.symbol_in).toUpperCase() === _keyIn
+          && String(t.symbol_out).toUpperCase() === _keyOut);
+        if (_hit) { metaWdFlag = _hit.withdrawToken; metaDpFlag = _hit.depositToken; }
+      } catch (_) {}
+      const metaWdUrl = (direction === 'tokentopair')
+        ? (cexUrls?.withdrawTokenUrl || cexUrls?.withdrawUrl || '#')
+        : (cexUrls?.withdrawPairUrl || cexUrls?.withdrawUrl || '#');
+      const metaDpTokenName = (direction === 'tokentopair') ? upper(Name_in) : upper(Name_out);
+      const metaDpUrl = cexUrls?.depositTokenUrl || cexUrls?.depositUrl || '#';
+
       // Build sub-columns HTML dengan format SAMA seperti single-DEX (KYBER style)
       // Limit jumlah provider sesuai maxProviders dari config
       // Ambil amount_in dari data (Modal / buyTokenCEX untuk tokentopair)
       const amtIn = direction === 'tokentopair'
         ? (buyTokenCEX > 0 ? baseModal / buyTokenCEX : 0)  // Jumlah token yang dibeli
         : baseModal;  // Jumlah pair yang digunakan
+
+      // Auto Level modal indicator (mirror regular DEX behavior)
+      const modalLabel = (() => {
+        if (data.autoLevelEnabled && data.maxModal) {
+          const maxM = n(data.maxModal);
+          const isInsuf = baseModal < maxM * 0.999;
+          return isInsuf
+            ? `[$${maxM.toFixed(0)}] <span style="color:#ff6b35">│ ${baseModal.toFixed(0)}$</span> ⚠️`
+            : `[$${maxM.toFixed(0)}] ✅`;
+        }
+        return `[$${baseModal.toFixed(0)}]`;
+      })();
 
       const subColsHtml = subResults.slice(0, maxProviders).map((subRes, idx) => {
         const amtOut = n(subRes.amount_out || subRes.amountOut);
@@ -1261,37 +1534,41 @@ function DisplayPNL(data) {
 
         // Highlight hanya sub-kolom yang profit (PNL > 0)
         const isSubProfit = subPnl > 0;
-        const subBgStyle = isSubProfit ? 'background-color: rgba(188, 233, 97, 0.9); border-radius: 4px;' : '';
+        const subBgStyle = isSubProfit ? 'background-color: rgba(188, 233, 97, 0.9);' : '';
 
-        // ✅ FIX: Display fee yang relevan per direction
-        const feeLabel1 = direction === 'tokentopair' ? `🈳WD:${subFeeWD.toFixed(4)}$` : `📤TX:${subFeeTransfer.toFixed(4)}$`;
+        // ✅ FIX: Display fee dengan link WD/DP (format sama seperti regular DEX)
+        const _wdText = (metaWdFlag === false) ? '🈳 WX' : '🈳 WD';
+        const _dpText = (metaDpFlag === false) ? `🈷️ DX[${metaDpTokenName}]` : `🈷️ DP[${metaDpTokenName}]`;
+        const _wdCls = (metaWdFlag === false) ? 'uk-text-danger' : 'uk-text-primary';
+        const _dpCls = (metaDpFlag === false) ? 'uk-text-danger' : 'uk-text-primary';
+        const feeLabel1 = direction === 'tokentopair'
+          ? `<a class="${_wdCls}" href="${metaWdUrl}" target="_blank" rel="noopener" title="FEE WITHDRAW">${_wdText}: ${subFeeWD.toFixed(4)}$</a>`
+          : `<a class="${_dpCls}" href="${metaDpUrl}" target="_blank" rel="noopener">${_dpText}</a>`;
         const feeTooltip = direction === 'tokentopair'
           ? `Fee WD: $${subFeeWD.toFixed(4)}\nFee SW: $${feeSwap.toFixed(4)}`
           : `Fee SW: $${feeSwap.toFixed(4)}\nFee Transfer (Gas): $${subFeeTransfer.toFixed(4)}`;
 
+        // Struktur HTML sama persis seperti regular DEX cell (monitor-line, strong header, uk-text-primary wrapper)
         return `
-          <div class="multi-sub" style="flex: 1; padding: 1px 2px; ${borderRight} text-align: center; line-height: 1.2; white-space: nowrap; ${subBgStyle}"
+          <div class="multi-sub" style="flex: 1 1 110px; padding: 2px 3px; ${borderRight} text-align: center; vertical-align: middle; ${subBgStyle}"
                title="${providerName}\nAmount Out: ${amtOut.toFixed(6)}\n${feeTooltip}\nBruto: $${subBruto.toFixed(2)}\nTotal Fee: $${subTotalFee.toFixed(2)}\nPNL: $${subPnl.toFixed(2)}">
-            <div style="font-size: 1em; font-weight: bold; color: ${dexColor};">${displayName}</div>
-            <a class="uk-text-success" href="${buyLink}" target="_blank" rel="noopener" title="${tipBuy}" style="text-decoration: none; display: block;">⬆ ${fmtUSD(buyPrice)}</a>
-            <a class="uk-text-danger" href="${sellLink}" target="_blank" rel="noopener" title="${tipSell}" style="text-decoration: none; display: block;">⬇ ${fmtUSD(sellPrice)}</a>
-            <div class="uk-text-primary" style="font-size: 0.95em;">${feeLabel1}</div>
-            <div class="uk-text-muted" style="font-size: 0.95em;">💸SW:${feeSwap.toFixed(4)}$</div>
-            <div class="uk-text-danger" style="font-size: 0.95em;">[${subBruto.toFixed(2)}~${subTotalFee.toFixed(2)}]</div>
-            <div class="${pnlClass}" style="font-weight: bold;">💰PNL:${subPnl.toFixed(2)}</div>
+            <strong style="display:inline-block; margin:0; color: ${dexColor};">${displayName} ${modalLabel}</strong><br>
+            <span class="uk-text-primary">
+              <a class="monitor-line uk-text-success dex-price-link" href="${buyLink}" target="_blank" rel="noopener" title="${tipBuy}">⬆ ${fmtUSD(buyPrice)}</a>
+              <a class="monitor-line uk-text-danger dex-price-link" href="${sellLink}" target="_blank" rel="noopener" title="${tipSell}">⬇ ${fmtUSD(sellPrice)}</a>
+              <span class="monitor-line">${feeLabel1}</span>
+              <span class="monitor-line uk-text-dark">💸 SW: ${feeSwap.toFixed(4)}$</span>
+              <span class="monitor-line uk-text-danger" title="BRUTO ~ TOTAL FEE">[${subBruto.toFixed(2)} ~ <b style="font-size: larger;">${subTotalFee.toFixed(2)}</b>]</span>
+              <span class="monitor-line ${pnlClass}" title="PROFIT / LOSS" style="font-weight: bold;">💰 PNL: ${subPnl.toFixed(2)}</span>
+            </span>
           </div>
         `;
       }).join('');
 
-      // Build cell HTML dengan sub-kolom format lengkap (maxProviders: LIFI=2, DZAP=3)
+      // Build cell HTML — langsung sub-kolom tanpa header META-DEX (sama seperti DEX biasa)
       const cellHtml = `
-        <div style="text-align: center; line-height: 1.2;">
-          <div style="font-size: 1.05em; font-weight: bold; color: ${dexColor}; border-bottom: 2px solid ${dexColor}; padding-bottom: 2px; margin-bottom: 3px;">
-            ${dexLabel} [$${baseModal.toFixed(0)}] (Top ${maxProviders})
-          </div>
-          <div style="display: flex; justify-content: space-between; gap: 1px;">
-            ${subColsHtml}
-          </div>
+        <div style="display: flex; justify-content: space-between; align-items: stretch; gap: 1px;">
+          ${subColsHtml}
         </div>
       `;
 
@@ -1341,8 +1618,7 @@ function DisplayPNL(data) {
       const shouldHighlight = bestPnl > 0 && (filterPNLValue === 0 || bestPnl > filterPNLValue);
 
       if (shouldHighlight) {
-        // Hanya border, tanpa background (background sudah di sub-kolom)
-        el.style.cssText = 'text-align:center;vertical-align:middle;border:2px solid #28a745!important;';
+        el.style.cssText = 'text-align:center;vertical-align:middle;';
         el.classList.add('dex-cell-highlight');
       } else {
         el.style.cssText = 'text-align:center;vertical-align:middle;';
@@ -1694,7 +1970,7 @@ function DisplayPNL(data) {
 
   // Highlight + UIkit
   const netClass = (pnl >= 0.02) ? 'uk-text-success' : 'uk-text-danger';
-  const bracket = `[${bruto.toFixed(2)} ~ ${feeAll.toFixed(2)}]`;
+  const bracket = `[${bruto.toFixed(2)} ~ <b style="font-size: larger;">${feeAll.toFixed(2)}</b>]`;
 
   // ✅ FIXED: Pisahkan profit indication (background) dari highlight (border)
   // Background hijau muncul kapanpun PNL > 0 (profit)
@@ -1718,7 +1994,7 @@ function DisplayPNL(data) {
 
   // Background color shows when PNL > 0, border shows when passing filter
   if (hasProfit) {
-    const borderStyle = shouldHighlight ? 'border:2px solid black !important;' : '';
+    const borderStyle = shouldHighlight ? '' : '';
     $mainCell.attr('style', `background-color:${hlBg}!important;font-weight:bolder!important;vertical-align:middle!important;text-align:center!important;${borderStyle}`);
   } else {
     $mainCell.attr('style', 'text-align:center;vertical-align:middle;');
@@ -1936,7 +2212,11 @@ function InfoSinyal(DEXPLUS, TokenPair, PNL, totalFee, cex, NameToken, NamePair,
 function calculateResult(baseId, tableBodyId, amount_out, FeeSwap, sc_input, sc_output, cex, Modal, amount_in, priceBuyToken_CEX, priceSellToken_CEX, priceBuyPair_CEX, priceSellPair_CEX, Name_in, Name_out, feeWD, dextype, nameChain, codeChain, trx, vol, DataDEX) {
   const NameX = Name_in + "_" + Name_out;
   const FeeWD = parseFloat(feeWD);
-  const FeeTrade = parseFloat(0.0014 * Modal);
+  // Non-USDT pair = 2 transaksi CEX (beli TOKEN + jual PAIR ke USDT) → 2x FeeTrade
+  const _pairIsStable = (trx === 'TokentoPair')
+    ? String(Name_out || '').toUpperCase() === 'USDT'
+    : String(Name_in || '').toUpperCase() === 'USDT';
+  const FeeTrade = parseFloat(0.0014 * Modal * (_pairIsStable ? 1 : 2));
 
   FeeSwap = parseFloat(FeeSwap) || 0;
   Modal = parseFloat(Modal) || 0;

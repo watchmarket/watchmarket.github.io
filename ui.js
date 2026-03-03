@@ -13,7 +13,8 @@ function showMainSection(sectionIdToShow) {
         '#scanner-config',
         '#sinyal-container',
         '#filter-card',
-        '#monitoring-scroll'
+        '#monitoring-scroll',
+        '#scanner-empty-placeholder'  // dynamically created placeholder; hide when leaving scanner
     ];
 
     const $form = $("#FormScanner");
@@ -210,13 +211,21 @@ function RenderCardSignal() {
     sinyalContainer.setAttribute('uk-grid', '');
     sinyalContainer.className = 'uk-grid uk-grid-small uk-grid-match';
 
-    // Warna header sesuai chain
+    // Warna header sesuai mode (CEX atau chain)
     let chainColor = '#5c9514';
     try {
-        const m = (typeof getAppMode === 'function') ? getAppMode() : { type: 'multi' };
-        if (m.type === 'single') {
-            const cfg = (window.CONFIG_CHAINS || {})[m.chain] || {};
-            if (cfg.WARNA) chainColor = cfg.WARNA;
+        // Check if CEX mode is active
+        if (window.CEXModeManager && window.CEXModeManager.active && window.CEXModeManager.selectedCEX) {
+            const cexTheme = window.CEXModeManager.getTheme(window.CEXModeManager.selectedCEX);
+            if (cexTheme && cexTheme.color) {
+                chainColor = cexTheme.color;
+            }
+        } else {
+            const m = (typeof getAppMode === 'function') ? getAppMode() : { type: 'multi' };
+            if (m.type === 'single') {
+                const cfg = (window.CONFIG_CHAINS || {})[m.chain] || {};
+                if (cfg.WARNA) chainColor = cfg.WARNA;
+            }
         }
     } catch (_) { }
 
@@ -244,7 +253,14 @@ function RenderCardSignal() {
         const left = document.createElement('div');
         left.className = 'uk-flex uk-flex-middle';
         left.style.gap = '8px';
-        left.innerHTML = `<span class="uk-text-bold" style="color:#fff!important; font-size:14px;">${String(dex).toUpperCase()}</span>`;
+
+        // ✅ META-DEX badge: Mark aggregators that are isMetaDex
+        const isMetaDexCard = !!(window.CONFIG_DEXS && window.CONFIG_DEXS[dexLower] && window.CONFIG_DEXS[dexLower].isMetaDex);
+        const metaBadge = isMetaDexCard
+            ? '<span style="background:rgba(255,255,255,0.25);color:#fff;padding:0 4px;border-radius:3px;font-size:9px;font-weight:bold;margin-left:4px;">META</span>'
+            : '';
+        const dexDisplayLabel = (window.CONFIG_DEXS?.[dexLower]?.label ? String(window.CONFIG_DEXS[dexLower].label).toUpperCase() : String(dex).toUpperCase());
+        left.innerHTML = `<span class="uk-text-bold" style="color:#fff!important; font-size:14px;">${dexDisplayLabel}${metaBadge}</span>`;
 
         const toggle = document.createElement('a');
         toggle.className = 'uk-icon-link uk-text-bolder';
@@ -334,10 +350,18 @@ window.updateSignalTheme = function () {
         }
 
         let chainColor = '#5c9514';
-        const m = (typeof getAppMode === 'function') ? getAppMode() : { type: 'multi' };
-        if (m.type === 'single') {
-            const cfg = (window.CONFIG_CHAINS || {})[m.chain] || {};
-            if (cfg.WARNA) chainColor = cfg.WARNA;
+        // Check if CEX mode is active first
+        if (window.CEXModeManager && window.CEXModeManager.active && window.CEXModeManager.selectedCEX) {
+            const cexTheme = window.CEXModeManager.getTheme(window.CEXModeManager.selectedCEX);
+            if (cexTheme && cexTheme.color) {
+                chainColor = cexTheme.color;
+            }
+        } else {
+            const m = (typeof getAppMode === 'function') ? getAppMode() : { type: 'multi' };
+            if (m.type === 'single') {
+                const cfg = (window.CONFIG_CHAINS || {})[m.chain] || {};
+                if (cfg.WARNA) chainColor = cfg.WARNA;
+            }
         }
         const container = document.getElementById('sinyal-container');
         if (!container) return;
@@ -439,13 +463,38 @@ window.clearSignalCards = function () {
 /** Open and populate the 'Edit Koin' modal by token id. */
 function openEditModalById(id) {
     const m = (typeof getAppMode === 'function') ? getAppMode() : { type: 'multi' };
-    const tokens = (m.type === 'single') ? getFromLocalStorage(`TOKEN_${String(m.chain).toUpperCase()}`, [])
-        : getFromLocalStorage('TOKEN_MULTICHAIN', []);
+    let tokens;
+    let tokenSourceChain = null; // Track which chain DB the token was found in (for CEX mode)
+    if (m.type === 'single') {
+        tokens = getFromLocalStorage(`TOKEN_${String(m.chain).toUpperCase()}`, []);
+    } else if (m.type === 'cex') {
+        // CEX mode: search across ALL per-chain databases to find the token
+        tokens = [];
+        const chains = Object.keys(window.CONFIG_CHAINS || {});
+        for (const chainKey of chains) {
+            const chainTokens = (typeof getTokensChain === 'function') ? getTokensChain(chainKey) : [];
+            if (Array.isArray(chainTokens)) {
+                const found = chainTokens.find(t => String(t.id) === String(id));
+                if (found) {
+                    tokens = chainTokens;
+                    tokenSourceChain = chainKey;
+                    break;
+                }
+            }
+        }
+        // Fallback to TOKEN_MULTICHAIN if not found in per-chain
+        if (!tokenSourceChain) tokens = getFromLocalStorage('TOKEN_MULTICHAIN', []);
+    } else {
+        tokens = getFromLocalStorage('TOKEN_MULTICHAIN', []);
+    }
     const token = (Array.isArray(tokens) ? tokens : []).find(t => String(t.id) === String(id));
     if (!token) {
-        // refactor: use toast helper
         if (typeof toast !== 'undefined' && toast.error) toast.error('Data token tidak ditemukan');
         return;
+    }
+    // Store source chain for CEX mode so save handler knows where to persist
+    if (m.type === 'cex' && tokenSourceChain) {
+        token._sourceChain = tokenSourceChain;
     }
 
     $('#multiTokenIndex').val(token.id);
@@ -468,18 +517,28 @@ function openEditModalById(id) {
             const c = String(m.chain).toLowerCase();
             $sel.val(c);
             if (isRunning) {
-                // During per-chain scan: keep inputs editable per request
                 $sel.prop('disabled', false).attr('title', '');
             } else {
                 $sel.prop('disabled', true).attr('title', 'Per-chain mode: Chain terkunci');
             }
             applyEditModalTheme(c);
-            // Show copy-to-multichain button in per-chain mode
             $('#CopyToMultiBtn').show();
+        } else if (m.type === 'cex') {
+            // CEX mode: set chain from token's source chain, keep editable
+            const c = String(token.chain || token._sourceChain || '').toLowerCase();
+            $sel.val(c);
+            $sel.prop('disabled', false).attr('title', '');
+            // Apply CEX theme accent
+            const cexCfg = (window.CONFIG_CEX || {})[m.cex] || {};
+            const cexColor = cexCfg.WARNA || '#333';
+            const $modal = $('#FormEditKoinModal');
+            $modal.find('.uk-modal-dialog').css('border-top', `3px solid ${cexColor}`);
+            $modal.find('#judulmodal').css({ background: cexColor, color: '#fff', borderRadius: '4px' });
+            applyEditModalTheme(c);
+            $('#CopyToMultiBtn').hide();
         } else {
             $sel.prop('disabled', false).attr('title', '');
-            applyEditModalTheme(null); // multi-mode theme
-            // Hide copy-to-multichain in multi mode
+            applyEditModalTheme(null);
             $('#CopyToMultiBtn').hide();
         }
     } catch (_) { }
@@ -569,13 +628,45 @@ function buildCexCheckboxForKoin(token) {
     const container = $('#cex-checkbox-koin');
     container.empty();
     const selected = (token.selectedCexs || []).map(s => String(s).toUpperCase());
-    Object.keys(CONFIG_CEX || {}).forEach(cexKey => {
+
+    // CEX mode: kunci ke CEX yang aktif — user tidak bisa mengubah exchanger token
+    const m = (typeof getAppMode === 'function') ? getAppMode() : { type: 'multi' };
+    const isCexMode = m.type === 'cex';
+    const activeCex = isCexMode ? String(m.cex || '').toUpperCase() : null;
+
+    getEnabledCEXs().forEach(cexKey => {
         const upper = String(cexKey).toUpperCase();
-        const isChecked = selected.includes(upper);
+        const isChecked = isCexMode ? (upper === activeCex) : selected.includes(upper);
         const color = (CONFIG_CEX[upper] && CONFIG_CEX[upper].WARNA) || '#000';
         const id = `cex-${upper}`;
-        container.append(`<label class="uk-display-block uk-margin-xsmall"><input type="checkbox" class="uk-checkbox" id="${id}" value="${upper}" ${isChecked ? 'checked' : ''}> <span style="color:${color}; font-weight:bold;">${upper}</span></label>`);
+
+        if (isCexMode) {
+            // Gunakan pointer-events:none (bukan disabled) agar form_off/form_on tidak mengubahnya
+            const opacity = upper === activeCex ? '1' : '0.35';
+            const badge = upper === activeCex
+                ? `<small style="color:#888;margin-left:5px;font-size:10px;">(mode aktif)</small>`
+                : '';
+            container.append(
+                `<label class="uk-display-block uk-margin-xsmall" style="pointer-events:none;opacity:${opacity};">` +
+                `<input type="checkbox" class="uk-checkbox" id="${id}" value="${upper}" ${isChecked ? 'checked' : ''}>` +
+                ` <span style="color:${color};font-weight:bold;">${upper}</span>${badge}</label>`
+            );
+        } else {
+            container.append(
+                `<label class="uk-display-block uk-margin-xsmall">` +
+                `<input type="checkbox" class="uk-checkbox" id="${id}" value="${upper}" ${isChecked ? 'checked' : ''}>` +
+                ` <span style="color:${color};font-weight:bold;">${upper}</span></label>`
+            );
+        }
     });
+
+    if (isCexMode && activeCex) {
+        const cexColor = (CONFIG_CEX[activeCex] && CONFIG_CEX[activeCex].WARNA) || '#555';
+        container.append(
+            `<div style="font-size:11px;color:#888;margin-top:6px;padding:3px 7px;background:#f8f8f8;border-left:3px solid ${cexColor};border-radius:2px;">` +
+            `Mode CEX — exchanger dikunci ke <b style="color:${cexColor};">${activeCex}</b></div>`
+        );
+    }
 }
 
 /** Build DEX selection checkboxes and capital inputs for edit modal. */
@@ -607,6 +698,8 @@ function buildDexCheckboxForKoin(token = {}) {
     });
 
     // Removed 4-DEX selection cap: no checkbox limit handler
+    // ✅ NOTE: MetaDEX aggregators tidak ditampilkan di sini karena modal-nya GLOBAL
+    //        (bukan per-token). Setting modal MetaDEX ada di panel Pengaturan Scanner.
 }
 
 /** Disable all form inputs globally. */

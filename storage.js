@@ -293,8 +293,9 @@
     window.exportIDB = async function () {
         try {
             const items = await idbGetAll();
+            // Semua data sudah di IndexedDB — tidak perlu export raw localStorage lagi
             return {
-                schema: 'kv-v1',
+                schema: 'kv-v2',
                 db: DB_NAME,
                 store: STORE_KV,
                 prefix: (window.storagePrefix || ''),
@@ -302,23 +303,89 @@
                 count: items.length,
                 items
             };
-        } catch (e) { return { schema: 'kv-v1', error: String(e) }; }
+        } catch (e) { return { schema: 'kv-v2', error: String(e) }; }
     };
 
     window.restoreIDB = async function (payload, opts) {
         const options = Object.assign({ overwrite: true }, opts || {});
         let ok = 0, fail = 0;
         if (!payload || !Array.isArray(payload.items)) return { ok, fail, error: 'Invalid payload' };
+
+        // ✅ FIX: Handle storage prefix mismatch
+        // Backup may have been created with different prefix (or no prefix)
+        // Current app may use a different prefix
+        // We need to normalize keys to use current prefix
+        const currentPrefix = window.storagePrefix || '';
+        const backupPrefix = payload.prefix || '';
+
+        console.log('[Restore] Current prefix:', currentPrefix || '(none)');
+        console.log('[Restore] Backup prefix:', backupPrefix || '(none)');
+        console.log('[Restore] Items to restore:', payload.items.length);
+
         for (const it of payload.items) {
             try {
                 if (!it || !it.key) { fail++; continue; }
-                // Optional: honor prefix if provided; else write as-is
-                const key = String(it.key);
-                const res = await idbSet(key, it.val);
-                if (res) { cache[key] = it.val; ok++; } else { fail++; }
-            } catch (_) { fail++; }
+
+                let key = String(it.key);
+
+                // ✅ Strip backup prefix if it exists
+                if (backupPrefix && key.startsWith(backupPrefix)) {
+                    key = key.substring(backupPrefix.length);
+                    console.log('[Restore] Stripped backup prefix from key:', it.key, '→', key);
+                }
+
+                // ✅ Apply current prefix
+                const finalKey = currentPrefix + key;
+
+                // Log important keys for debugging
+                if (key === 'CEX_API_KEYS' || key === 'ENABLED_CEXS') {
+                    console.log(`[Restore] ✅ Restoring ${key} → ${finalKey}`);
+                }
+
+                const res = await idbSet(finalKey, it.val);
+                if (res) {
+                    cache[finalKey] = it.val;
+                    ok++;
+                } else {
+                    console.warn('[Restore] Failed to save:', finalKey);
+                    fail++;
+                }
+            } catch (e) {
+                console.error('[Restore] Error processing item:', it.key, e);
+                fail++;
+            }
         }
-        return { ok, fail };
+
+        // Backward compat: import old localStorageItems ke IndexedDB (bukan raw localStorage)
+        let lsOk = 0;
+        if (Array.isArray(payload.localStorageItems)) {
+            console.log('[Restore] Migrating legacy localStorage items to IndexedDB:', payload.localStorageItems.length);
+            for (const it of payload.localStorageItems) {
+                try {
+                    if (it && it.key) {
+                        // Map legacy keys ke IndexedDB key
+                        let idbKey = it.key;
+                        let val = it.val;
+
+                        // Skip legacy MULTI_* keys (sudah di CEX_API_KEYS)
+                        if (idbKey.startsWith('MULTI_apikey') || idbKey.startsWith('MULTI_secretkey') || idbKey.startsWith('MULTI_passphrase')) continue;
+
+                        // Parse JSON string values
+                        try { val = JSON.parse(val); } catch (_) { }
+
+                        // Rename legacy keys
+                        if (idbKey === 'MULTI_USDTRate') idbKey = 'PRICE_RATE_USDT';
+
+                        const finalKey = currentPrefix + idbKey;
+                        const res = await idbSet(finalKey, val);
+                        if (res) { cache[finalKey] = val; lsOk++; }
+                    }
+                } catch (_) { }
+            }
+        }
+
+        console.log('[Restore] Complete - OK:', ok, 'Fail:', fail, 'LegacyMigrated:', lsOk);
+        return { ok, fail, lsRestored: lsOk };
     };
 
     window.downloadJSON = function (filename, obj) {
@@ -364,8 +431,25 @@ function getActiveChainLabel() {
  * - No JSON fields (all plain text)
  */
 function downloadTokenScannerCSV() {
-    const tokenData = getFromLocalStorage(getActiveTokenKeyLocal(), []);
-    const chainLabel = getActiveChainLabel();
+    const isCEXMode = !!(window.CEXModeManager && typeof window.CEXModeManager.isCEXMode === 'function' && window.CEXModeManager.isCEXMode());
+    let tokenData, chainLabel;
+    if (isCEXMode) {
+        const activeCEX = (typeof window.CEXModeManager.getSelectedCEX === 'function') ? (window.CEXModeManager.getSelectedCEX() || 'CEX') : 'CEX';
+        const chains = Object.keys(window.CONFIG_CHAINS || {});
+        const allTokens = [];
+        chains.forEach(ck => {
+            const ct = getFromLocalStorage(`TOKEN_${String(ck).toUpperCase()}`, []);
+            if (Array.isArray(ct)) allTokens.push(...ct);
+        });
+        // Filter: hanya token yang memiliki activeCEX di selectedCexs
+        tokenData = allTokens.filter(t =>
+            Array.isArray(t.selectedCexs) && t.selectedCexs.map(c => String(c).toUpperCase()).includes(activeCEX.toUpperCase())
+        );
+        chainLabel = `CEX_${activeCEX}`;
+    } else {
+        tokenData = getFromLocalStorage(getActiveTokenKeyLocal(), []);
+        chainLabel = getActiveChainLabel();
+    }
     const appName = (typeof window !== 'undefined' && window.CONFIG_APP && window.CONFIG_APP.APP && window.CONFIG_APP.APP.NAME)
         ? window.CONFIG_APP.APP.NAME
         : 'MULTIALL-PLUS';
@@ -377,7 +461,7 @@ function downloadTokenScannerCSV() {
     })(appName);
 
     // Get all available CEX and DEX from config
-    const allCex = Object.keys(window.CONFIG_CEX || {}).map(c => c.toUpperCase());
+    const allCex = getEnabledCEXs();
     const allDex = Object.keys(window.CONFIG_DEXS || {}).map(d => d.toLowerCase());
 
     // Build dynamic headers with expanded CEX and DEX columns
@@ -594,14 +678,15 @@ function uploadTokenScannerCSV(event) {
                         const isActive = (val || '').toString().trim().toUpperCase() === 'TRUE';
                         if (isActive && !obj.selectedCexs.includes(cexName)) {
                             obj.selectedCexs.push(cexName);
-                            // Initialize dataCexs entry
+                            // Initialize dataCexs entry (INDODAX: default ON karena tidak ada status API)
+                            const _dpwdDefault = cexName === 'INDODAX';
                             obj.dataCexs[cexName] = {
                                 feeWDToken: 0,
                                 feeWDPair: 0,
-                                depositToken: false,
-                                withdrawToken: false,
-                                depositPair: false,
-                                withdrawPair: false
+                                depositToken: _dpwdDefault,
+                                withdrawToken: _dpwdDefault,
+                                depositPair: _dpwdDefault,
+                                withdrawPair: _dpwdDefault
                             };
                         }
                     }
@@ -639,13 +724,15 @@ function uploadTokenScannerCSV(event) {
                         // Auto-initialize dataCexs for each selected CEX with default values
                         obj.selectedCexs.forEach(cexName => {
                             if (!obj.dataCexs[cexName]) {
+                                // INDODAX: default ON karena tidak ada status API
+                                const _dpwdDefault = cexName === 'INDODAX';
                                 obj.dataCexs[cexName] = {
                                     feeWDToken: 0,
                                     feeWDPair: 0,
-                                    depositToken: false,
-                                    withdrawToken: false,
-                                    depositPair: false,
-                                    withdrawPair: false
+                                    depositToken: _dpwdDefault,
+                                    withdrawToken: _dpwdDefault,
+                                    depositPair: _dpwdDefault,
+                                    withdrawPair: _dpwdDefault
                                 };
                             }
                         });
@@ -693,25 +780,27 @@ function uploadTokenScannerCSV(event) {
                 // === POST-PROCESSING: Auto-fill missing dataCexs with default values ===
                 // Ensure all selectedCexs have dataCexs entries
                 (obj.selectedCexs || []).forEach(cexName => {
+                    // INDODAX: default ON karena tidak ada status API
+                    const _dpwdDefault = cexName === 'INDODAX';
                     if (!obj.dataCexs[cexName]) {
                         // console.log(`[IMPORT CSV] Auto-filling dataCexs for ${cexName} with defaults`);
                         obj.dataCexs[cexName] = {
-                            feeWDToken: 0,           // Default: no fee
-                            feeWDPair: 0,            // Default: no fee
-                            depositToken: false,     // Default: deposit closed
-                            withdrawToken: false,    // Default: withdraw closed
-                            depositPair: false,      // Default: deposit closed
-                            withdrawPair: false      // Default: withdraw closed
+                            feeWDToken: 0,
+                            feeWDPair: 0,
+                            depositToken: _dpwdDefault,
+                            withdrawToken: _dpwdDefault,
+                            depositPair: _dpwdDefault,
+                            withdrawPair: _dpwdDefault
                         };
                     } else {
                         // Ensure all required fields exist with defaults
                         const defaults = {
                             feeWDToken: 0,
                             feeWDPair: 0,
-                            depositToken: false,
-                            withdrawToken: false,
-                            depositPair: false,
-                            withdrawPair: false
+                            depositToken: _dpwdDefault,
+                            withdrawToken: _dpwdDefault,
+                            depositPair: _dpwdDefault,
+                            withdrawPair: _dpwdDefault
                         };
                         // Merge with defaults to fill missing fields
                         obj.dataCexs[cexName] = { ...defaults, ...obj.dataCexs[cexName] };
@@ -758,27 +847,27 @@ function uploadTokenScannerCSV(event) {
                         throw new Error(`Chain tidak valid: ${invalidChains.join(', ')}. Available chains: ${Object.keys(CONFIG_CHAINS || {}).join(', ')}`);
                     }
 
-                    // Set target ke MULTICHAIN
-                    targetKey = 'TOKEN_MULTICHAIN';
-                    chainLabel = 'MULTICHAIN';
-
-                    // Konfirmasi dengan user untuk import multichain
                     const chainCounts = uniqueChains.map(ch => {
                         const count = tokenData.filter(t => String(t.chain || '').toLowerCase().trim() === ch).length;
                         return `  - ${ch.toUpperCase()}: ${count} token`;
                     }).join('\n');
 
-                    const confirmMsg = `📦 Deteksi CSV MULTICHAIN\n\n` +
-                        `File CSV berisi ${tokenData.length} token dari ${uniqueChains.length} chain:\n${chainCounts}\n\n` +
-                        `Data akan disimpan ke: TOKEN_MULTICHAIN\n\n` +
-                        `Lanjutkan import?`;
-
+                    const _isCEXImport = !!(window.CEXModeManager && typeof window.CEXModeManager.isCEXMode === 'function' && window.CEXModeManager.isCEXMode());
+                    const _activeCEX = _isCEXImport && typeof window.CEXModeManager.getSelectedCEX === 'function' ? (window.CEXModeManager.getSelectedCEX() || '') : '';
+                    if (_isCEXImport) {
+                        targetKey = '__CEX_MULTI__';
+                        chainLabel = `CEX_${_activeCEX}`;
+                    } else {
+                        targetKey = 'TOKEN_MULTICHAIN';
+                        chainLabel = 'MULTICHAIN';
+                    }
+                    const confirmMsg = _isCEXImport
+                        ? `📦 Import CEX Mode (Multi-Chain)\n\nFile CSV berisi ${tokenData.length} token dari ${uniqueChains.length} chain:\n${chainCounts}\n\nSetiap chain disimpan ke database chain-nya masing-masing.\n\nLanjutkan import?`
+                        : `📦 Deteksi CSV MULTICHAIN\n\nFile CSV berisi ${tokenData.length} token dari ${uniqueChains.length} chain:\n${chainCounts}\n\nData akan disimpan ke: TOKEN_MULTICHAIN\n\nLanjutkan import?`;
                     const confirmed = confirm(confirmMsg);
                     if (!confirmed) {
-                        if (typeof toast !== 'undefined' && toast.info) {
-                            toast.info('Import dibatalkan oleh user');
-                        }
-                        return; // Cancel import
+                        if (typeof toast !== 'undefined' && toast.info) toast.info('Import dibatalkan oleh user');
+                        return;
                     }
                 } else {
                     // Single chain CSV
@@ -834,13 +923,25 @@ function uploadTokenScannerCSV(event) {
                 targetKey,
                 chainLabel,
                 detectedChain,
+                activeCEX: (targetKey === '__CEX_MULTI__' && window.CEXModeManager && typeof window.CEXModeManager.getSelectedCEX === 'function') ? (window.CEXModeManager.getSelectedCEX() || '') : '',
                 fileName: file.name
             };
 
             // Update UI modal dengan info file
             try {
-                const existingData = getFromLocalStorage(targetKey, []);
-                const existingCount = Array.isArray(existingData) ? existingData.length : 0;
+                let existingCount = 0;
+                if (targetKey === '__CEX_MULTI__') {
+                    const _cex = (window._importTempData && window._importTempData.activeCEX) ? window._importTempData.activeCEX.toUpperCase() : '';
+                    Object.keys(window.CONFIG_CHAINS || {}).forEach(ck => {
+                        const ct = getFromLocalStorage(`TOKEN_${ck.toUpperCase()}`, []);
+                        if (Array.isArray(ct)) existingCount += ct.filter(t =>
+                            _cex && Array.isArray(t.selectedCexs) && t.selectedCexs.map(c => String(c).toUpperCase()).includes(_cex)
+                        ).length;
+                    });
+                } else {
+                    const existingData = getFromLocalStorage(targetKey, []);
+                    existingCount = Array.isArray(existingData) ? existingData.length : 0;
+                }
 
                 $('#import-csv-filename').text(file.name);
                 $('#import-csv-info').text(`${tokenData.length} token untuk ${chainLabel}`);
@@ -889,8 +990,20 @@ function uploadTokenScannerCSV(event) {
 $(document).on('click', '#btn-import-replace', async function () {
     if (!window._importTempData) return;
 
-    const { tokenData, targetKey, chainLabel, detectedChain } = window._importTempData;
-    const existingData = getFromLocalStorage(targetKey, []);
+    const { tokenData, targetKey, chainLabel, detectedChain, activeCEX } = window._importTempData;
+    let existingData;
+    if (targetKey === '__CEX_MULTI__') {
+        const _cex = String(activeCEX || '').toUpperCase();
+        existingData = [];
+        Object.keys(window.CONFIG_CHAINS || {}).forEach(ck => {
+            const ct = getFromLocalStorage(`TOKEN_${ck.toUpperCase()}`, []);
+            if (Array.isArray(ct)) existingData.push(...ct.filter(t =>
+                _cex && Array.isArray(t.selectedCexs) && t.selectedCexs.map(c => String(c).toUpperCase()).includes(_cex)
+            ));
+        });
+    } else {
+        existingData = getFromLocalStorage(targetKey, []);
+    }
     const existingCount = Array.isArray(existingData) ? existingData.length : 0;
 
     // Store mode and close first modal
@@ -929,8 +1042,20 @@ $(document).on('click', '#btn-import-replace', async function () {
 $(document).on('click', '#btn-import-merge', function () {
     if (!window._importTempData) return;
 
-    const { tokenData, targetKey, chainLabel } = window._importTempData;
-    const existingData = getFromLocalStorage(targetKey, []);
+    const { tokenData, targetKey, chainLabel, activeCEX: _activeCEXMerge } = window._importTempData;
+    let existingData;
+    if (targetKey === '__CEX_MULTI__') {
+        const _cex = String(_activeCEXMerge || '').toUpperCase();
+        existingData = [];
+        Object.keys(window.CONFIG_CHAINS || {}).forEach(ck => {
+            const ct = getFromLocalStorage(`TOKEN_${ck.toUpperCase()}`, []);
+            if (Array.isArray(ct)) existingData.push(...ct.filter(t =>
+                _cex && Array.isArray(t.selectedCexs) && t.selectedCexs.map(c => String(c).toUpperCase()).includes(_cex)
+            ));
+        });
+    } else {
+        existingData = getFromLocalStorage(targetKey, []);
+    }
 
     // Proses merge untuk preview
     const mergeResult = mergeTokens(existingData, tokenData);
@@ -996,7 +1121,7 @@ $(document).on('click', '#btn-import-cancel', function () {
 async function processImport() {
     if (!window._importTempData) return;
 
-    const { tokenData, targetKey, chainLabel, detectedChain, mode, mergeResult, existingCount } = window._importTempData;
+    const { tokenData, targetKey, chainLabel, detectedChain, mode, mergeResult, existingCount, activeCEX } = window._importTempData;
 
     let finalTokenData;
     let importStats;
@@ -1024,6 +1149,56 @@ async function processImport() {
     // Close modal
     if (typeof UIkit !== 'undefined' && UIkit.modal) {
         UIkit.modal('#import-confirm-modal').hide();
+    }
+
+    // CEX mode: simpan per-chain tanpa menghapus token non-CEX
+    if (targetKey === '__CEX_MULTI__') {
+        const cexUpper = String(activeCEX || '').toUpperCase();
+        // Kelompokkan token import per chain
+        const importByChain = {};
+        (finalTokenData || []).forEach(t => {
+            const ck = String(t.chain || '').toLowerCase();
+            if (ck) { if (!importByChain[ck]) importByChain[ck] = []; importByChain[ck].push(t); }
+        });
+        let allSaved = true;
+        const allChainKeys = Object.keys(window.CONFIG_CHAINS || {});
+        let totalSaved = 0;
+        for (const ck of allChainKeys) {
+            const key = `TOKEN_${ck.toUpperCase()}`;
+            const existing = getFromLocalStorage(key, []);
+            const importedForChain = importByChain[ck] || [];
+            let finalForChain;
+            if (importStats.mode === 'REPLACE') {
+                // Pertahankan token yang tidak punya activeCEX, ganti yang punya activeCEX dengan import
+                const nonCEXTokens = cexUpper
+                    ? existing.filter(t => !Array.isArray(t.selectedCexs) || !t.selectedCexs.map(c => String(c).toUpperCase()).includes(cexUpper))
+                    : existing;
+                finalForChain = [...nonCEXTokens, ...importedForChain];
+            } else {
+                // MERGE: update token matching (symbol_in|symbol_out|chain), tambah yang baru
+                finalForChain = mergeTokens(existing, importedForChain).merged;
+            }
+            if (finalForChain.length === 0 && existing.length === 0) continue;
+            const result = await (window.saveToLocalStorageAsync
+                ? window.saveToLocalStorageAsync(key, finalForChain)
+                : Promise.resolve({ ok: !!saveToLocalStorage(key, finalForChain) || true }));
+            if (!result.ok) { allSaved = false; break; }
+            totalSaved += importedForChain.length;
+        }
+        window._importTempData = null;
+        if (!allSaved) {
+            if (typeof toast !== 'undefined' && toast.error) toast.error(`Import gagal: Gagal menyimpan ke database`);
+            return;
+        }
+        try { setLastAction('IMPORT DATA KOIN (CEX)', 'success', { count: totalSaved, cex: cexUpper, mode: importStats.mode }); } catch (_) { }
+        const successMsg2 = importStats.mode === 'MERGE'
+            ? `✅ MERGE CEX BERHASIL! Update: ${importStats.updated}, Tambah: ${importStats.added}, Total: ${importStats.total} token`
+            : `✅ REPLACE CEX ${cexUpper} BERHASIL! ${totalSaved} token diperbarui (token CEX lain tetap aman)`;
+        try {
+            if (typeof reloadWithNotify === 'function') reloadWithNotify('success', successMsg2);
+            else { if (typeof toast !== 'undefined' && toast.success) toast.success(successMsg2); setTimeout(() => window.location.reload(), 1000); }
+        } catch (_) { window.location.reload(); }
+        return;
     }
 
     // ✅ FIX: Await save to ensure IndexedDB write completes before reload

@@ -257,6 +257,11 @@
                 normalizedEntries.set(indexKey, Object.assign({}, item, { _chainKey: chainKey, _symbol: symbol }));
             });
 
+            // Chain yang memang ada datanya di response CEX ini
+            const chainsWithData = new Set(
+                walletItems.map(item => normalizeChainKey(item.chain, mode))
+            );
+
             normalizedEntries.forEach(entry => {
                 const refs = coinIndex.get(`${entry._chainKey}:${entry._symbol}`);
                 if (!refs || refs.length === 0) {
@@ -329,6 +334,25 @@
                     }
                 });
             });
+
+            // Second pass: jika CEX punya data untuk chain tertentu tapi token tidak ada
+            // di response → berarti CEX tidak support token di chain ini → CLOSED
+            merged.forEach((coin, idx) => {
+                if (!allowedCexByCoin[idx].has(cexUpper)) return;
+                const coinChainKey = normalizeChainKey(coin.chain, mode);
+                // Lewati jika CEX tidak mengembalikan data apapun untuk chain ini
+                if (!chainsWithData.has(coinChainKey)) return;
+                const tokenSymbol = String(coin.symbol_in || coin.tokenName || '').toUpperCase();
+                if (!tokenSymbol) return;
+                // Jika token tidak ada di data CEX untuk chain ini → CLOSED
+                if (!normalizedEntries.has(`${coinChainKey}:${tokenSymbol}`)) {
+                    const target = ensureCexEntry(coin, cexUpper);
+                    coin.withdrawToken = false;
+                    coin.depositToken = false;
+                    target.withdrawToken = false;
+                    target.depositToken = false;
+                }
+            });
         });
 
         return merged;
@@ -342,8 +366,7 @@
             // Gunakan saveActiveTokens() untuk konsistensi dengan sistem storage
             if (typeof saveActiveTokens === 'function') {
                 saveActiveTokens(coins);
-                const storageKey = (typeof getActiveTokenKey === 'function') ? getActiveTokenKey() : 'TOKEN_MULTICHAIN';
-                // console.log(`[Wallet Exchanger] Saved ${coins.length} coins to ${storageKey}`);
+                // console.log(`[Wallet Exchanger] Saved ${coins.length} coins`);
             } else {
                 const mode = (typeof getAppMode === 'function') ? getAppMode() : { type: 'multi' };
 
@@ -396,11 +419,11 @@
             reportData.type = 'error';
         }
 
-        // ✅ FIX: Simpan report ke localStorage agar tetap tampil setelah reload
+        // Simpan report ke IndexedDB agar tetap tampil setelah reload
         try {
-            localStorage.setItem('WALLET_UPDATE_REPORT', JSON.stringify(reportData));
-        } catch(e) {
-            console.warn('[Wallet Exchanger] Failed to save report to localStorage:', e);
+            saveToLocalStorage('WALLET_UPDATE_REPORT', reportData);
+        } catch (e) {
+            console.warn('[Wallet Exchanger] Failed to save report:', e);
         }
 
         $result.fadeIn(300);
@@ -417,10 +440,8 @@
      */
     function restoreSavedReport() {
         try {
-            const savedReport = localStorage.getItem('WALLET_UPDATE_REPORT');
-            if (!savedReport) return;
-
-            const reportData = JSON.parse(savedReport);
+            const reportData = getFromLocalStorage('WALLET_UPDATE_REPORT', null);
+            if (!reportData) return;
             const $result = $('#wallet-update-result');
             const $resultText = $result.find('p');
 
@@ -428,8 +449,8 @@
             const reportAge = Date.now() - new Date(reportData.timestamp).getTime();
             const oneHour = 60 * 60 * 1000;
             if (reportAge > oneHour) {
-                // Report expired, hapus dari localStorage
-                localStorage.removeItem('WALLET_UPDATE_REPORT');
+                // Report expired, hapus
+                removeFromLocalStorage('WALLET_UPDATE_REPORT');
                 return;
             }
 
@@ -447,7 +468,7 @@
             }
 
             $result.show();
-        } catch(e) {
+        } catch (e) {
             console.warn('[Wallet Exchanger] Failed to restore report:', e);
         }
     }
@@ -467,12 +488,22 @@
         const CONFIG_CEX = root.CONFIG_CEX || {};
         const CONFIG_CHAINS = root.CONFIG_CHAINS || {};
 
+        // ✅ CEX MODE: Check if Per-CEX mode is active
+        const isCEXMode = root.CEXModeManager && root.CEXModeManager.isCEXMode();
+        const selectedCEX = isCEXMode ? root.CEXModeManager.getSelectedCEX() : null;
+
         // ✅ BARU: Ambil SEMUA CEX dari CONFIG_CEX (sumber yang sama dengan filter)
-        // Tidak lagi tergantung pada filter aktif
-        let availableCexes = Object.keys(CONFIG_CEX)
+        // Get enabled CEXs only
+        let availableCexes = getEnabledCEXs()
             .map(x => String(x).toUpperCase())
             .filter(cx => !!CONFIG_CEX[cx])
             .sort(); // Sort alphabetically untuk konsistensi
+
+        // ✅ CEX MODE: Filter to show only selected CEX
+        if (isCEXMode && selectedCEX) {
+            availableCexes = availableCexes.filter(cx => cx === selectedCEX);
+            console.log(`[Update Wallet] CEX Mode active - showing only ${selectedCEX}`);
+        }
 
         // Determine active chain
         if (mode.type === 'single') {
@@ -573,11 +604,7 @@
                     chainBreakdown[chainKey] = (chainBreakdown[chainKey] || 0) + 1;
                 });
 
-                const breakdown = Object.entries(chainBreakdown)
-                    .map(([chain, count]) => `${chain.toUpperCase()}:${count}`)
-                    .join(', ');
-
-                // console.log(`[${cexName}] Koin bermasalah (multichain): ${problemCount} dari ${totalCount} | Breakdown: ${breakdown}`);
+                // console.log(`[${cexName}] Koin bermasalah (multichain): ${problemCount} dari ${totalCount}`);
             } else {
                 // console.log(`[${cexName}] Koin bermasalah di chain ${activeChain}: ${problemCount} dari total ${totalCount}`);
             }
@@ -597,8 +624,13 @@
                 statusBadge = `<span class="uk-badge" style="background-color: #6c757d; color: white;">Belum ada data</span>`;
             }
 
+            // CEX mode atau hanya 1 CEX → full width (1 kolom)
+            const cardWidthClass = (isCEXMode || availableCexes.length === 1)
+                ? 'uk-width-1-1'
+                : 'uk-width-1-1 uk-width-1-2@m';
+
             const cardHtml = `
-                <div class="wallet-cex-grid-item uk-width-1-1 uk-width-1-2@m">
+                <div class="wallet-cex-grid-item ${cardWidthClass}">
                     <div class="wallet-cex-card ${isSelected ? 'selected' : ''}" data-cex="${cexName}">
                         <div class="wallet-cex-header" data-cex="${cexName}">
                             <div class="wallet-cex-name" style="color: ${cexColor}">
@@ -648,22 +680,13 @@
         const CONFIG_CHAINS = root.CONFIG_CHAINS || {};
         const isMultiMode = mode && mode.type === 'multi';
 
-        // Group coins by chain untuk mode multi
+        // Group coins by chain — selalu (bukan hanya multiMode) agar chain header berwarna selalu tampil
         let coinsByChain = {};
-        if (isMultiMode) {
-            coins.forEach(coin => {
-                const chainKey = getCanonicalChainKey(coin.chain) || String(coin.chain || '').toLowerCase();
-                if (!coinsByChain[chainKey]) {
-                    coinsByChain[chainKey] = [];
-                }
-                coinsByChain[chainKey].push(coin);
-            });
-        } else {
-            // Single mode: tidak perlu grouping
-            const chainKey = getCanonicalChainKey(coins[0]?.chain) || 'unknown';
-            // console.log(`[Wallet Table SINGLE MODE] Original chain: ${coins[0]?.chain} | Canonical chainKey: ${chainKey}`);
-            coinsByChain[chainKey] = coins;
-        }
+        coins.forEach(coin => {
+            const chainKey = getCanonicalChainKey(coin.chain) || String(coin.chain || '').toLowerCase();
+            if (!coinsByChain[chainKey]) coinsByChain[chainKey] = [];
+            coinsByChain[chainKey].push(coin);
+        });
 
         // Sort chains alphabetically
         const sortedChains = Object.keys(coinsByChain).sort();
@@ -686,14 +709,12 @@
                 // console.warn(`[Wallet Table] No config found for chainKey: ${chainKey}. Available keys:`, Object.keys(CONFIG_CHAINS));
             }
 
-            // Header chain untuk mode multi
-            if (isMultiMode) {
-                tableHtml += `
-                    <div class="wallet-chain-header" style="background: ${chainColor}; color: white; padding: 4px 8px; font-weight: bold; font-size: 12px; margin-top: ${chainIdx > 0 ? '8px' : '0'};">
-                        ${chainName} (${chainCoins.length} koin bermasalah)
-                    </div>
-                `;
-            }
+            // Header chain selalu tampil dengan warna chain (bukan hanya multiMode)
+            tableHtml += `
+                <div class="wallet-chain-header" style="background: ${chainColor}; color: white; padding: 6px 10px; font-weight: bold; font-size: 12px; margin-top: ${chainIdx > 0 ? '10px' : '0'}; border-radius: ${chainIdx > 0 ? '4px 4px 0 0' : '0'};">
+                    ${chainName} (${chainCoins.length} koin bermasalah)
+                </div>
+            `;
 
             tableHtml += `
                 <table class="wallet-cex-table uk-table uk-table-divider uk-table-hover uk-table-small">
@@ -1015,20 +1036,53 @@
 
         // Proses dan tampilkan hasil
         try {
-            // Load existing coins dari storage
-            const existingCoins = loadCoinsFromStorage({ applyFilter: false, mode });
-            // console.log('[Wallet Exchanger] Existing coins in storage:', existingCoins.length);
+            const isCEXMode = window.CEXModeManager && window.CEXModeManager.isCEXMode();
 
-            const mergedCoins = mergeWalletData(existingCoins, cexWalletData, mode);
-            // console.log('[Wallet Exchanger] Merged coins:', mergedCoins.length);
+            let mergedCoins;
 
-            // Debug: tampilkan sample data
-            if (mergedCoins.length > 0) {
-                // console.log('[Wallet Exchanger] Sample merged coin:', mergedCoins[0]);
+            if (isCEXMode) {
+                // ══════════════════════════════════════════════════════
+                // CEX MODE: Update SEMUA per-chain databases
+                // Data CEX diambil dari gabungan per-chain DB, jadi harus
+                // update kembali ke masing-masing per-chain DB.
+                // ══════════════════════════════════════════════════════
+                const chains = Object.keys(window.CONFIG_CHAINS || {});
+                let allMerged = [];
+
+                chains.forEach(chainKey => {
+                    if (typeof getTokensChain !== 'function') return;
+                    const chainTokens = getTokensChain(chainKey);
+                    if (!Array.isArray(chainTokens) || chainTokens.length === 0) return;
+
+                    // Merge wallet data untuk chain ini
+                    const chainMerged = mergeWalletData(chainTokens, cexWalletData, { type: 'single', chain: chainKey });
+
+                    // Save kembali ke per-chain DB
+                    if (typeof setTokensChain === 'function') {
+                        setTokensChain(chainKey, chainMerged);
+                    }
+
+                    allMerged.push(...chainMerged);
+                    console.log(`[Wallet Exchanger] CEX Mode: Updated ${chainMerged.length} tokens for chain ${chainKey}`);
+                });
+
+                // Juga update TOKEN_MULTICHAIN agar konsisten
+                const multiTokens = (typeof getFromLocalStorage === 'function')
+                    ? getFromLocalStorage('TOKEN_MULTICHAIN', []) : [];
+                if (Array.isArray(multiTokens) && multiTokens.length > 0) {
+                    const multiMerged = mergeWalletData(multiTokens, cexWalletData, { type: 'multi' });
+                    saveToLocalStorage('TOKEN_MULTICHAIN', multiMerged);
+                }
+
+                mergedCoins = allMerged;
+            } else {
+                // ══════════════════════════════════════════════════════
+                // NORMAL MODE: Load + merge + save sesuai mode aktif
+                // ══════════════════════════════════════════════════════
+                const existingCoins = loadCoinsFromStorage({ applyFilter: false, mode });
+                mergedCoins = mergeWalletData(existingCoins, cexWalletData, mode);
+                saveCoinsToStorage(mergedCoins);
             }
-
-            // Save merged data ke storage
-            saveCoinsToStorage(mergedCoins);
 
             // Re-render cards dengan data terbaru
             renderCexCards();

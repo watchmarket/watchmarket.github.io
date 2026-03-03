@@ -40,14 +40,14 @@
                 }
             });
             ratePrice.idr = parseFloat(indodaxResponse[0].ticker.last);
-            // Also store to localStorage for consistency
-            localStorage.setItem('MULTI_USDTRate', ratePrice.idr);
+            // Simpan ke IndexedDB (PRICE_RATE_USDT)
+            saveToLocalStorage('PRICE_RATE_USDT', ratePrice.idr);
             console.log('✅ IDR rate updated:', ratePrice.idr);
         }).fail(function (error) {
             console.log("-----------------------");
             console.log(error);
-            // Fallback: load from localStorage if fetch fails
-            const storedRate = parseFloat(localStorage.getItem('MULTI_USDTRate')) || 0;
+            // Fallback: load dari IndexedDB jika fetch gagal
+            const storedRate = parseFloat(getFromLocalStorage('PRICE_RATE_USDT', 0)) || 0;
             if (storedRate > 0) {
                 ratePrice.idr = storedRate;
                 console.log('ℹ️ Using stored IDR rate:', ratePrice.idr);
@@ -273,8 +273,8 @@
         console.log('✅ Calculator modal shown - inputs enabled');
     });
 
-    // Load IDR rate from localStorage on initialization
-    const storedIDRRate = parseFloat(localStorage.getItem('MULTI_USDTRate')) || 0;
+    // Load IDR rate dari IndexedDB on initialization
+    const storedIDRRate = parseFloat(getFromLocalStorage('PRICE_RATE_USDT', 0)) || 0;
     if (storedIDRRate > 0) {
         ratePrice.idr = storedIDRRate;
         console.log('✅ Loaded stored IDR rate on init:', ratePrice.idr);
@@ -283,18 +283,26 @@
     // Fetch rates on initialization
     fetchRates();
 
-    // Keyboard shortcut: Ctrl+K or Cmd+K to open calculator
+    // Keyboard shortcuts
     $(document).on('keydown', function(event) {
-        // Check for Ctrl+K (Windows/Linux) or Cmd+K (Mac)
+        // Ctrl+K / Cmd+K → buka kalkulator
         if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
             event.preventDefault();
             event.stopPropagation();
             UIkit.modal('#calculator-modal').show();
-            console.log('✅ Calculator opened via keyboard shortcut (Ctrl/Cmd+K)');
+            return false;
+        }
+        // Ctrl+S / Cmd+S → buka setting (skip jika sedang di input/textarea)
+        if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+            const tag = (event.target || {}).tagName || '';
+            if (/^(INPUT|TEXTAREA|SELECT)$/i.test(tag)) return; // biarkan browser default saat mengetik
+            event.preventDefault();
+            event.stopPropagation();
+            try { $('#SettingConfig').trigger('click'); } catch (_) { }
             return false;
         }
     });
 
-    console.log('✅ Calculator Crypto module loaded. Press Ctrl+K (or Cmd+K) to open calculator.');
+    console.log('✅ Shortcut: Ctrl+K = Kalkulator | Ctrl+S = Setting');
 
 })();

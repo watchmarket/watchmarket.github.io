@@ -40,6 +40,7 @@ let filteredTokens = [];
 let originalTokens = [];
 var SavedSettingData = getFromLocalStorage('SETTING_SCANNER', {});
 let activeSingleChainKey = null; // Active chain key (single mode)
+let syncSnapshotFetched = false; // Flag: WD/DP checkbox aktif hanya setelah SNAPSHOT button ditekan
 
 // Log scan limit configuration on load
 (function logScanLimitStatus() {
@@ -82,7 +83,7 @@ let activeSingleChainKey = null; // Active chain key (single mode)
 
 // --- Application Initialization ---
 
-// Per-mode app state is merged into FILTER_<CHAIN> / FILTER_MULTICHAIN
+// Per-mode app state is merged into FILTER_<CHAIN> / FILTER_MULTICHAIN / FILTER_CEX_<NAME>
 // Fields: { run: 'YES'|'NO', darkMode: boolean, sort: 'A'|'Z', pnl: number, ... }
 function getAppState() {
     try {
@@ -276,7 +277,7 @@ $(document).off('click.globalDelete').on('click.globalDelete', '.delete-token-bu
             setTokensChain(mode.chain, list);
             if (list.length < before) {
                 try { setLastAction('HAPUS KOIN'); } catch (_) { }
-                if (typeof toast !== 'undefined' && toast.info) toast.info(`PROSES HAPUS KOIN ${symIn} VS ${symOut} BERHASIL`);
+                if (typeof toast !== 'undefined' && toast.info) toast.info(`PROSES HAPUS KOIN ${symIn} VS ${symOut} [${chain || mode.chain || '-'}] BERHASIL`);
 
                 // FIX: Jika sedang scanning, HANYA update total koin tanpa refresh tabel
                 if (isScanning) {
@@ -293,6 +294,35 @@ $(document).off('click.globalDelete').on('click.globalDelete', '.delete-token-bu
                 }
             }
             try { $el.closest('tr').addClass('row-hidden'); } catch (_) { }
+        } else if (mode.type === 'cex') {
+            // CEX mode: find and delete from the correct per-chain database
+            let deleted = false;
+            const chains = Object.keys(window.CONFIG_CHAINS || {});
+            for (const ck of chains) {
+                let ct = (typeof getTokensChain === 'function') ? getTokensChain(ck) : [];
+                if (!Array.isArray(ct)) continue;
+                const before = ct.length;
+                ct = ct.filter(t => String(t.id) !== id);
+                if (ct.length < before) {
+                    setTokensChain(ck, ct);
+                    deleted = true;
+                    break;
+                }
+            }
+            if (deleted) {
+                try { setLastAction('HAPUS KOIN'); } catch (_) { }
+                if (typeof toast !== 'undefined' && toast.info) toast.info(`PROSES HAPUS KOIN ${symIn} VS ${symOut} [${chain || mode.chain || '-'}] BERHASIL`);
+
+                if (isScanning) {
+                    try { if (typeof updateTokenStatsOnly === 'function') updateTokenStatsOnly(); } catch (_) { }
+                    try { if (typeof updateTotalKoinOnly === 'function') updateTotalKoinOnly(); } catch (_) { }
+                    try { if (typeof window.decrementScanTotalTokens === 'function') window.decrementScanTotalTokens(); } catch (_) { }
+                } else {
+                    try { if (typeof renderTokenManagementList === 'function') renderTokenManagementList(); } catch (_) { }
+                    try { if (typeof refreshTokensTable === 'function') refreshTokensTable(); } catch (_) { }
+                }
+            }
+            try { $el.closest('tr').addClass('row-hidden'); } catch (_) { }
         } else {
             let list = getTokensMulti();
             const before = list.length;
@@ -300,18 +330,13 @@ $(document).off('click.globalDelete').on('click.globalDelete', '.delete-token-bu
             setTokensMulti(list);
             if (list.length < before) {
                 try { setLastAction('HAPUS KOIN'); } catch (_) { }
-                if (typeof toast !== 'undefined' && toast.info) toast.info(`PROSES HAPUS KOIN ${symIn} VS ${symOut} BERHASIL`);
+                if (typeof toast !== 'undefined' && toast.info) toast.info(`PROSES HAPUS KOIN ${symIn} VS ${symOut} [${chain || mode.chain || '-'}] BERHASIL`);
 
-                // FIX: Jika sedang scanning, HANYA update total koin tanpa refresh tabel
                 if (isScanning) {
-                    // Update HANYA angka total koin di header manajemen (tanpa re-render tabel)
                     try { if (typeof updateTokenStatsOnly === 'function') updateTokenStatsOnly(); } catch (_) { }
-                    // Update HANYA angka "TOTAL KOIN" di filter card (tanpa re-render filter)
                     try { if (typeof updateTotalKoinOnly === 'function') updateTotalKoinOnly(); } catch (_) { }
-                    // FIX: Update progress bar total token
                     try { if (typeof window.decrementScanTotalTokens === 'function') window.decrementScanTotalTokens(); } catch (_) { }
                 } else {
-                    // Jika TIDAK scanning, update total + refresh tabel
                     try { if (typeof renderTokenManagementList === 'function') renderTokenManagementList(); } catch (_) { }
                     try { if (typeof refreshTokensTable === 'function') refreshTokensTable(); } catch (_) { }
                 }
@@ -335,6 +360,58 @@ $(document).off('click.globalEdit').on('click.globalEdit', '.edit-token-button',
 });
 
 function refreshTokensTable() {
+    // === CEX MODE HANDLING ===
+    if (window.CEXModeManager && window.CEXModeManager.isCEXMode()) {
+        const currentCEX = window.CEXModeManager.getSelectedCEX();
+        // Pakai per-CEX filter (FILTER_CEX_BINANCE, dll)
+        const fm = (typeof getFilterCEX === 'function') ? getFilterCEX(currentCEX) : getFilterMulti();
+        const chainsSel = (fm.chains || []).map(c => String(c).toLowerCase());
+        const pairSel = (fm.pair || []).map(p => String(p).toUpperCase());
+        const dexSel = (fm.dex || []).map(d => String(d).toLowerCase());
+
+        // Fetch tokens from all chain DBs, filtered by CEX
+        window.CEXModeManager.getEnabledTokensPerCEX(currentCEX).then(tokens => {
+            let filtered = [];
+
+            // Chain dan DEX harus dipilih agar token ditampilkan (PAIR opsional)
+            if (chainsSel.length > 0 && dexSel.length > 0) {
+                // META-DEX tidak disimpan per-token, skip filter per-token untuk META-DEX
+                const regularDexSel = dexSel.filter(dx => !window.CONFIG_DEXS?.[dx]?.isMetaDex);
+                filtered = tokens
+                    .filter(t => chainsSel.includes(String(t.chain || '').toLowerCase()));
+                if (regularDexSel.length > 0) {
+                    filtered = filtered.filter(t => (t.dexs || []).some(d => regularDexSel.includes(String(d.dex || '').toLowerCase())));
+                }
+
+                // Apply PAIR Filter jika aktif
+                if (pairSel.length > 0) {
+                    filtered = filtered.filter(t => {
+                        const chainCfg = (window.CONFIG_CHAINS || {})[(t.chain || '').toLowerCase()] || {};
+                        const pd = chainCfg.PAIRDEXS || {};
+                        const p = String(t.symbol_out || '').toUpperCase().trim();
+                        const mapped = pd[p] ? p : 'NON';
+                        return pairSel.includes(mapped);
+                    });
+                }
+            }
+            // chainsSel atau dexSel kosong → filtered tetap [] (tabel kosong)
+
+            // Apply sort preference (A-Z / Z-A)
+            const sortPref = fm.sort || 'A';
+            if (typeof sortBySymbolIn === 'function') {
+                filtered = sortBySymbolIn(filtered, sortPref);
+            }
+
+            window.filteredTokens = [...filtered];
+            window.currentListOrderMulti = [...filtered];
+
+            loadKointoTable(filtered, 'dataTableBody');
+            try { applySortToggleState(); } catch (_) { }
+            attachEditButtonListeners();
+        });
+        return;
+    }
+
     const storedFilter = getFromLocalStorage('FILTER_MULTICHAIN', null);
     const filtersActive = storedFilter !== null; // null = first load
 
@@ -347,15 +424,16 @@ function refreshTokensTable() {
     let flatTokens = (typeof getFlattenedSortedMulti === 'function') ? getFlattenedSortedMulti() : flattenDataKoin(getTokensMulti());
 
     let filteredByChain = [];
-    if (!filtersActive) {
-        // First load (no saved FILTER_MULTICHAIN): show all
-        filteredByChain = flatTokens;
-    } else if (chainsSel.length > 0 && cexSel.length > 0 && dexSel.length > 0) {
+    if (chainsSel.length > 0 && cexSel.length > 0 && dexSel.length > 0) {
         // Combined filter: require both CHAIN and CEX selections
+        // META-DEX tidak disimpan per-token, skip filter per-token untuk META-DEX
+        const regularDexSel = dexSel.filter(dx => !window.CONFIG_DEXS?.[dx]?.isMetaDex);
         filteredByChain = flatTokens
             .filter(t => chainsSel.includes(String(t.chain || '').toLowerCase()))
-            .filter(t => cexSel.includes(String(t.cex || '').toUpperCase()))
-            .filter(t => (t.dexs || []).some(d => dexSel.includes(String(d.dex || '').toLowerCase())));
+            .filter(t => cexSel.includes(String(t.cex || '').toUpperCase()));
+        if (regularDexSel.length > 0) {
+            filteredByChain = filteredByChain.filter(t => (t.dexs || []).some(d => regularDexSel.includes(String(d.dex || '').toLowerCase())));
+        }
     } else {
         // One or both groups empty → show none
         filteredByChain = [];
@@ -375,8 +453,11 @@ function refreshTokensTable() {
         attachEditButtonListeners(); // Re-attach listeners after table render
     };
 
-    // Defer rendering to allow UI thread to breathe
-    if (window.requestIdleCallback) {
+    // If no tokens to display, render synchronously so empty state message
+    // is not overwritten by any subsequent deferred/async rendering
+    if (filteredTokens.length === 0) {
+        renderTable();
+    } else if (window.requestIdleCallback) {
         window.requestIdleCallback(renderTable, { timeout: 100 });
     } else {
         setTimeout(renderTable, 0);
@@ -415,7 +496,11 @@ function loadAndDisplaySingleChainTokens() {
                 const mapped = pairDefs[p] ? p : 'NON';
                 return selPair.includes(mapped);
             });
-            flatTokens = flatTokens.filter(t => (t.dexs || []).some(d => selDex.includes(String(d.dex || '').toLowerCase())));
+            // META-DEX tidak disimpan per-token, skip filter per-token untuk META-DEX
+            const regularSelDex = selDex.filter(dx => !window.CONFIG_DEXS?.[dx]?.isMetaDex);
+            if (regularSelDex.length > 0) {
+                flatTokens = flatTokens.filter(t => (t.dexs || []).some(d => regularSelDex.includes(String(d.dex || '').toLowerCase())));
+            }
         } else {
             flatTokens = [];
         }
@@ -475,10 +560,28 @@ function hasValidSettings() {
         if (!Number.isFinite(jedaGrp) || jedaGrp <= 0) return false;
         if (!Number.isFinite(jedaKoin) || jedaKoin <= 0) return false;
 
-        // Pastikan setiap chain memiliki RPC terisi (userRPCs diisi saat simpan setting)
-        const chains = Object.keys(window.CONFIG_CHAINS || {});
+        // ✅ UPDATED: Hanya validasi RPC untuk ENABLED chains (chain toggle integration)
+        // Get enabled chains (if function exists, otherwise fallback to all chains)
+        const enabledChains = (typeof getEnabledChains === 'function')
+            ? getEnabledChains()
+            : Object.keys(window.CONFIG_CHAINS || {});
+
+        // If no chains enabled, settings invalid
+        if (enabledChains.length === 0) {
+            console.warn('[SETTINGS] No enabled chains found');
+            return false;
+        }
+
         const userRPCs = (s && typeof s.userRPCs === 'object') ? s.userRPCs : {};
-        if (!chains.every((c) => userRPCs && typeof userRPCs[c] === 'string' && userRPCs[c].trim().length > 0)) {
+
+        // Check RPC ONLY for enabled chains
+        const missingRPC = enabledChains.some(chain => {
+            const rpc = userRPCs[chain];
+            return !rpc || typeof rpc !== 'string' || rpc.trim().length === 0;
+        });
+
+        if (missingRPC) {
+            console.warn('[SETTINGS] Missing RPC for enabled chains');
             return false;
         }
 
@@ -496,14 +599,18 @@ function hasValidTokens() {
         const t = getTokensChain(m.chain);
         return Array.isArray(t) && t.length > 0;
     } else {
-        const t = getTokensMulti();
-        return Array.isArray(t) && t.length > 0;
+        // Cek TOKEN_MULTICHAIN dulu
+        const tMulti = getTokensMulti();
+        if (Array.isArray(tMulti) && tMulti.length > 0) return true;
+        // Fallback: cek per-chain DBs (dipakai CEX mode & saat token disimpan per-chain)
+        const allFlat = typeof window.getAllChainTokensFlat === 'function' ? window.getAllChainTokensFlat() : [];
+        return allFlat.length > 0;
     }
 }
 
 /**
  * Dynamically render CEX API key input fields based on CONFIG_CEX
- * Generates input cards for each CEX with proper styling and passphrase support
+ * Now with per-CEX checkbox for enable/disable
  */
 function renderCEXAPIKeyInputs() {
     const container = document.getElementById('cex-api-keys-container');
@@ -512,15 +619,9 @@ function renderCEXAPIKeyInputs() {
         return;
     }
 
-    const cexList = (typeof CONFIG_CEX !== 'undefined') ? Object.keys(CONFIG_CEX) : [];
+    container.innerHTML = ''; // Clear previous content
 
-    if (cexList.length === 0) {
-        container.innerHTML = '<p class="uk-text-muted uk-text-small">No CEX configured in CONFIG_CEX</p>';
-        return;
-    }
-
-    const requiresPassphrase = ['KUCOIN', 'BITGET'];
-
+    const requiresPassphrase = ['KUCOIN', 'BITGET', 'OKX'];
     const hexToRgba = (hex, alpha = 0.08) => {
         hex = hex.replace('#', '');
         if (hex.length > 6) hex = hex.substring(0, 6);
@@ -530,42 +631,160 @@ function renderCEXAPIKeyInputs() {
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     };
 
+    // Load enabled CEXs
+    const enabledCEXs = getEnabledCEXs();
+
+    // Get all CEXs from CONFIG_CEX
+    const cexList = Object.keys(CONFIG_CEX || {});
+
     let html = '<div class="uk-grid-small uk-child-width-1-2@s" uk-grid>';
     cexList.forEach(cex => {
         const cexConfig = CONFIG_CEX[cex];
         const color = cexConfig.WARNA || '#333';
+        const icon = cexConfig.ICON || ''; // ✅ Get CEX icon
         const needsPassphrase = requiresPassphrase.includes(cex);
+        const isEnabled = enabledCEXs.includes(cex);
 
         html += `
             <div>
               <div style="background: ${hexToRgba(color)}; border-left: 3px solid ${color}; padding: 6px 8px; margin-bottom: 4px; border-radius: 4px;">
-                <div class="uk-text-small uk-text-bold" style="color: ${color}; margin-bottom: 4px;">
-                  <span uk-icon="icon: credit-card; ratio: 0.7"></span> ${cex}
+                
+                <!-- ✅ Per-CEX Toggle Switch + Icon + Name -->
+                <div class="uk-margin-small-bottom" style="display: flex; align-items: center; gap: 8px;">
+                  <label class="cex-toggle-wrapper" style="margin: 0;">
+                    <input type="checkbox" 
+                           class="cex-enable-checkbox" 
+                           data-cex="${cex}" 
+                           id="cex_enable_${cex}"
+                           ${isEnabled ? 'checked' : ''}>
+                    <span class="cex-toggle-slider"></span>
+                  </label>
+                  ${icon ? `<img src="${icon}" alt="${cex}" style="width: 18px; height: 18px; border-radius: 4px; object-fit: contain;">` : ''}
+                  <span class="uk-text-small uk-text-bold" style="color: ${color}; cursor: pointer;" onclick="document.getElementById('cex_enable_${cex}').click()">
+                    ${cex}
+                  </span>
                 </div>
-                <input type="text" class="uk-input uk-form-small" style="margin-bottom: 3px; font-size: 0.78rem;" id="cex_apikey_${cex}"
-                  placeholder="API Key" aria-label="${cex} API Key">
-                <input type="password" class="uk-input uk-form-small" style="margin-bottom: ${needsPassphrase ? '3px' : '0'}; font-size: 0.78rem;" id="cex_secret_${cex}" placeholder="Secret Key"
-                  aria-label="${cex} Secret">
-                ${needsPassphrase ? `<input type="password" class="uk-input uk-form-small" style="font-size: 0.78rem;" id="cex_passphrase_${cex}"
-                  placeholder="Passphrase (Required)" aria-label="${cex} Passphrase">` : ''}
+                
+                <!-- API Key inputs -->
+                <input type="text" class="uk-input uk-form-small cex-api-input" style="margin-bottom: 3px; font-size: 0.78rem;" 
+                  id="cex_apikey_${cex}" placeholder="API Key" aria-label="${cex} API Key" ${!isEnabled ? 'disabled' : ''}>
+                <input type="password" class="uk-input uk-form-small cex-api-input" style="margin-bottom: ${needsPassphrase ? '3px' : '0'}; font-size: 0.78rem;" 
+                  id="cex_secret_${cex}" placeholder="Secret Key" aria-label="${cex} Secret" ${!isEnabled ? 'disabled' : ''}>
+                ${needsPassphrase ? `<input type="password" class="uk-input uk-form-small cex-api-input" style="font-size: 0.78rem;" 
+                  id="cex_passphrase_${cex}" placeholder="Passphrase (Required)" aria-label="${cex} Passphrase" ${!isEnabled ? 'disabled' : ''}>` : ''}
               </div>
             </div>
         `;
     });
     html += '</div>';
-
     container.innerHTML = html;
-    console.log(`[CEX Settings] Generated ${cexList.length} CEX input field(s):`, cexList);
+
+    console.log(`[CEX Settings] Displayed ${cexList.length} CEX(s) from CONFIG_CEX:`, cexList);
 
     loadCEXApiKeys();
+
+    // ✅ Setup per-CEX checkbox handlers
+    setupCEXCheckboxHandlers();
+}
+
+/**
+ * Setup handlers for per-CEX checkboxes
+ */
+function setupCEXCheckboxHandlers() {
+    $('.cex-enable-checkbox').off('change.cexEnable').on('change.cexEnable', function () {
+        const cex = $(this).data('cex');
+        const isChecked = $(this).is(':checked');
+
+        // Enable/disable input fields
+        $(`#cex_apikey_${cex}, #cex_secret_${cex}, #cex_passphrase_${cex}`)
+            .prop('disabled', !isChecked);
+
+        // Update enabled CEXs list
+        let enabledCEXs = getEnabledCEXs();
+        if (isChecked) {
+            if (!enabledCEXs.includes(cex)) {
+                enabledCEXs.push(cex);
+            }
+        } else {
+            enabledCEXs = enabledCEXs.filter(c => c !== cex);
+        }
+
+        // Save to storage
+        saveEnabledCEXs(enabledCEXs);
+
+        // Show feedback
+        if (typeof toast !== 'undefined') {
+            if (isChecked) {
+                toast.info(`✅ ${cex} diaktifkan`);
+            } else {
+                toast.warning(`⚠️ ${cex} dinonaktifkan. CEX ini tidak akan muncul di aplikasi.`);
+            }
+        }
+
+        console.log(`[CEX Settings] ${cex} ${isChecked ? 'enabled' : 'disabled'}. Enabled list:`, enabledCEXs);
+    });
+
+    console.log('[CEX Settings] Per-CEX checkbox handlers setup complete');
+}
+
+/**
+ * Setup handlers for per-chain checkboxes
+ * Manages enabled/disabled state for chains and RPC inputs
+ */
+function setupChainCheckboxHandlers() {
+    $('.chain-enable-checkbox').off('change.chainEnable').on('change.chainEnable', function () {
+        const chain = $(this).data('chain');
+        const isChecked = $(this).is(':checked');
+
+        // Enable/disable RPC input field
+        $(`#rpc_${chain}`).prop('disabled', !isChecked);
+
+        // Update enabled chains list
+        let enabledChains = (typeof getEnabledChains === 'function') ? getEnabledChains() : [];
+        if (isChecked) {
+            if (!enabledChains.includes(chain)) {
+                enabledChains.push(chain);
+            }
+        } else {
+            enabledChains = enabledChains.filter(c => c !== chain);
+        }
+
+        // Save to storage
+        if (typeof saveEnabledChains === 'function') {
+            saveEnabledChains(enabledChains);
+        }
+
+        // Show feedback
+        if (typeof toast !== 'undefined') {
+            const chainLabel = (CONFIG_CHAINS[chain]?.Nama_Chain || chain).toUpperCase();
+            if (isChecked) {
+                toast.info(`✅ Chain ${chainLabel} diaktifkan`);
+            } else {
+                toast.warning(`⚠️ Chain ${chainLabel} dinonaktifkan. Chain ini tidak akan muncul di multichain filter dan portfolio.`);
+            }
+        }
+
+        console.log(`[CHAIN Settings] ${chain} ${isChecked ? 'enabled' : 'disabled'}. Enabled list:`, enabledChains);
+    });
+
+    console.log('[CHAIN Settings] Per-chain checkbox handlers setup complete');
 }
 
 /**
  * Load CEX API Keys from IndexedDB and populate input fields
  */
-function loadCEXApiKeys() {
+async function loadCEXApiKeys() {
     try {
-        const cexKeys = getFromLocalStorage('CEX_API_KEYS', {});
+        // Tunggu cache IDB warm terlebih dahulu agar data hasil restore terbaca
+        if (window.whenStorageReady) {
+            try { await window.whenStorageReady; } catch (_) { }
+        }
+        const raw = getFromLocalStorage('CEX_API_KEYS', null);
+        let cexKeys = raw;
+        if (typeof raw === 'string' && typeof appDecrypt === 'function') {
+            cexKeys = appDecrypt(raw) || {};
+        }
+        if (!cexKeys || typeof cexKeys !== 'object') cexKeys = {};
         const loadedCount = Object.keys(cexKeys).length;
 
         if (loadedCount > 0) {
@@ -597,12 +816,13 @@ function renderSettingsForm() {
         if (s && typeof s === 'object' && s.JedaDexs) {
             // Force remove legacy/deleted DEX keys that no longer exist
             // ✅ FIXED: 'fly' is NOT a DEX name (it's internal LIFI slug), must be removed from settings
-            const forceRemoveDexs = ['0x', 'dzap', 'fly', '1inch'];
+            // ℹ️ 'dzap' sudah kembali sebagai Meta-DEX aggregator — jangan di-remove
+            const forceRemoveDexs = ['0x', 'fly', '1inch'];
 
-            // Get list of active DEX (not disabled, not Meta-DEX)
+            // Get list of active DEX (not disabled, not Meta-DEX, not backend provider)
             const activeDexKeys = Object.keys(CONFIG_DEXS || {}).filter(key => {
                 const dexConfig = CONFIG_DEXS[key];
-                return !dexConfig.disabled && !dexConfig.isMetaDex;
+                return !dexConfig.disabled && !dexConfig.isMetaDex && !dexConfig.isBackendProvider;
             });
 
             let hasChanges = false;
@@ -624,16 +844,17 @@ function renderSettingsForm() {
     }
 
     // ✅ Generate DEX delay inputs - 100% dari CONFIG_DEXS (NO HARDCODE!)
-    // Filter: disabled=false AND isMetaDex=false
-    // Exclude: lifi, rubic, rango, kamino (Meta-DEX)
+    // Filter: disabled=false AND isMetaDex=false AND isBackendProvider=false
+    // Exclude: rubic, rango, kamino (Meta-DEX) dan lifi (Backend Provider)
     // ⚠️ NOTE: 'fly' bukan DEX name! Hanya ada 'flytrade' di CONFIG_DEXS
     const activeDexList = Object.keys(CONFIG_DEXS || {})
         .filter(dexKey => {
             const dexConfig = CONFIG_DEXS[dexKey];
-            const isActive = !dexConfig.disabled && !dexConfig.isMetaDex;
+            const isActive = !dexConfig.disabled && !dexConfig.isMetaDex && !dexConfig.isBackendProvider;
 
             // ✅ EXTRA VALIDATION: Block legacy/invalid keys
-            const invalidKeys = ['fly', '0x', 'dzap', 'paraswap', '1inch'];
+            // ℹ️ 'dzap' sudah kembali sebagai Meta-DEX aggregator — jangan diblokir di sini
+            const invalidKeys = ['fly', '0x', 'paraswap', '1inch'];
             if (invalidKeys.includes(dexKey.toLowerCase())) {
                 console.warn(`[Settings] Skipping invalid DEX key: ${dexKey}`);
                 return false;
@@ -680,6 +901,59 @@ function renderSettingsForm() {
         `;
     });
     $('#dex-delay-group').html(dexDelayHtml);
+
+    // ✅ META-DEX SETTINGS: Per-chain modal + per-aggregator enable/delay
+    if (window.CONFIG_APP?.APP?.META_DEX === true) {
+        const metaDexCfg = window.CONFIG_APP?.META_DEX_CONFIG || {};
+        const metaAggs = metaDexCfg.aggregators || {};
+        const savedMetaDexNow = (getFromLocalStorage('SETTING_SCANNER') || {}).metaDex || {};
+        const savedMetaAggs = savedMetaDexNow.aggregators || {};
+
+        let metaDexHtml = `
+        
+            <h5 class="uk-text-primary uk-text-bolder uk-margin-small-bottom"  >
+                &#x26A1; META-DEX SETTINGS
+            </h5>
+        `;
+// Options: top-N routes
+        const topN = savedMetaDexNow.topRoutes ?? 2;
+        metaDexHtml += `
+            <div style="margin-top:8px;padding:6px 8px;background:#f8f9fa;border-radius:4px;border:1px solid #e2e8f0;">
+                <div class="uk-flex uk-flex-middle" style="gap:8px;">
+                    <span style="font-size:11px;font-weight:600;">Max Route:</span>
+                    <input type="number" id="meta-dex-topN" class="uk-input uk-form-small"
+                           value="${topN}" min="1" max="4"
+                           style="width:50px;text-align:center;padding:2px 4px;">
+                </div>
+            </div>
+        `;
+        // ----- Section 1: Delay per aggregator -----
+        Object.entries(metaAggs).forEach(([aggKey, aggCfg]) => {
+            const label = (aggCfg.label || aggKey).toUpperCase();
+            const dexColor = (window.CONFIG_DEXS?.[aggKey]?.warna) || '#7c3aed';
+            const savedAgg = savedMetaAggs[aggKey] || {};
+            const savedDelay = savedAgg.jedaDex !== undefined ? savedAgg.jedaDex : aggCfg.jedaDex || 1000;
+            const chainTag = (window.CONFIG_DEXS?.[aggKey]?.evmOnly)
+                ? '<span style="background:#0ea5e9;color:#fff;padding:1px 5px;border-radius:4px;font-size:9px;margin-left:4px;">EVM</span>'
+                : '<span style="background:#6b21a8;color:#fff;padding:1px 5px;border-radius:4px;font-size:9px;margin-left:4px;">ALL</span>';
+
+            metaDexHtml += `
+                <div class="uk-flex uk-flex-middle" style="gap:6px;padding:3px 4px;border-bottom:1px solid #eee;">
+                    <span style="color:${dexColor};font-size:11px;font-weight:700;flex:1;">${label}${chainTag}</span>
+                    <input type="number" id="meta-dex-delay-${aggKey}"
+                           class="uk-input uk-form-small meta-dex-delay-input"
+                           data-agg="${aggKey}" value="${savedDelay}"
+                           style="width:60px;text-align:center;padding:2px 4px;" min="0">
+                    <span style="font-size:10px;color:#888;">ms</span>
+                </div>
+            `;
+        });
+
+        
+
+        $('#meta-dex-settings-group').html(metaDexHtml).show();
+        console.log('[Settings] META-DEX settings rendered');
+    }
 
     // Load existing settings
     const appSettings = getFromLocalStorage('SETTING_SCANNER') || {};
@@ -734,7 +1008,7 @@ function renderSettingsForm() {
         if (modalDexs[dex] !== undefined) $(this).val(modalDexs[dex]);
     });
 
-    // Generate RPC settings inputs with chain colors (compact horizontal layout)
+    // Generate RPC settings inputs with chain toggles and colors (compact horizontal layout)
     const chainList = Object.keys(CONFIG_CHAINS || {}).sort();
     // Get initial RPC values from database migrator (not hardcoded anymore)
     const getInitialRPC = (chain) => {
@@ -743,51 +1017,98 @@ function renderSettingsForm() {
         }
         return '';
     };
-    let rpcHtml = '';
 
-    chainList.forEach(chain => {
-        const cfg = CONFIG_CHAINS[chain];
-        const suggestedRpc = getInitialRPC(chain);
-        const chainLabel = (cfg.Nama_Chain || chain).toUpperCase();
-        const chainColor = cfg.WARNA || '#333';
-        const chainIcon = cfg.ICON || '';
+    // Load enabled chains from storage (for initial toggle state only)
+    const enabledChains = (typeof getEnabledChains === 'function') ? getEnabledChains() : [];
+
+    // Helper function untuk hex to rgba (same as CEX)
+    const hexToRgba = (hex, alpha = 0.05) => {
+        hex = hex.replace('#', '');
+        if (hex.length > 6) hex = hex.substring(0, 6);
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    };
+
+    // ✅ Default RPC values (from user specification)
+    const defaultRPCs = {
+        'arbitrum': 'https://arbitrum-one-rpc.publicnode.com',
+        'base': 'https://1rpc.io/base',
+        'bsc': 'https://bsc-dataseed1.binance.org',
+        'ethereum': 'https://eth.llamarpc.com',
+        'polygon': 'https://polygon-pokt.nodies.app',
+        'solana': 'https://api.mainnet-beta.solana.com'
+    };
+
+    // ✅ RENDER RPC SETTINGS - CEX-style with colored background
+    let rpcHtml = '';
+    Object.keys(CONFIG_CHAINS || {}).forEach(chain => {
+        const chainLabel = CONFIG_CHAINS[chain]?.Nama_Chain || chain.toUpperCase();
+        const chainShortLabel = CONFIG_CHAINS[chain]?.Nama_Pendek || chain.toUpperCase();
+        const chainColor = CONFIG_CHAINS[chain]?.WARNA || '#666';
+        const chainIcon = CONFIG_CHAINS[chain]?.ICON || '';
+        const defaultRpc = defaultRPCs[chain.toLowerCase()] || CONFIG_CHAINS[chain]?.RPC?.[0] || '';
+        const isEnabled = enabledChains.includes(chain);
 
         rpcHtml += `
-            <div class="uk-margin-small-bottom" style="border-left: 3px solid ${chainColor}; padding-left: 8px; padding-top: 4px; padding-bottom: 4px; background: ${chainColor}08;">
-                <div class="uk-grid-small uk-flex-middle" uk-grid>
-                    <div class="uk-width-auto">
-                        <div class="uk-flex uk-flex-middle">
-                            ${chainIcon ? `<img src="${chainIcon}" alt="${chainLabel}" style="width:16px; height:16px; margin-right:6px; border-radius:50%;">` : ''}
-                            <label class="uk-text-bold uk-margin-remove" style="color: ${chainColor}; font-size: 13px; min-width: 90px;">
-                                ${chainLabel}
-                            </label>
-                        </div>
-                    </div>
-                    <div class="uk-width-expand">
-                        <input type="text" class="uk-input uk-form-small rpc-input"
+            <div class="rpc-card-cex-style" style="background: ${hexToRgba(chainColor)}; border-left: 3px solid ${chainColor};">
+                <!-- Toggle + Icon + Name -->
+                <div class="uk-margin-small-bottom" style="display: flex; align-items: center; gap: 8px;">
+                    <label class="cex-toggle-wrapper" style="margin: 0;">
+                        <input type="checkbox" 
+                               class="rpc-enable-toggle" 
                                data-chain="${chain}"
-                               placeholder="${suggestedRpc}"
-                               value=""
-                               style="font-size:12px; font-family: monospace; border-color: ${chainColor}40; padding: 4px 8px; height: 28px;">
-                        <small class="uk-text-muted" style="font-size: 10px;">Default: ${suggestedRpc || 'N/A'}</small>
-                    </div>
+                               ${isEnabled ? 'checked' : ''}>
+                        <span class="cex-toggle-slider"></span>
+                    </label>
+                    ${chainIcon ? `<img src="${chainIcon}" alt="${chainLabel}" style="width: 18px; height: 18px; border-radius: 4px; object-fit: contain;">` : ''}
+                    <span class="uk-text-small uk-text-bold" style="color: ${chainColor};">
+                        ${chainLabel.toUpperCase()}
+                    </span>
                 </div>
+                
+                <!-- RPC Input -->
+                <input type="text" 
+                       class="uk-input uk-form-small rpc-input"
+                       data-chain="${chain}"
+                       id="rpc_${chain}"
+                       placeholder="${defaultRpc}"
+                       style="margin-bottom: 3px; font-size: 0.78rem;">
+                <div class="rpc-default-label">Default: <span style="color: #0052ff;">${defaultRpc || 'N/A'}</span></div>
+                
+                <!-- Wallet Input -->
+                <input type="text"
+                       class="uk-input uk-form-small wallet-input"
+                       data-chain="${chain}"
+                       id="wallet_${chain}"
+                       placeholder="${chain === 'solana' ? 'Solana Address' : '0x... (Wallet Address)'}"
+                       style="font-size: 0.78rem; margin-top: 3px;">
             </div>
         `;
     });
+
     $('#rpc-settings-group').html(rpcHtml);
 
-    // Load user RPCs dari setting (jika ada), atau auto-fill dengan default
+    // ✅ Load user RPCs and Wallets from settings
     const userRPCs = appSettings.userRPCs || {};
+    const userWallets = appSettings.userWallets || {};
+
     $('.rpc-input').each(function () {
         const chain = $(this).data('chain');
         if (userRPCs[chain]) {
-            // User sudah punya custom RPC
             $(this).val(userRPCs[chain]);
         } else {
-            // Auto-fill dengan default suggestion untuk kemudahan user
-            const initialRPC = getInitialRPC(chain);
-            if (initialRPC) $(this).val(initialRPC);
+            // Auto-fill with default RPC
+            const defaultRpc = defaultRPCs[chain.toLowerCase()];
+            if (defaultRpc) $(this).val(defaultRpc);
+        }
+    });
+
+    $('.wallet-input').each(function () {
+        const chain = $(this).data('chain');
+        if (userWallets[chain]) {
+            $(this).val(userWallets[chain]);
         }
     });
 
@@ -832,14 +1153,14 @@ function bootApp() {
             // Legacy/invalid DEX keys yang harus di-remove (tidak ada di CONFIG_DEXS)
             // ✅ 'fly' = internal LIFI slug (bukan DEX standalone)
             // ✅ '0x' = diganti jadi 'matcha'
-            // ✅ 'dzap' = removed (jadi provider internal saja)
             // ✅ '1inch' = removed (diganti jadi 'relay')
-            const forceRemoveDexs = ['fly', '0x', 'dzap', 'paraswap', '1inch'];
+            // ℹ️ 'dzap' sudah kembali sebagai Meta-DEX aggregator (jangan di-remove)
+            const forceRemoveDexs = ['fly', '0x', 'paraswap', '1inch'];
 
-            // Get list of active DEX from CONFIG_DEXS (disabled=false AND isMetaDex=false)
+            // Get list of active DEX from CONFIG_DEXS (disabled=false AND isMetaDex=false AND isBackendProvider=false)
             const activeDexKeys = Object.keys(CONFIG_DEXS || {}).filter(key => {
                 const cfg = CONFIG_DEXS[key];
-                return !cfg.disabled && !cfg.isMetaDex;
+                return !cfg.disabled && !cfg.isMetaDex && !cfg.isBackendProvider;
             });
 
             console.log('[Cleanup] Active DEX from CONFIG_DEXS:', activeDexKeys);
@@ -932,7 +1253,16 @@ function cekDataAwal() {
     let errorMessages = [];
 
     const mBoot = getAppMode();
-    let DataTokens = (mBoot.type === 'single') ? getTokensChain(mBoot.chain) : getTokensMulti();
+    let DataTokens;
+    if (mBoot.type === 'single') {
+        DataTokens = getTokensChain(mBoot.chain);
+    } else {
+        DataTokens = getTokensMulti();
+        // Fallback ke per-chain DBs jika TOKEN_MULTICHAIN kosong (CEX mode pakai getAllChainTokensFlat)
+        if ((!Array.isArray(DataTokens) || DataTokens.length === 0) && typeof window.getAllChainTokensFlat === 'function') {
+            DataTokens = window.getAllChainTokensFlat();
+        }
+    }
     let SavedSettingData = getFromLocalStorage('SETTING_SCANNER', {});
 
     if (!Array.isArray(DataTokens) || DataTokens.length === 0) {
@@ -1064,18 +1394,33 @@ async function deferredInit() {
         if (m.mode === 'multi') {
             const fmNow = getFilterMulti();
             const chainsSel = fmNow.chains || [];
-            const cexSel = fmNow.cex || [];
+            let cexSel = fmNow.cex || [];
             const dexSel = (fmNow.dex || []).map(x => String(x).toLowerCase());
-            const flat = flattenDataKoin(getTokensMulti()) || [];
+
+            // CEX mode: pakai semua chain DB, filter by CEX
+            const cexActive = window.CEXModeManager && window.CEXModeManager.isCEXMode();
+            let flat = cexActive
+                ? (typeof getAllChainTokensFlat === 'function' ? getAllChainTokensFlat() : flattenDataKoin(getTokensMulti()) || [])
+                : flattenDataKoin(getTokensMulti()) || [];
+
+            if (cexActive) {
+                const selCEX = window.CEXModeManager.getSelectedCEX();
+                flat = flat.filter(t => String(t.cex || '').toUpperCase() === selCEX);
+                cexSel = [selCEX];
+            }
+
             const saved = getFromLocalStorage('FILTER_MULTICHAIN', null);
 
             if (!saved) {
                 total = flat.length;
             } else if (chainsSel.length > 0 && cexSel.length > 0 && dexSel.length > 0) {
-                total = flat.filter(t => chainsSel.includes(String(t.chain || '').toLowerCase()))
-                    .filter(t => cexSel.includes(String(t.cex || '').toUpperCase()))
-                    .filter(t => (t.dexs || []).some(d => dexSel.includes(String(d.dex || '').toLowerCase())))
-                    .length;
+                const regularDexSel = dexSel.filter(dx => !window.CONFIG_DEXS?.[dx]?.isMetaDex);
+                let totalFlat = flat.filter(t => chainsSel.includes(String(t.chain || '').toLowerCase()))
+                    .filter(t => cexSel.includes(String(t.cex || '').toUpperCase()));
+                if (regularDexSel.length > 0) {
+                    totalFlat = totalFlat.filter(t => (t.dexs || []).some(d => regularDexSel.includes(String(d.dex || '').toLowerCase())));
+                }
+                total = totalFlat.length;
             } else {
                 total = 0;
             }
@@ -1089,14 +1434,17 @@ async function deferredInit() {
             const pairDefs = (CONFIG_CHAINS[chain] || {}).PAIRDEXS || {};
 
             if (cexSel.length && pairSel.length && dexSel.length) {
-                total = flat.filter(t => cexSel.includes(String(t.cex || '').toUpperCase()))
+                const regularDexSelSc = dexSel.filter(dx => !window.CONFIG_DEXS?.[dx]?.isMetaDex);
+                let totalFlat = flat.filter(t => cexSel.includes(String(t.cex || '').toUpperCase()))
                     .filter(t => {
                         const p = String(t.symbol_out || '').toUpperCase();
                         const key = pairDefs[p] ? p : 'NON';
                         return pairSel.includes(key);
-                    })
-                    .filter(t => (t.dexs || []).some(d => dexSel.includes(String(d.dex || '').toLowerCase())))
-                    .length;
+                    });
+                if (regularDexSelSc.length > 0) {
+                    totalFlat = totalFlat.filter(t => (t.dexs || []).some(d => regularDexSelSc.includes(String(d.dex || '').toLowerCase())));
+                }
+                total = totalFlat.length;
             } else {
                 total = 0;
             }
@@ -1140,12 +1488,24 @@ async function deferredInit() {
 
         let $sum = $(`<span id="total-koin-badge" class="uk-text-small" style="font-weight:bolder; color: white; background-color: ${accentColor}; padding: 2px 8px; border-radius: 4px;">TOTAL KOIN: 0</span>`);
         if (m.mode === 'multi') {
-            const fmNow = getFilterMulti();
+            // CEX mode: pakai per-CEX filter, bukan FILTER_MULTICHAIN
+            const cexActive = window.CEXModeManager && window.CEXModeManager.isCEXMode();
+            const fmNow = (cexActive && typeof getFilterCEX === 'function')
+                ? getFilterCEX(window.CEXModeManager.getSelectedCEX())
+                : getFilterMulti();
             // FIX: Don't default to all chains, respect the user's saved empty selection.
             const chainsSel = fmNow.chains || [];
-            const cexSel = fmNow.cex || [];
+            let cexSel = fmNow.cex || [];
             const dexSel = (fmNow.dex || []).map(x => String(x).toLowerCase());
-            const flat = flattenDataKoin(getTokensMulti()) || [];
+            let flat = cexActive
+                ? (typeof getAllChainTokensFlat === 'function' ? getAllChainTokensFlat() : flattenDataKoin(getTokensMulti()) || [])
+                : flattenDataKoin(getTokensMulti()) || [];
+
+            if (cexActive) {
+                const selCEX = window.CEXModeManager.getSelectedCEX();
+                flat = flat.filter(t => String(t.cex || '').toUpperCase() === selCEX);
+                cexSel = [selCEX];
+            }
             const byChain = flat.reduce((a, t) => { const k = String(t.chain || '').toLowerCase(); a[k] = (a[k] || 0) + 1; return a; }, {});
             const byCex = flat.filter(t => (chainsSel.length === 0 || chainsSel.includes(String(t.chain || '').toLowerCase())))
                 .reduce((a, t) => { const k = String(t.cex || '').toUpperCase(); a[k] = (a[k] || 0) + 1; return a; }, {});
@@ -1165,25 +1525,34 @@ async function deferredInit() {
                 $secChain.append(chipHtml('fc-chain', id, short, CONFIG_CHAINS[k].WARNA, cnt, checked, k.toLowerCase(), false));
             });
             const $secCex = $('<div class="uk-flex uk-flex-middle" style="gap:8px;flex-wrap:wrap;"><span class="uk-text-danger">EXCH:</span></div>');
-            Object.keys(CONFIG_CEX || {}).forEach(cx => {
+            getEnabledCEXs().forEach(cx => {
                 const id = `fc-cex-${cx}`; const cnt = byCex[cx] || 0; if (cnt === 0) return; const checked = cexSel.includes(cx.toUpperCase());
                 $secCex.append(chipHtml('fc-cex', id, cx, CONFIG_CEX[cx].WARNA, cnt, checked, cx, false));
             });
             const $secDex = $('<div class="uk-flex uk-flex-middle" style="gap:8px;flex-wrap:wrap;"><span class="uk-text-bolder uk-text-danger">DEX:</span></div>');
-            // ✅ Filter: Hanya tampilkan DEX asli (not disabled, not Meta-DEX)
+            // ✅ Filter: Hanya tampilkan DEX asli (not disabled, not Meta-DEX, not Backend Provider)
             // Meta-DEX hanya muncul jika CONFIG_APP.APP.META_DEX === true
+            // Backend Provider (lifi) tidak pernah muncul sebagai DEX column
             const metaDexEnabled = (CONFIG_APP && CONFIG_APP.APP && CONFIG_APP.APP.META_DEX === true);
             Object.keys(CONFIG_DEXS || {}).forEach(dx => {
                 const dexConfig = CONFIG_DEXS[dx];
                 // Skip jika disabled
                 if (dexConfig.disabled) return;
+                // Skip Backend Provider (internal only, tidak tampil di UI)
+                if (dexConfig.isBackendProvider) return;
                 // Skip Meta-DEX jika META_DEX disabled
                 if (dexConfig.isMetaDex && !metaDexEnabled) return;
+                // Skip Meta-DEX yang tidak ada di META_DEX_CONFIG.aggregators (inactive/commented out)
+                if (dexConfig.isMetaDex && !window.CONFIG_APP?.META_DEX_CONFIG?.aggregators?.[dx]) return;
+                // Skip EVM-only Meta-DEX jika HANYA Solana yang dipilih
+                if (dexConfig.isMetaDex && dexConfig.evmOnly && chainsSel.length > 0 && chainsSel.every(c => c === 'solana')) return;
+                // Skip Solana-only Meta-DEX jika tidak ada Solana dipilih
+                if (dexConfig.isMetaDex && dexConfig.solanaOnly && !chainsSel.includes('solana')) return;
 
                 const key = String(dx).toLowerCase();
                 const id = `fc-dex-${key}`; const cnt = byDex[key] || 0; if (cnt === 0) return; const checked = dexSel.includes(key);
                 const col = (dexConfig.warna || dexConfig.WARNA) || '#333';
-                $secDex.append(chipHtml('fc-dex', id, dx.toUpperCase(), col, cnt, checked, key, false));
+                $secDex.append(chipHtml('fc-dex', id, (dexConfig.label || dx).toUpperCase(), col, cnt, checked, key, false));
             });
             if ($headLabels.length)
                 $wrap.append($secChain).append($('<div class=\"uk-text-muted\">|</div>')).append($secCex).append($('<div class=\"uk-text-muted\">|</div>')).append($secDex);
@@ -1204,6 +1573,32 @@ async function deferredInit() {
             // Search input now in HTML (next to WALLET CEX checkbox)
             $wrap.append($right);
             $('#modal-filter-sections').off('change.multif').on('change.multif', 'label.fc-chain input, label.fc-cex input, label.fc-dex input', function () {
+                // LIMIT_METADEX: batasi jumlah META-DEX yang bisa dipilih
+                const $lbl = $(this).closest('label');
+                if ($lbl.hasClass('fc-dex') && $(this).prop('checked')) {
+                    const changedVal = $lbl.attr('data-val');
+                    if (window.CONFIG_DEXS?.[changedVal]?.isMetaDex) {
+                        const limitMeta = window.CONFIG_APP?.APP?.LIMIT_METADEX || 0;
+                        if (limitMeta > 0) {
+                            const $checkedMeta = $('#modal-filter-sections').find('label.fc-dex').filter(function () {
+                                return !!window.CONFIG_DEXS?.[$(this).attr('data-val')]?.isMetaDex && $(this).find('input').prop('checked');
+                            });
+                            const toUncheck = $checkedMeta.length - limitMeta;
+                            if (toUncheck > 0) {
+                                let done = 0;
+                                $checkedMeta.each(function () {
+                                    if (done >= toUncheck) return false;
+                                    if ($(this).attr('data-val') !== changedVal) {
+                                        $(this).find('input').prop('checked', false);
+                                        $(this).css({ 'border-color': '#c4b5fd', 'background': 'white' });
+                                        done++;
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+
                 const prev = getFilterMulti();
                 const prevChains = (prev.chains || []).map(s => String(s).toLowerCase());
                 const prevCex = (prev.cex || []).map(s => String(s).toUpperCase());
@@ -1213,7 +1608,13 @@ async function deferredInit() {
                 const cex = $('#modal-filter-sections').find('label.fc-cex input:checked').map(function () { return $(this).closest('label').attr('data-val').toUpperCase(); }).get();
                 const dex = $('#modal-filter-sections').find('label.fc-dex input:checked').map(function () { return $(this).closest('label').attr('data-val').toLowerCase(); }).get();
 
-                setFilterMulti({ chains, cex, dex });
+                // CEX mode → simpan ke FILTER_CEX_<NAME>, multi → simpan ke FILTER_MULTICHAIN
+                const isCEXModeNow = window.CEXModeManager && window.CEXModeManager.isCEXMode();
+                if (isCEXModeNow && typeof setFilterCEX === 'function') {
+                    setFilterCEX(window.CEXModeManager.getSelectedCEX(), { chains, dex });
+                } else {
+                    setFilterMulti({ chains, cex, dex });
+                }
 
                 // Build detailed toast message
                 const addChains = chains.filter(x => !prevChains.includes(x)).map(x => x.toUpperCase());
@@ -1229,7 +1630,8 @@ async function deferredInit() {
                 if (delCex.length) parts.push(`-CEX: ${delCex.join(', ')}`);
                 if (addDex.length) parts.push(`+DEX: ${addDex.join(', ')}`);
                 if (delDex.length) parts.push(`-DEX: ${delDex.join(', ')}`);
-                const msg = parts.length ? parts.join(' | ') : `Filter MULTI diperbarui: CHAIN=${chains.length}, CEX=${cex.length}`;
+                const modeLabel = isCEXModeNow ? `CEX ${window.CEXModeManager.getSelectedCEX()}` : 'MULTI';
+                const msg = parts.length ? parts.join(' | ') : `Filter ${modeLabel} diperbarui: CHAIN=${chains.length}, DEX=${dex.length}`;
                 try { if (typeof toast !== 'undefined' && toast.info) toast.info(msg); } catch (_) { }
 
                 // searchInput in filter card is now used for both monitoring and management tables
@@ -1285,15 +1687,18 @@ async function deferredInit() {
             dexAllowed.forEach(dx => {
                 const id = `sc-dex-${dx}`; const cnt = byDex[dx] || 0; if (cnt === 0) return; const checked = dexSel.includes(dx);
                 const col = (CONFIG_DEXS[dx] && (CONFIG_DEXS[dx].warna || CONFIG_DEXS[dx].WARNA)) || '#333';
-                $secDex.append(chipHtml('sc-dex', id, dx.toUpperCase(), col, cnt, checked, dx, false));
+                $secDex.append(chipHtml('sc-dex', id, (CONFIG_DEXS[dx]?.label || dx).toUpperCase(), col, cnt, checked, dx, false));
             });
             if ($headLabels.length)
                 $wrap.append($secCex).append($('<div class=\"uk-text-muted\">|</div>')).append($secPair).append($('<div class=\"uk-text-muted\">|</div>')).append($secDex);
             let totalSingle = 0;
             if ((cexSel && cexSel.length) && (pairSel && pairSel.length) && (dexSel && dexSel.length)) {
-                const filtered = flat.filter(t => cexSel.includes(String(t.cex || '').toUpperCase()))
-                    .filter(t => { const p = String(t.symbol_out || '').toUpperCase(); const key = pairDefs[p] ? p : 'NON'; return pairSel.includes(key); })
-                    .filter(t => (t.dexs || []).some(d => dexSel.includes(String(d.dex || '').toLowerCase())));
+                const regularDexSelInline = dexSel.filter(dx => !window.CONFIG_DEXS?.[dx]?.isMetaDex);
+                let filtered = flat.filter(t => cexSel.includes(String(t.cex || '').toUpperCase()))
+                    .filter(t => { const p = String(t.symbol_out || '').toUpperCase(); const key = pairDefs[p] ? p : 'NON'; return pairSel.includes(key); });
+                if (regularDexSelInline.length > 0) {
+                    filtered = filtered.filter(t => (t.dexs || []).some(d => regularDexSelInline.includes(String(d.dex || '').toLowerCase())));
+                }
                 totalSingle = filtered.length;
             } else {
                 totalSingle = 0;
@@ -1444,6 +1849,8 @@ async function deferredInit() {
     }
 
     renderFilterCard();
+    // Expose untuk dipanggil ulang dari CEX mode init
+    window.renderFilterCard = renderFilterCard;
 
     // Render filter card to modal
     function renderFilterCardToModal() {
@@ -1451,11 +1858,22 @@ async function deferredInit() {
         if (!$wrap.length) return;
         $wrap.empty();
 
-        const m = getMode();
+        // ✅ CEX MODE: Treat as multichain mode (show all chains)
+        const isCEXMode = window.CEXModeManager && window.CEXModeManager.isCEXMode();
+        let m = getMode();
+
+        // Override mode to 'multi' if CEX mode is active
+        if (isCEXMode) {
+            m = { mode: 'multi', chain: null };
+        }
 
         // Determine accent color based on mode
         let accentColor = '#5c9514'; // Default for multi-chain
-        if (m.mode === 'single') {
+        if (isCEXMode) {
+            const currentCEX = window.CEXModeManager.getSelectedCEX();
+            const cexConfig = window.CONFIG_CEX?.[currentCEX];
+            accentColor = cexConfig?.WARNA || '#1448ce';
+        } else if (m.mode === 'single') {
             const cfg = (CONFIG_CHAINS && CONFIG_CHAINS[m.chain]) ? CONFIG_CHAINS[m.chain] : null;
             accentColor = cfg?.WARNA || '#333';
         }
@@ -1464,11 +1882,41 @@ async function deferredInit() {
         let $sum = $(`<span id="modal-total-koin-badge" class="uk-text-small" style="font-weight:bolder; color: white; background-color: ${accentColor}; padding: 2px 8px; border-radius: 4px;">TOTAL KOIN: 0</span>`);
 
         if (m.mode === 'multi') {
-            const fmNow = getFilterMulti();
+            // CEX mode: pakai per-CEX filter, bukan FILTER_MULTICHAIN
+            const isCEXModeNow = window.CEXModeManager && window.CEXModeManager.isCEXMode();
+            const fmNow = (isCEXModeNow && typeof getFilterCEX === 'function')
+                ? getFilterCEX(window.CEXModeManager.getSelectedCEX())
+                : getFilterMulti();
             const chainsSel = fmNow.chains || [];
-            const cexSel = fmNow.cex || [];
+            let cexSel = fmNow.cex || [];
             const dexSel = (fmNow.dex || []).map(x => String(x).toLowerCase());
-            const flat = flattenDataKoin(getTokensMulti()) || [];
+            let flat = isCEXModeNow
+                ? (typeof getAllChainTokensFlat === 'function' ? getAllChainTokensFlat() : flattenDataKoin(getTokensMulti()) || [])
+                : flattenDataKoin(getTokensMulti()) || [];
+
+            if (isCEXModeNow) {
+                const selCEX = window.CEXModeManager.getSelectedCEX();
+                flat = flat.filter(t => String(t.cex || '').toUpperCase() === selCEX);
+                cexSel = [selCEX];
+            }
+            // If no tokens exist, show import message and skip filter sections
+            if (flat.length === 0) {
+                const _cexLabel = isCEXModeNow ? window.CEXModeManager.getSelectedCEX() : null;
+                const _noTokenMsg = isCEXModeNow
+                    ? `<div style="padding:24px 16px; text-align:center;">
+                        <div style="font-size:13px; font-weight:700; color:#e74c3c; margin-bottom:8px;">⚠️ Belum ada koin untuk EXCHANGER <b>${_cexLabel}</b></div>
+                        <div style="font-size:12px; color:#666;">Tambahkan koin di mode chain dan set exchanger ke <b>${_cexLabel}</b>.</div>
+                       </div>`
+                    : `<div style="padding:24px 16px; text-align:center;">
+                        <div style="font-size:13px; font-weight:700; color:#e74c3c; margin-bottom:8px;">⚠️ Belum ada koin untuk mode MULTICHAIN</div>
+                        <div style="font-size:12px; color:#666; margin-bottom:12px;">Gunakan tombol <b>IMPORT</b> di halaman Manajemen Koin untuk menambahkan koin.</div>
+                       </div>`;
+                $wrap.append($(_noTokenMsg));
+                $sum.text('TOTAL KOIN: 0');
+                $('#modal-summary-bar').empty().append($sum);
+                return;
+            }
+
             const byChain = flat.reduce((a, t) => { const k = String(t.chain || '').toLowerCase(); a[k] = (a[k] || 0) + 1; return a; }, {});
             const byCex = flat.filter(t => (chainsSel.length === 0 || chainsSel.includes(String(t.chain || '').toLowerCase())))
                 .reduce((a, t) => { const k = String(t.cex || '').toUpperCase(); a[k] = (a[k] || 0) + 1; return a; }, {});
@@ -1480,11 +1928,23 @@ async function deferredInit() {
                 return a;
             }, {});
 
-            // Section 1: CHAIN (horizontal flex)
+            // Section 1: CHAIN (horizontal flex) - ✅ FILTERED BY ENABLED CHAINS
             const $chainSection = $('<div style="margin-bottom:15px;"></div>');
             $chainSection.append($('<div style="font-weight:700; color:#333; margin-bottom:8px; font-size:12px; border-bottom:2px solid #e5e5e5; padding-bottom:4px;">CHAIN</div>'));
             const $chainGrid = $('<div style="display:flex; flex-wrap:wrap; gap:6px;"></div>');
+
+            // ✅ Get enabled chains for filtering
+            const enabledChains = (typeof getEnabledChains === 'function')
+                ? getEnabledChains()
+                : Object.keys(CONFIG_CHAINS || {}); // Fallback: show all
+
             Object.keys(CONFIG_CHAINS || {}).forEach(k => {
+                // ✅ FILTER: Only show enabled chains
+                if (!enabledChains.includes(k)) {
+                    console.log(`[FILTER] Chain ${k} disabled, skipping chip render`);
+                    return; // Skip disabled chain
+                }
+
                 const short = (CONFIG_CHAINS[k].Nama_Pendek || k.substr(0, 3)).toUpperCase();
                 const id = `modal-fc-chain-${k}`; const cnt = byChain[k] || 0;
                 if (cnt === 0) return;
@@ -1499,60 +1959,185 @@ async function deferredInit() {
                 `));
             });
             $chainSection.append($chainGrid);
-            $wrap.append($chainSection);
 
-            // Section 2: EXCHANGER (horizontal flex)
-            const $cexSection = $('<div style="margin-bottom:15px;"></div>');
-            $cexSection.append($('<div style="font-weight:700; color:#333; margin-bottom:8px; font-size:12px; border-bottom:2px solid #e5e5e5; padding-bottom:4px;">EXCHANGER</div>'));
-            const $cexGrid = $('<div style="display:flex; flex-wrap:wrap; gap:6px;"></div>');
-            Object.keys(CONFIG_CEX || {}).forEach(cx => {
-                const id = `modal-fc-cex-${cx}`; const cnt = byCex[cx] || 0; if (cnt === 0) return; const checked = cexSel.includes(cx.toUpperCase());
-                const col = CONFIG_CEX[cx].WARNA || '#333';
-                $cexGrid.append($(`
-                    <label class="fc-cex" data-val="${cx}" data-color="${col}" for="${id}" style="display:flex; align-items:center; gap:3px; padding:3px 8px; border-radius:3px; cursor:pointer; border:2px solid ${checked ? col : 'transparent'}; background:${checked ? '#f8f8f8' : 'white'};">
-                        <input type="checkbox" id="${id}" ${checked ? 'checked' : ''} style="width:11px; height:11px; margin:0;">
-                        <span style="font-weight:600; font-size:10px; color:${col};">${cx}</span>
-                        <span style="font-size:9px; opacity:0.7; color:#555;">[${cnt}]</span>
-                    </label>
-                `));
-            });
-            $cexSection.append($cexGrid);
-            $wrap.append($cexSection);
+            // Section 2: EXCHANGER / PAIR
+            // ✅ CEX MODE: Hide exchanger filter if in Per-CEX mode
+            const isCEXMode = window.CEXModeManager && window.CEXModeManager.isCEXMode();
 
-            // Section 3: DEX (horizontal flex)
+            // Build DEX section (shared between CEX and multichain)
+            // ======== SECTION DEX (bukan MetaDEX) ========
             const $dexSection = $('<div style="margin-bottom:15px;"></div>');
             $dexSection.append($('<div style="font-weight:700; color:#333; margin-bottom:8px; font-size:12px; border-bottom:2px solid #e5e5e5; padding-bottom:4px;">DEX</div>'));
             const $dexGrid = $('<div style="display:flex; flex-wrap:wrap; gap:6px;"></div>');
-            // ✅ Filter: Hanya tampilkan DEX asli (not disabled, not Meta-DEX)
             const metaDexEnabled = (CONFIG_APP && CONFIG_APP.APP && CONFIG_APP.APP.META_DEX === true);
+
+            // ======== SECTION META-DEX (terpisah) ========
+            const $metaDexSection = $('<div style="margin-bottom:15px;"></div>');
+            $metaDexSection.append($('<div style="font-weight:700; color:#7c3aed; margin-bottom:8px; font-size:12px; border-bottom:2px solid #e5e5e5; padding-bottom:4px;">&#x26A1; META-DEX AGGREGATORS  </div>'));
+            const $metaDexGrid = $('<div style="display:flex; flex-wrap:wrap; gap:6px;"></div>');
+
             Object.keys(CONFIG_DEXS || {}).forEach(dx => {
                 const dexConfig = CONFIG_DEXS[dx];
                 if (dexConfig.disabled) return;
-                if (dexConfig.isMetaDex && !metaDexEnabled) return;
+                if (dexConfig.isBackendProvider) return;
 
                 const key = String(dx).toLowerCase();
-                const id = `modal-fc-dex-${key}`; const cnt = byDex[key] || 0; if (cnt === 0) return; const checked = dexSel.includes(key);
                 const col = (dexConfig.warna || dexConfig.WARNA) || '#333';
-                $dexGrid.append($(`
-                    <label class="fc-dex" data-val="${key}" data-color="${col}" for="${id}" style="display:flex; align-items:center; gap:3px; padding:3px 8px; border-radius:3px; cursor:pointer; border:2px solid ${checked ? col : 'transparent'}; background:${checked ? '#f8f8f8' : 'white'};">
-                        <input type="checkbox" id="${id}" ${checked ? 'checked' : ''} style="width:11px; height:11px; margin:0;">
-                        <span style="font-weight:600; font-size:10px; color:${col};">${dx.toUpperCase()}</span>
-                        <span style="font-size:9px; opacity:0.7; color:#555;">[${cnt}]</span>
-                    </label>
-                `));
+
+                if (dexConfig.isMetaDex) {
+                    // ===== MetaDEX chip =====
+                    if (!metaDexEnabled) return;
+                    // Skip Meta-DEX yang tidak ada di META_DEX_CONFIG.aggregators (inactive/commented out)
+                    if (!window.CONFIG_APP?.META_DEX_CONFIG?.aggregators?.[dx]) return;
+                    // Skip EVM-only Meta-DEX jika HANYA Solana yang dipilih
+                    if (dexConfig.evmOnly && chainsSel.length > 0 && chainsSel.every(c => c === 'solana')) return;
+                    // Skip Solana-only Meta-DEX jika tidak ada Solana dipilih
+                    if (dexConfig.solanaOnly && !chainsSel.includes('solana')) return;
+                    const id = `modal-fc-dex-${key}`;
+                    // META-DEX applies to all tokens (per-chain), use total count
+                    const cnt = flatForDex.length;
+                    const checked = dexSel.includes(key);
+                    $metaDexGrid.append($(`
+                        <label class="fc-dex" data-val="${key}" data-color="${col}" for="${id}"
+                               style="display:flex; align-items:center; gap:3px; padding:3px 8px; border-radius:3px; cursor:pointer;
+                                      border:2px solid ${checked ? col : '#c4b5fd'}; background:${checked ? '#f5f3ff' : 'white'};">
+                            <input type="checkbox" id="${id}" ${checked ? 'checked' : ''} style="width:11px; height:11px; margin:0;">
+                            <span style="font-weight:600; font-size:10px; color:${col};">${(dexConfig.label || dx).toUpperCase()}</span>
+                            <span style="background:${col};color:#fff;padding:0 3px;border-radius:3px;font-size:8px;">META</span>
+                            <span style="font-size:9px; opacity:0.7; color:#555;">[${cnt}]</span>
+                        </label>
+                    `));
+                } else {
+                    // ===== DEX biasa chip =====
+                    const id = `modal-fc-dex-${key}`;
+                    const cnt = byDex[key] || 0;
+                    if (cnt === 0) return;
+                    const checked = dexSel.includes(key);
+                    $dexGrid.append($(`
+                        <label class="fc-dex" data-val="${key}" data-color="${col}" for="${id}"
+                               style="display:flex; align-items:center; gap:3px; padding:3px 8px; border-radius:3px; cursor:pointer;
+                                      border:2px solid ${checked ? col : 'transparent'}; background:${checked ? '#f8f8f8' : 'white'};">
+                            <input type="checkbox" id="${id}" ${checked ? 'checked' : ''} style="width:11px; height:11px; margin:0;">
+                            <span style="font-weight:600; font-size:10px; color:${col};">${(dexConfig.label || dx).toUpperCase()}</span>
+                            <span style="font-size:9px; opacity:0.7; color:#555;">[${cnt}]</span>
+                        </label>
+                    `));
+                }
             });
             $dexSection.append($dexGrid);
-            $wrap.append($dexSection);
+            $metaDexSection.append($metaDexGrid);
 
-            const saved = getFromLocalStorage('FILTER_MULTICHAIN', null);
+            if (isCEXMode) {
+                console.log('[FILTER] CEX Mode active - hiding Exchanger section');
+
+                // === PAIR SECTION FOR CEX MODE ===
+                const pairSel = (fmNow.pair || []).map(x => String(x).toUpperCase());
+                const flatForPair = flat.filter(t => (chainsSel.length === 0 || chainsSel.includes(String(t.chain || '').toLowerCase())));
+
+                const activeChainsForPair = chainsSel.length > 0 ? chainsSel : Object.keys(CONFIG_CHAINS || {});
+                const allPairDefs = {};
+                activeChainsForPair.forEach(ck => {
+                    const pd = (CONFIG_CHAINS[ck] || {}).PAIRDEXS || {};
+                    Object.keys(pd).forEach(p => { allPairDefs[p] = true; });
+                });
+                if (!allPairDefs['NON']) allPairDefs['NON'] = true;
+
+                const byPair = {};
+                flatForPair.forEach(t => {
+                    const chainCfg = CONFIG_CHAINS[(t.chain || '').toLowerCase()] || {};
+                    const pd = chainCfg.PAIRDEXS || {};
+                    const p = String(t.symbol_out || '').toUpperCase().trim();
+                    const key = pd[p] ? p : 'NON';
+                    byPair[key] = (byPair[key] || 0) + 1;
+                });
+
+                const $pairSection = $('<div style="margin-bottom:15px;"></div>');
+                $pairSection.append($('<div style="font-weight:700; color:#333; margin-bottom:8px; font-size:12px; border-bottom:2px solid #e5e5e5; padding-bottom:4px;">PAIR</div>'));
+                const $pairGrid = $('<div style="display:flex; flex-wrap:wrap; gap:6px;"></div>');
+                Object.keys(allPairDefs).forEach(p => {
+                    const cnt = byPair[p] || 0;
+                    if (cnt === 0) return;
+                    const checked = pairSel.includes(p);
+                    const pairColor = (p === 'NON') ? '#6b7280' : accentColor;
+                    const id = `modal-fc-pair-${p}`;
+                    $pairGrid.append($(`
+                        <label class="fc-pair" data-val="${p}" data-color="${pairColor}" for="${id}" style="display:flex; align-items:center; gap:3px; padding:3px 8px; border-radius:3px; cursor:pointer; border:2px solid ${checked ? pairColor : 'transparent'}; background:${checked ? '#f8f8f8' : 'white'};">
+                            <input type="checkbox" id="${id}" ${checked ? 'checked' : ''} style="width:11px; height:11px; margin:0;">
+                            <span style="font-weight:600; font-size:10px; color:${pairColor};">${p}</span>
+                            <span style="font-size:9px; opacity:0.7; color:#555;">[${cnt}]</span>
+                        </label>
+                    `));
+                });
+                $pairSection.append($pairGrid);
+
+                // === 2-COLUMN LAYOUT: Column 1 (CHAIN + PAIR) | Column 2 (DEX + MetaDEX) ===
+                const $grid = $('<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;"></div>');
+                const $col1 = $('<div></div>');
+                $col1.append($chainSection);
+                $col1.append($pairSection);
+                const $col2 = $('<div></div>');
+                $col2.append($dexSection);
+                if (metaDexEnabled) $col2.append($metaDexSection);  // ✅ MetaDEX terpisah
+                $grid.append($col1).append($col2);
+                $wrap.append($grid);
+            } else {
+                // Normal Multichain Mode: stacked layout (CHAIN → EXCHANGER → DEX → META-DEX)
+                $wrap.append($chainSection);
+
+                const $cexSection = $('<div style="margin-bottom:15px;"></div>');
+                $cexSection.append($('<div style="font-weight:700; color:#333; margin-bottom:8px; font-size:12px; border-bottom:2px solid #e5e5e5; padding-bottom:4px;">EXCHANGER</div>'));
+                const $cexGrid = $('<div style="display:flex; flex-wrap:wrap; gap:6px;"></div>');
+                getEnabledCEXs().forEach(cx => {
+                    const id = `modal-fc-cex-${cx}`; const cnt = byCex[cx] || 0; if (cnt === 0) return; const checked = cexSel.includes(cx.toUpperCase());
+                    const col = CONFIG_CEX[cx].WARNA || '#333';
+                    $cexGrid.append($(`
+                        <label class="fc-cex" data-val="${cx}" data-color="${col}" for="${id}" style="display:flex; align-items:center; gap:3px; padding:3px 8px; border-radius:3px; cursor:pointer; border:2px solid ${checked ? col : 'transparent'}; background:${checked ? '#f8f8f8' : 'white'};">
+                            <input type="checkbox" id="${id}" ${checked ? 'checked' : ''} style="width:11px; height:11px; margin:0;">
+                            <span style="font-weight:600; font-size:10px; color:${col};">${cx}</span>
+                            <span style="font-size:9px; opacity:0.7; color:#555;">[${cnt}]</span>
+                        </label>
+                    `));
+                });
+                $cexSection.append($cexGrid);
+                $wrap.append($cexSection);
+                $wrap.append($dexSection);
+                if (metaDexEnabled) $wrap.append($metaDexSection);  // ✅ MetaDEX terpisah di bawah DEX
+            }
+
+            const savedFilterKey = isCEXModeNow ? `FILTER_CEX_${window.CEXModeManager.getSelectedCEX()}` : 'FILTER_MULTICHAIN';
+            const saved = getFromLocalStorage(savedFilterKey, null);
             let total = 0;
             if (!saved) {
                 total = flat.length;
+            } else if (isCEXModeNow) {
+                // CEX mode: chain + pair + dex filter
+                const pairSelTotal = (fmNow.pair || []).map(x => String(x).toUpperCase());
+                let totalFiltered = flat;
+                if (chainsSel.length > 0) totalFiltered = totalFiltered.filter(t => chainsSel.includes(String(t.chain || '').toLowerCase()));
+                if (pairSelTotal.length > 0) {
+                    totalFiltered = totalFiltered.filter(t => {
+                        const chainCfg = CONFIG_CHAINS[(t.chain || '').toLowerCase()] || {};
+                        const pd = chainCfg.PAIRDEXS || {};
+                        const p = String(t.symbol_out || '').toUpperCase().trim();
+                        const mapped = pd[p] ? p : 'NON';
+                        return pairSelTotal.includes(mapped);
+                    });
+                }
+                if (dexSel.length > 0) {
+                    const regularDexSelCex = dexSel.filter(dx => !window.CONFIG_DEXS?.[dx]?.isMetaDex);
+                    if (regularDexSelCex.length > 0) {
+                        totalFiltered = totalFiltered.filter(t => (t.dexs || []).some(d => regularDexSelCex.includes(String(d.dex || '').toLowerCase())));
+                    }
+                }
+                total = (chainsSel.length > 0 && pairSelTotal.length > 0 && dexSel.length > 0) ? totalFiltered.length : 0;
             } else if (chainsSel.length > 0 && cexSel.length > 0 && ((fmNow.dex || []).length > 0)) {
-                total = flat.filter(t => chainsSel.includes(String(t.chain || '').toLowerCase()))
-                    .filter(t => cexSel.includes(String(t.cex || '').toUpperCase()))
-                    .filter(t => (t.dexs || []).some(d => (dexSel || []).includes(String(d.dex || '').toLowerCase())))
-                    .length;
+                const regularDexSelMulti = dexSel.filter(dx => !window.CONFIG_DEXS?.[dx]?.isMetaDex);
+                let totalFlat = flat.filter(t => chainsSel.includes(String(t.chain || '').toLowerCase()))
+                    .filter(t => cexSel.includes(String(t.cex || '').toUpperCase()));
+                if (regularDexSelMulti.length > 0) {
+                    totalFlat = totalFlat.filter(t => (t.dexs || []).some(d => regularDexSelMulti.includes(String(d.dex || '').toLowerCase())));
+                }
+                total = totalFlat.length;
             } else {
                 total = 0;
             }
@@ -1561,22 +2146,58 @@ async function deferredInit() {
             // Insert only summary badge (no search input in modal)
             $('#modal-summary-bar').empty().append($sum);
 
-            $('#modal-filter-sections').off('change.multif').on('change.multif', 'label.fc-chain input, label.fc-cex input, label.fc-dex input', function () {
-                const prev = getFilterMulti();
+            $('#modal-filter-sections').off('change.multif').on('change.multif', 'label.fc-chain input, label.fc-cex input, label.fc-pair input, label.fc-dex input', function () {
+                // LIMIT_METADEX: batasi jumlah META-DEX yang bisa dipilih
+                const $lbl2 = $(this).closest('label');
+                if ($lbl2.hasClass('fc-dex') && $(this).prop('checked')) {
+                    const changedVal2 = $lbl2.attr('data-val');
+                    if (window.CONFIG_DEXS?.[changedVal2]?.isMetaDex) {
+                        const limitMeta2 = window.CONFIG_APP?.APP?.LIMIT_METADEX || 0;
+                        if (limitMeta2 > 0) {
+                            const $checkedMeta2 = $('#modal-filter-sections').find('label.fc-dex').filter(function () {
+                                return !!window.CONFIG_DEXS?.[$(this).attr('data-val')]?.isMetaDex && $(this).find('input').prop('checked');
+                            });
+                            const toUncheck2 = $checkedMeta2.length - limitMeta2;
+                            if (toUncheck2 > 0) {
+                                let done2 = 0;
+                                $checkedMeta2.each(function () {
+                                    if (done2 >= toUncheck2) return false;
+                                    if ($(this).attr('data-val') !== changedVal2) {
+                                        $(this).find('input').prop('checked', false);
+                                        $(this).css({ 'border-color': '#c4b5fd', 'background': 'white' });
+                                        done2++;
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+
+                const prev = isCEXModeNow ? (typeof getFilterCEX === 'function' ? getFilterCEX(window.CEXModeManager.getSelectedCEX()) : {}) : getFilterMulti();
                 const prevChains = (prev.chains || []).map(s => String(s).toLowerCase());
                 const prevCex = (prev.cex || []).map(s => String(s).toUpperCase());
+                const prevPair = (prev.pair || []).map(s => String(s).toUpperCase());
                 const prevDex = (prev.dex || []).map(s => String(s).toLowerCase());
 
                 const chains = $('#modal-filter-sections').find('label.fc-chain input:checked').map(function () { return $(this).closest('label').attr('data-val').toLowerCase(); }).get();
                 const cex = $('#modal-filter-sections').find('label.fc-cex input:checked').map(function () { return $(this).closest('label').attr('data-val').toUpperCase(); }).get();
+                const pair = $('#modal-filter-sections').find('label.fc-pair input:checked').map(function () { return $(this).closest('label').attr('data-val').toUpperCase(); }).get();
                 const dex = $('#modal-filter-sections').find('label.fc-dex input:checked').map(function () { return $(this).closest('label').attr('data-val').toLowerCase(); }).get();
 
-                setFilterMulti({ chains, cex, dex });
+                // Simpan ke per-CEX filter jika dalam CEX mode
+                if (isCEXModeNow && typeof setFilterCEX === 'function') {
+                    const activeCEX = window.CEXModeManager.getSelectedCEX();
+                    setFilterCEX(activeCEX, { chains, pair, dex });
+                } else {
+                    setFilterMulti({ chains, cex, dex });
+                }
 
                 const addChains = chains.filter(x => !prevChains.includes(x)).map(x => x.toUpperCase());
                 const delChains = prevChains.filter(x => !chains.includes(x)).map(x => x.toUpperCase());
                 const addCex = cex.filter(x => !prevCex.includes(x));
                 const delCex = prevCex.filter(x => !cex.includes(x));
+                const addPair = pair.filter(x => !prevPair.includes(x));
+                const delPair = prevPair.filter(x => !pair.includes(x));
                 const addDex = dex.filter(x => !prevDex.includes(x)).map(x => x.toUpperCase());
                 const delDex = prevDex.filter(x => !dex.includes(x)).map(x => x.toUpperCase());
                 const parts = [];
@@ -1584,9 +2205,11 @@ async function deferredInit() {
                 if (delChains.length) parts.push(`-CHAIN: ${delChains.join(', ')}`);
                 if (addCex.length) parts.push(`+CEX: ${addCex.join(', ')}`);
                 if (delCex.length) parts.push(`-CEX: ${delCex.join(', ')}`);
+                if (addPair.length) parts.push(`+PAIR: ${addPair.join(', ')}`);
+                if (delPair.length) parts.push(`-PAIR: ${delPair.join(', ')}`);
                 if (addDex.length) parts.push(`+DEX: ${addDex.join(', ')}`);
                 if (delDex.length) parts.push(`-DEX: ${delDex.join(', ')}`);
-                const msg = parts.length ? parts.join(' | ') : `Filter MULTI diperbarui: CHAIN=${chains.length}, CEX=${cex.length}`;
+                const msg = parts.length ? parts.join(' | ') : `Filter diperbarui: CHAIN=${chains.length}, PAIR=${pair.length}, DEX=${dex.length}`;
                 try { if (typeof toast !== 'undefined' && toast.info) toast.info(msg); } catch (_) { }
 
                 try { if (typeof window.clearSignalCards === 'function') window.clearSignalCards(); } catch (_) { }
@@ -1616,6 +2239,28 @@ async function deferredInit() {
             // === NEW LAYOUT: ROW 1 (EXCHANGER | PAIR), ROW 2 (DEX horizontal) ===
             const $container = $('<div style="font-size:11px; padding:10px;"></div>');
 
+            // ✅ CEX MODE: Check if in Per-CEX mode
+            const isCEXMode = window.CEXModeManager && window.CEXModeManager.isCEXMode();
+
+            if (isCEXMode) {
+                // Show CEX mode banner instead of filter
+                const currentCEX = window.CEXModeManager.getSelectedCEX();
+                const cexConfig = window.CONFIG_CEX?.[currentCEX];
+                const color = cexConfig?.WARNA || '#1448ce';
+
+                // const $banner = $(`
+                //     <div class="uk-alert uk-alert-primary" style="border-left: 4px solid ${color}; background: rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)}, 0.1); padding: 10px; margin-bottom: 15px;">
+                //         <strong style="color: ${color};">Mode Per CEX Aktif:</strong> 
+                //         <span class="uk-badge" style="background: ${color}; color: #fff; padding: 2px 8px;">${currentCEX}</span>
+                //         <br>
+                //         <span class="uk-text-small uk-text-muted">Filter CEX otomatis diterapkan. Hanya Chain, Pair, dan DEX yang dapat diubah.</span>
+                //     </div>
+                // `);
+                // $container.append($banner);
+
+                console.log('[FILTER] CEX Mode active (single chain) - hiding Exchanger section');
+            }
+
             // Row 1: EXCHANGER dan PAIR side by side
             const $topRow = $('<div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px; margin-bottom:20px;"></div>');
 
@@ -1629,32 +2274,38 @@ async function deferredInit() {
                 pairByCex[cex][pairKey] = (pairByCex[cex][pairKey] || 0) + 1;
             });
 
-            // Column 1: EXCHANGER
-            const $cexCol = $('<div></div>');
-            $cexCol.append($('<div style="font-weight:700; color:#333; margin-bottom:10px; font-size:13px; border-bottom:2px solid #e5e5e5; padding-bottom:6px;">EXCHANGER</div>'));
-            const $cexList = $('<div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;"></div>');
-            const relevantCexs = (CONFIG_CHAINS[chain] && CONFIG_CHAINS[chain].WALLET_CEX) ? Object.keys(CONFIG_CHAINS[chain].WALLET_CEX) : [];
-            relevantCexs.forEach(cx => {
-                const cexCnt = byCex[cx] || 0;
-                if (cexCnt === 0) return;
-                const cexChecked = cexSel.includes(cx);
-                const cexColor = (CONFIG_CEX[cx] || {}).WARNA || '#333';
-                const cexId = `modal-sc-cex-${cx}`;
-                const cexPairs = Object.keys(pairByCex[cx] || {}).join('/') || '-';
+            // Column 1: EXCHANGER (only show if NOT in CEX mode)
+            if (!isCEXMode) {
+                const $cexCol = $('<div></div>');
+                $cexCol.append($('<div style="font-weight:700; color:#333; margin-bottom:10px; font-size:13px; border-bottom:2px solid #e5e5e5; padding-bottom:6px;">EXCHANGER</div>'));
+                const $cexList = $('<div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;"></div>');
+                let relevantCexs = (CONFIG_CHAINS[chain] && CONFIG_CHAINS[chain].WALLET_CEX) ? Object.keys(CONFIG_CHAINS[chain].WALLET_CEX) : [];
+                const enabledCexList = (typeof getEnabledCEXs === 'function') ? getEnabledCEXs() : [];
+                if (enabledCexList.length > 0) {
+                    relevantCexs = relevantCexs.filter(cx => enabledCexList.includes(cx.toUpperCase()));
+                }
+                relevantCexs.forEach(cx => {
+                    const cexCnt = byCex[cx] || 0;
+                    if (cexCnt === 0) return;
+                    const cexChecked = cexSel.includes(cx);
+                    const cexColor = (CONFIG_CEX[cx] || {}).WARNA || '#333';
+                    const cexId = `modal-sc-cex-${cx}`;
+                    const cexPairs = Object.keys(pairByCex[cx] || {}).join('/') || '-';
 
-                $cexList.append($(`
-                    <div style="display:flex; align-items:center; gap:4px;">
-                        <label class="sc-cex" data-val="${cx}" data-color="${cexColor}" for="${cexId}" style="display:flex; align-items:center; gap:3px; padding:2px 6px; border-radius:3px; cursor:pointer; border:2px solid ${cexChecked ? cexColor : 'transparent'}; background:${cexChecked ? '#f8f8f8' : 'white'};">
-                            <input type="checkbox" id="${cexId}" ${cexChecked ? 'checked' : ''} style="width:11px; height:11px; margin:0;">
-                            <span style="font-weight:600; font-size:10px; color:${cexColor};">${cx}</span>
-                            <span style="font-size:9px; opacity:0.7; color:#555;">[${cexCnt}]</span>
-                        </label>
-                        <span style="font-size:9px; color:#888; font-style:italic;">${cexPairs}</span>
-                    </div>
-                `));
-            });
-            $cexCol.append($cexList);
-            $topRow.append($cexCol);
+                    $cexList.append($(`
+                        <div style="display:flex; align-items:center; gap:4px;">
+                            <label class="sc-cex" data-val="${cx}" data-color="${cexColor}" for="${cexId}" style="display:flex; align-items:center; gap:3px; padding:2px 6px; border-radius:3px; cursor:pointer; border:2px solid ${cexChecked ? cexColor : 'transparent'}; background:${cexChecked ? '#f8f8f8' : 'white'};">
+                                <input type="checkbox" id="${cexId}" ${cexChecked ? 'checked' : ''} style="width:11px; height:11px; margin:0;">
+                                <span style="font-weight:600; font-size:10px; color:${cexColor};">${cx}</span>
+                                <span style="font-size:9px; opacity:0.7; color:#555;">[${cexCnt}]</span>
+                            </label>
+                            <span style="font-size:9px; color:#888; font-style:italic;">${cexPairs}</span>
+                        </div>
+                    `));
+                });
+                $cexCol.append($cexList);
+                $topRow.append($cexCol);
+            }
 
             // Column 2: PAIR
             const $pairCol = $('<div></div>');
@@ -1681,7 +2332,7 @@ async function deferredInit() {
 
             $container.append($topRow);
 
-            // Row 2: DEX (horizontal, flex-wrap)
+            // Row 2: DEX (horizontal, flex-wrap) — DEX biasa saja (bukan MetaDEX)
             const $dexSection = $('<div></div>');
             $dexSection.append($('<div style="font-weight:700; color:#333; margin-bottom:10px; font-size:13px; border-bottom:2px solid #e5e5e5; padding-bottom:6px;">DEX</div>'));
             const $dexGrid = $('<div style="display:flex; flex-wrap:wrap; gap:6px; align-items:flex-start;"></div>');
@@ -1691,15 +2342,17 @@ async function deferredInit() {
                 return a;
             }, {});
             dexAllowed.forEach(dx => {
+                const dexConfig = CONFIG_DEXS[dx] || {};
+                if (dexConfig.isMetaDex) return; // skip MetaDEX dari section DEX biasa
                 const cnt = byDex[dx] || 0;
                 if (cnt === 0) return;
                 const checked = dexSel.includes(dx);
-                const col = (CONFIG_DEXS[dx] && (CONFIG_DEXS[dx].warna || CONFIG_DEXS[dx].WARNA)) || '#333';
+                const col = (dexConfig.warna || dexConfig.WARNA) || '#333';
                 const id = `modal-sc-dex-${dx}`;
                 $dexGrid.append($(`
                     <label class="sc-dex" data-val="${dx}" data-color="${col}" for="${id}" style="display:flex; align-items:center; gap:3px; padding:3px 8px; border-radius:3px; cursor:pointer; border:2px solid ${checked ? col : 'transparent'}; background:${checked ? '#f8f8f8' : 'white'};">
                         <input type="checkbox" id="${id}" ${checked ? 'checked' : ''} style="width:11px; height:11px; margin:0;">
-                        <span style="font-weight:500; font-size:10px; color:${col};">${dx.toUpperCase()}</span>
+                        <span style="font-weight:500; font-size:10px; color:${col};">${(dexConfig.label || dx).toUpperCase()}</span>
                         <span style="font-size:9px; opacity:0.7; color:#555;">[${cnt}]</span>
                     </label>
                 `));
@@ -1707,13 +2360,54 @@ async function deferredInit() {
             $dexSection.append($dexGrid);
             $container.append($dexSection);
 
+            // Row 3: META-DEX (terpisah, section sendiri)
+            if (window.CONFIG_APP?.APP?.META_DEX === true) {
+                const $metaDexSc = $('<div style="margin-top:14px;"></div>');
+                $metaDexSc.append($('<div style="font-weight:700; color:#7c3aed; margin-bottom:8px; font-size:13px; border-bottom:2px solid #e5e5e5; padding-bottom:6px;">META-DEX <span style="font-size:10px;font-weight:400;color:#888;"></span></div>'));
+                const $metaGrid = $('<div style="display:flex; flex-wrap:wrap; gap:6px;"></div>');
+                const metaKeys = Object.keys(CONFIG_DEXS || {}).filter(k => {
+                    const dcfg = CONFIG_DEXS[k];
+                    if (!dcfg?.isMetaDex || dcfg?.disabled || dcfg?.isBackendProvider) return false;
+                    // Hanya tampilkan jika ada di META_DEX_CONFIG.aggregators (active in config)
+                    if (!window.CONFIG_APP?.META_DEX_CONFIG?.aggregators?.[k]) return false;
+                    // EVM-only: sembunyikan jika chain aktif adalah Solana
+                    if (dcfg?.evmOnly && chain === 'solana') return false;
+                    // Solana-only: sembunyikan jika chain aktif bukan Solana
+                    if (dcfg?.solanaOnly && chain !== 'solana') return false;
+                    return true;
+                });
+                metaKeys.forEach(dx => {
+                    const dexConfig = CONFIG_DEXS[dx] || {};
+                    // META-DEX applies to all tokens in the chain, use flatPair.length
+                    const cnt = flatPair.length;
+                    const checked = dexSel.includes(dx);
+                    const col = (dexConfig.warna || dexConfig.WARNA) || '#7c3aed';
+                    const id = `modal-sc-dex-${dx}`;
+                    $metaGrid.append($(`
+                        <label class="sc-dex" data-val="${dx}" data-color="${col}" for="${id}"
+                               style="display:flex; align-items:center; gap:3px; padding:3px 8px; border-radius:3px; cursor:pointer;
+                                      border:2px solid ${checked ? col : '#c4b5fd'}; background:${checked ? '#f5f3ff' : 'white'};">
+                            <input type="checkbox" id="${id}" ${checked ? 'checked' : ''} style="width:11px; height:11px; margin:0;">
+                            <span style="font-weight:500; font-size:10px; color:${col};">${(dexConfig.label || dx).toUpperCase()}</span>
+                            <span style="background:${col};color:#fff;padding:0 3px;border-radius:3px;font-size:8px;">META</span>
+                            <span style="font-size:9px; opacity:0.7; color:#555;">[${cnt}]</span>
+                        </label>
+                    `));
+                });
+                $metaDexSc.append($metaGrid);
+                $container.append($metaDexSc);
+            }
+
             $wrap.append($container);
 
             let totalSingle = 0;
             if ((cexSel && cexSel.length) && (pairSel && pairSel.length) && (dexSel && dexSel.length)) {
-                const filtered = flat.filter(t => cexSel.includes(String(t.cex || '').toUpperCase()))
-                    .filter(t => { const p = String(t.symbol_out || '').toUpperCase(); const key = pairDefs[p] ? p : 'NON'; return pairSel.includes(key); })
-                    .filter(t => (t.dexs || []).some(d => dexSel.includes(String(d.dex || '').toLowerCase())));
+                const regularDexSelScModal = dexSel.filter(dx => !window.CONFIG_DEXS?.[dx]?.isMetaDex);
+                let filtered = flat.filter(t => cexSel.includes(String(t.cex || '').toUpperCase()))
+                    .filter(t => { const p = String(t.symbol_out || '').toUpperCase(); const key = pairDefs[p] ? p : 'NON'; return pairSel.includes(key); });
+                if (regularDexSelScModal.length > 0) {
+                    filtered = filtered.filter(t => (t.dexs || []).some(d => regularDexSelScModal.includes(String(d.dex || '').toLowerCase())));
+                }
                 totalSingle = filtered.length;
             } else {
                 totalSingle = 0;
@@ -1725,6 +2419,32 @@ async function deferredInit() {
 
             // Event handler untuk filter changes
             $('#modal-filter-sections').off('change.scf').on('change.scf', 'label.sc-cex input, label.sc-pair input, label.sc-dex input', function () {
+                // LIMIT_METADEX: batasi jumlah META-DEX yang bisa dipilih
+                const $lbl3 = $(this).closest('label');
+                if ($lbl3.hasClass('sc-dex') && $(this).prop('checked')) {
+                    const changedVal3 = $lbl3.attr('data-val');
+                    if (window.CONFIG_DEXS?.[changedVal3]?.isMetaDex) {
+                        const limitMeta3 = window.CONFIG_APP?.APP?.LIMIT_METADEX || 0;
+                        if (limitMeta3 > 0) {
+                            const $checkedMeta3 = $('#modal-filter-sections').find('label.sc-dex').filter(function () {
+                                return !!window.CONFIG_DEXS?.[$(this).attr('data-val')]?.isMetaDex && $(this).find('input').prop('checked');
+                            });
+                            const toUncheck3 = $checkedMeta3.length - limitMeta3;
+                            if (toUncheck3 > 0) {
+                                let done3 = 0;
+                                $checkedMeta3.each(function () {
+                                    if (done3 >= toUncheck3) return false;
+                                    if ($(this).attr('data-val') !== changedVal3) {
+                                        $(this).find('input').prop('checked', false);
+                                        $(this).css({ 'border-color': '#c4b5fd', 'background': 'white' });
+                                        done3++;
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+
                 const prev = getFilterChain(chain);
                 const prevC = (prev.cex || []).map(String);
                 const prevP = (prev.pair || []).map(x => String(x).toUpperCase());
@@ -1839,6 +2559,13 @@ async function deferredInit() {
                 return;
             }
 
+            // CEX mode: scanner is always the primary view, never redirect to management
+            // Cek dari state DAN dari URL param (fallback saat IDB cache belum warm)
+            const cexFromURL = (new URLSearchParams(window.location.search)).get('cex');
+            if ((window.CEXModeManager && window.CEXModeManager.isCEXMode()) || cexFromURL) {
+                return;
+            }
+
             const mode = getAppMode();
             let hasTokens = false;
             if (mode.type === 'single') {
@@ -1847,6 +2574,11 @@ async function deferredInit() {
             } else {
                 const t = getTokensMulti();
                 hasTokens = Array.isArray(t) && t.length > 0;
+                // Fallback: cek per-chain DBs jika TOKEN_MULTICHAIN kosong
+                if (!hasTokens && typeof window.getAllChainTokensFlat === 'function') {
+                    const allFlat = window.getAllChainTokensFlat();
+                    hasTokens = Array.isArray(allFlat) && allFlat.length > 0;
+                }
             }
             if (!hasTokens) {
                 showMainSection('#token-management');
@@ -1868,6 +2600,9 @@ async function deferredInit() {
                 const key = `FILTER_${String(mode.chain).toUpperCase()}`;
                 const obj = getFromLocalStorage(key, {}) || {};
                 if (obj && (obj.sort === 'A' || obj.sort === 'Z')) pref = obj.sort;
+            } else if (window.CEXModeManager && window.CEXModeManager.isCEXMode() && typeof getFilterCEX === 'function') {
+                const cexFilter = getFilterCEX(window.CEXModeManager.getSelectedCEX());
+                if (cexFilter.sort === 'A' || cexFilter.sort === 'Z') pref = cexFilter.sort;
             } else {
                 const obj = getFromLocalStorage('FILTER_MULTICHAIN', {}) || {};
                 if (obj && (obj.sort === 'A' || obj.sort === 'Z')) pref = obj.sort;
@@ -1882,6 +2617,8 @@ async function deferredInit() {
         } catch (_) { }
     }
     try { applySortToggleState(); } catch (_) { }
+    // Expose untuk dipanggil ulang dari CEX mode init
+    window.applySortToggleState = applySortToggleState;
 
     // Auto-switch to single-chain view if URL indicates per-chain mode
     (function autoOpenSingleChainIfNeeded() {
@@ -1947,6 +2684,15 @@ async function deferredInit() {
                 obj.sort = pref;
                 saveToLocalStorage(key, obj);
                 loadAndDisplaySingleChainTokens(); // will re-apply sorting and update window.singleChainTokensCurrent
+            } else if (mode.type === 'cex' && typeof setFilterCEX === 'function') {
+                // CEX mode: save sort to FILTER_CEX_{cexName}
+                const cexName = mode.cex || (window.CEXModeManager ? window.CEXModeManager.getSelectedCEX() : '');
+                if (cexName) {
+                    const cexFilter = (typeof getFilterCEX === 'function') ? getFilterCEX(cexName) : {};
+                    cexFilter.sort = pref;
+                    setFilterCEX(cexName, cexFilter);
+                }
+                refreshTokensTable();
             } else {
                 const key = 'FILTER_MULTICHAIN';
                 const obj = getFromLocalStorage(key, {}) || {};
@@ -2061,9 +2807,11 @@ async function deferredInit() {
         try { location.reload(); } catch (_) { }
     });
 
-    $("#SettingConfig").on("click", function () {
+    $("#SettingConfig").on("click", async function () {
         showMainSection('#form-setting-app');
         try { document.getElementById('form-setting-app').scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) { }
+        // Tunggu storage ready agar data hasil restore sudah masuk cache
+        try { if (window.whenStorageReady) await window.whenStorageReady; } catch (_) { }
         renderSettingsForm();
     });
 
@@ -2461,11 +3209,26 @@ async function deferredInit() {
         const id = String($(this).data('id'));
         const val = $(this).val() === 'true';
         const m = getAppMode();
-        let tokens = (m.type === 'single') ? getTokensChain(m.chain) : getTokensMulti();
+        let tokens;
+        let cexSrcChain = null;
+        if (m.type === 'single') {
+            tokens = getTokensChain(m.chain);
+        } else if (m.type === 'cex') {
+            const chains = Object.keys(window.CONFIG_CHAINS || {});
+            for (const ck of chains) {
+                const ct = (typeof getTokensChain === 'function') ? getTokensChain(ck) : [];
+                if (Array.isArray(ct) && ct.some(t => String(t.id) === id)) { tokens = ct; cexSrcChain = ck; break; }
+            }
+            if (!tokens) tokens = getTokensMulti();
+        } else {
+            tokens = getTokensMulti();
+        }
         const idx = tokens.findIndex(t => String(t.id) === id);
         if (idx !== -1) {
             tokens[idx].status = val;
-            if (m.type === 'single') setTokensChain(m.chain, tokens); else setTokensMulti(tokens);
+            if (m.type === 'single') setTokensChain(m.chain, tokens);
+            else if (m.type === 'cex' && cexSrcChain) setTokensChain(cexSrcChain, tokens);
+            else setTokensMulti(tokens);
             if (typeof toast !== 'undefined' && toast.success) toast.success(`Status diubah ke ${val ? 'ON' : 'OFF'}`);
             try {
                 const chainLbl = String(tokens[idx]?.chain || (m.type === 'single' ? m.chain : 'all')).toUpperCase();
@@ -3600,6 +4363,7 @@ async function deferredInit() {
         }
 
         // Reset modal state
+        syncSnapshotFetched = false; // Reset: WD/DP checkbox disabled sampai SNAPSHOT ditekan
         $('#sync-modal-chain-name').text(chainConfig.Nama_Chain || String(activeSingleChainKey).toUpperCase());
         $('#sync-snapshot-chain-label').text(chainConfig.Nama_Chain || String(activeSingleChainKey).toUpperCase());
         $('#sync-modal-tbody').empty().html('<tr><td colspan="7">Memuat Data Koin...</td></tr>');
@@ -4012,6 +4776,7 @@ async function deferredInit() {
                     });
 
                     // Re-render table with updated data
+                    syncSnapshotFetched = true; // SNAPSHOT berhasil: aktifkan WD/DP checkbox
                     if (typeof window.renderSyncTable === 'function') {
                         window.renderSyncTable(activeSingleChainKey);
                     }
@@ -4209,10 +4974,11 @@ async function deferredInit() {
             // Merge prior CEX info if exists
             const existing = savedTokens.find(s => String(s.cex).toUpperCase() === cexUpper && s.symbol_in === symbolIn && s.symbol_out === symbolOut);
             const dataCexs = {};
+            const _indodaxOn = cexUpper === 'INDODAX';
             const baseCexInfo = existing?.dataCexs?.[cexUpper] ? { ...existing.dataCexs[cexUpper] } : {
                 feeWDToken: 0, feeWDPair: 0,
-                depositToken: false, withdrawToken: false,
-                depositPair: false, withdrawPair: false
+                depositToken: _indodaxOn, withdrawToken: _indodaxOn,
+                depositPair: _indodaxOn, withdrawPair: _indodaxOn
             };
             if (isSnapshot) {
                 const feeSnapshot = parseFloat(tok.feeWDToken ?? tok.feeWD);
@@ -4463,15 +5229,40 @@ $(document).ready(function () {
             try { if (typeof window.updateRunningChainsBanner === 'function') window.updateRunningChainsBanner(); } catch (_) { }
             $('#stopSCAN').show().prop('disabled', false);
             $('#reload').prop('disabled', false);
-            //$('#infoAPP').html('⚠️ Proses sebelumnya tidak selesai. Tekan tombol <b>RESET PROSES</b> untuk memulai ulang.').show();
 
             try { if (typeof setScanUIGating === 'function') setScanUIGating(true); } catch (_) { }
         } else {
-            $('#startSCAN').prop('disabled', false).removeAttr('aria-busy').text('Start').removeClass('uk-button-disabled');
-            $('#stopSCAN').hide();
-            // Clear banner when not running
-            try { $('#infoAPP').text('').hide(); } catch (_) { }
-            try { if (typeof setScanUIGating === 'function') setScanUIGating(false); } catch (_) { }
+            // When SCAN_LIMIT is true, check if another mode is running globally
+            let lockedByOther = false;
+            let lockMode = '';
+            try {
+                const scanLimitEnabled = window.CONFIG_APP && window.CONFIG_APP.APP && window.CONFIG_APP.APP.SCAN_LIMIT === true;
+                if (scanLimitEnabled && typeof getGlobalScanLock === 'function') {
+                    const lock = getGlobalScanLock();
+                    if (lock) {
+                        // Check if lock is from a DIFFERENT mode than current
+                        const activeKey = (typeof getActiveFilterKey === 'function') ? getActiveFilterKey() : '';
+                        if (lock.key !== activeKey) {
+                            lockedByOther = true;
+                            lockMode = lock.mode || 'UNKNOWN';
+                        }
+                    }
+                }
+            } catch (_) { }
+
+            if (lockedByOther) {
+                // Another mode is scanning - disable Start but don't show Stop
+                $('#startSCAN').prop('disabled', true).removeAttr('aria-busy').text(`Locked (${lockMode})`).addClass('uk-button-disabled');
+                $('#stopSCAN').hide();
+                try { $('#infoAPP').text(`⚠️ Scan sedang berjalan di mode ${lockMode}`).show(); } catch (_) { }
+                try { if (typeof setScanUIGating === 'function') setScanUIGating(true); } catch (_) { }
+            } else {
+                $('#startSCAN').prop('disabled', false).removeAttr('aria-busy').text('Start').removeClass('uk-button-disabled');
+                $('#stopSCAN').hide();
+                // Clear banner when not running
+                try { $('#infoAPP').text('').hide(); } catch (_) { }
+                try { if (typeof setScanUIGating === 'function') setScanUIGating(false); } catch (_) { }
+            }
         }
     }
 
@@ -4561,6 +5352,15 @@ $(document).ready(function () {
                     // Refresh toolbar indicators and running banner for ANY filter change
                     try { if (typeof window.updateRunningChainsBanner === 'function') window.updateRunningChainsBanner(); } catch (_) { }
                     try { if (typeof window.updateToolbarRunIndicators === 'function') window.updateToolbarRunIndicators(); } catch (_) { }
+
+                    // When SCAN_LIMIT is enabled, re-evaluate Start button on ANY filter run change
+                    try {
+                        const scanLimitOn = window.CONFIG_APP && window.CONFIG_APP.APP && window.CONFIG_APP.APP.SCAN_LIMIT === true;
+                        if (scanLimitOn && msg.val && Object.prototype.hasOwnProperty.call(msg.val, 'run')) {
+                            const currentSt = getAppState();
+                            applyRunUI(currentSt && currentSt.run === 'YES');
+                        }
+                    } catch (_) { }
 
                     // If this update is for the ACTIVE filter key, also apply run/theme locally
                     const activeKey = (typeof getActiveFilterKey === 'function') ? getActiveFilterKey() : 'FILTER_MULTICHAIN';
@@ -4734,33 +5534,54 @@ $(document).ready(function () {
     } catch (_) { }
 
     // Build chain icon links based on CONFIG_CHAINS
+    // ✅ NOW FILTERS BY ENABLED CHAINS (from chain-toggle-helpers.js)
     function renderChainLinks(activeKey = 'all') {
         const $wrap = $('#chain-links-container');
         if ($wrap.length === 0) return;
         $wrap.empty();
 
+        // Robot icon: only active when multichain mode (chain=all) and no CEX mode
+        const isCEXActive = window.CEXModeManager && window.CEXModeManager.isCEXMode();
+        const isMultichain = (!activeKey || activeKey === 'all');
+        if (isMultichain && !isCEXActive) {
+            $('#multichain_scanner').addClass('active-mode');
+        } else {
+            $('#multichain_scanner').removeClass('active-mode');
+        }
+
+        // ✅ Get enabled chains (only show icons for active chains)
+        const enabledChains = (typeof getEnabledChains === 'function')
+            ? getEnabledChains()
+            : Object.keys(CONFIG_CHAINS || {}); // Fallback: show all if function not available
+
         const currentPage = (window.location.pathname.split('/').pop() || 'index.html');
         Object.keys(CONFIG_CHAINS || {}).forEach(chainKey => {
+            // ✅ FILTER: Only render enabled chains
+            if (!enabledChains.includes(chainKey)) {
+                console.log(`[TOOLBAR] Chain ${chainKey} disabled, skipping icon render`);
+                return; // Skip this chain
+            }
+
             const chain = CONFIG_CHAINS[chainKey] || {};
             const isActive = String(activeKey).toLowerCase() === String(chainKey).toLowerCase();
-            const style = isActive ? 'width:30px' : '';
-            const width = isActive ? 30 : 24;
             const icon = chain.ICON || '';
             const name = chain.Nama_Chain || chainKey.toUpperCase();
+            const chainColor = chain.WARNA || '#2563eb';
+            const activeClass = isActive ? 'active' : '';
+            const activeStyle = isActive
+                ? `--icon-color: ${chainColor}; --icon-shadow: ${chainColor}40;`
+                : '';
             // Determine running state for this chain
             let running = false;
             try {
                 const f = getFromLocalStorage(`FILTER_${String(chainKey).toUpperCase()}`, {}) || {};
                 running = String(f.run || 'NO').toUpperCase() === 'YES';
             } catch (_) { }
-            // Do not apply ring or enlargement; small dot indicator handled elsewhere
-            const ring = '';
             const linkHTML = `
-                <span class="chain-link icon" data-chain="${chainKey}" style="display:inline-block; ${style} margin-right:4px;">
-                    <a href="${currentPage}?chain=${encodeURIComponent(chainKey)}" title="SCANNER ${name.toUpperCase()}">
-                        <img src="${icon}" alt="${name} icon" width="${width}" style="${ring}">
-                    </a>
-                </span>`;
+                <a href="${currentPage}?chain=${encodeURIComponent(chainKey)}" class="chain-link ${activeClass}" data-chain="${chainKey}"
+                   style="${activeStyle}" title="SCANNER ${name.toUpperCase()}">
+                    <img class="icon" src="${icon}" alt="${name} icon" width="24" />
+                </a>`;
             $wrap.append(linkHTML);
         });
         try { updateToolbarRunIndicators(); } catch (_) { }
@@ -4951,8 +5772,9 @@ $(document).ready(function () {
         const pairDefs = chain.PAIRDEXS || {};
 
         // Build CEX checkboxes (horizontal chips) - JANGAN auto-check CEX yang ada data
+        // CEX columns (dynamically from enabled CEXs only)
         const $cex = $('#sync-filter-cex').empty();
-        Object.keys(CONFIG_CEX || {}).forEach(cex => {
+        getEnabledCEXs().forEach(cex => {
             const id = `sync-cex-${cex}`;
             const badge = countByCex[cex] || 0;
             // TIDAK auto-check - biarkan user yang memilih
@@ -5141,12 +5963,14 @@ $(document).ready(function () {
                 const cexUp = String(t.cex || '').toUpperCase();
                 if (selectedCexs.length && !selectedCexs.includes(cexUp)) return false;
 
-                // ===== FILTER: Only show tokens with valid SC =====
-                // Skip tokens without smart contract address (untuk semua CEX, termasuk LBANK)
+                // ===== FILTER: Only show tokens with valid SC (Except INDODAX) =====
+                // Skip tokens without smart contract address
                 const sc = String(t.sc_in || t.contract_in || '').trim().toLowerCase();
                 const hasValidSC = sc && sc !== '0x' && sc.length > 6;
-                if (!hasValidSC) {
-                    return false; // ❌ Skip token tanpa SC valid
+                const isIndodax = cexUp === 'INDODAX';
+
+                if (!hasValidSC && !isIndodax) {
+                    return false; // ❌ Skip token tanpa SC valid kecuali INDODAX
                 }
 
                 // Filter harga
@@ -5258,21 +6082,9 @@ $(document).ready(function () {
             const priceJobKeys = new Set();
             const priceJobs = [];
 
-            // ========== PERFORMANCE FIX: LIMIT ROWS TO PREVENT BROWSER FREEZE ==========
-            // Jika filtered > 1000 rows, limit untuk menghindari browser hang
-            const MAX_SYNC_ROWS = 1000; // ← REDUCED dari 3000 ke 1000 untuk mencegah "Not Responding"
+            // ========== TAMPILKAN SEMUA ROWS (chunked rendering untuk dataset besar) ==========
             const totalFiltered = filtered.length;
-            if (totalFiltered > MAX_SYNC_ROWS) {
-                console.warn(`[renderSyncTableCore] Too many rows (${totalFiltered}). Limiting to ${MAX_SYNC_ROWS} rows to prevent browser freeze.`);
-                filtered = filtered.slice(0, MAX_SYNC_ROWS);
-
-                // Show warning message to user
-                if (typeof toast !== 'undefined' && toast.warning) {
-                    toast.warning(`⚠️ Menampilkan ${MAX_SYNC_ROWS} dari ${totalFiltered} koin.\n\n✅ GUNAKAN FILTER untuk mempersempit hasil:\n• Filter by CEX (BITGET, BYBIT, dll)\n• Filter by Status (WD/DP ON/OFF)\n• Filter by Pair (USDT, BTC, dll)\n\nTerlalu banyak rows menyebabkan browser hang!`, {
-                        duration: 10000
-                    });
-                }
-            }
+            // Tidak ada hard limit — semua koin ditampilkan
             // ===========================================================================
 
             // ========== OPTIMASI: BATCH DOM RENDERING ==========
@@ -5471,8 +6283,26 @@ $(document).ready(function () {
                 // =================================================================
             });
 
-            // Insert semua rows sekaligus (1× reflow, bukan 1000× reflow)
-            modalBody.html(batchHtml);
+            // Insert rows: chunked untuk dataset besar agar browser tetap responsif
+            const CHUNK_SIZE = 300;
+            if (totalFiltered <= CHUNK_SIZE) {
+                // Dataset kecil: insert langsung
+                modalBody.html(batchHtml);
+            } else {
+                // Dataset besar: split HTML per baris lalu insert per chunk
+                modalBody.empty();
+                const rows = batchHtml.match(/<tr[\s\S]*?<\/tr>/g) || [];
+                let chunkIdx = 0;
+                const insertChunk = () => {
+                    const chunk = rows.slice(chunkIdx, chunkIdx + CHUNK_SIZE).join('');
+                    modalBody.append(chunk);
+                    chunkIdx += CHUNK_SIZE;
+                    if (chunkIdx < rows.length) {
+                        requestAnimationFrame(insertChunk);
+                    }
+                };
+                insertChunk();
+            }
 
             // Update price cells setelah DOM ter-insert
             priceCellsToUpdate.forEach(cellData => {
@@ -5509,18 +6339,20 @@ $(document).ready(function () {
             }
 
             // ========== ENABLE/DISABLE WALLET FILTER CHECKBOX BERDASARKAN DATA TABEL ==========
+            // Checkbox WD/DP hanya aktif setelah user menekan SNAPSHOT [UPDATE KOIN]
             const $walletFilter = $('#sync-wallet-filter');
             if ($walletFilter.length) {
-                $walletFilter.prop('disabled', !hasTableData);
+                const walletFilterEnabled = hasTableData && syncSnapshotFetched;
+                $walletFilter.prop('disabled', !walletFilterEnabled);
 
                 // Visual feedback: opacity untuk label
                 $walletFilter.closest('label').css({
-                    opacity: hasTableData ? '1' : '0.5',
-                    pointerEvents: hasTableData ? 'auto' : 'none',
-                    cursor: hasTableData ? 'pointer' : 'not-allowed'
+                    opacity: walletFilterEnabled ? '1' : '0.5',
+                    pointerEvents: walletFilterEnabled ? 'auto' : 'none',
+                    cursor: walletFilterEnabled ? 'pointer' : 'not-allowed'
                 });
 
-                console.log('[renderSyncTable] Wallet filter checkbox:', hasTableData ? 'ENABLED' : 'DISABLED');
+                console.log('[renderSyncTable] Wallet filter checkbox:', walletFilterEnabled ? 'ENABLED' : 'DISABLED', '- snapshotFetched:', syncSnapshotFetched);
             }
 
             // Update price filter state (enable/disable berdasarkan data tabel)
@@ -5599,9 +6431,43 @@ function readDexSelectionFromForm() {
 
 function deleteTokenById(tokenId) {
     const m = getAppMode();
-    let tokens = (m.type === 'single') ? getTokensChain(m.chain) : getTokensMulti();
+    let tokens;
+    let cexSourceChain = null;
+    if (m.type === 'single') {
+        tokens = getTokensChain(m.chain);
+    } else if (m.type === 'cex') {
+        // CEX mode: find token across all per-chain databases
+        const chains = Object.keys(window.CONFIG_CHAINS || {});
+        for (const ck of chains) {
+            const ct = (typeof getTokensChain === 'function') ? getTokensChain(ck) : [];
+            if (Array.isArray(ct) && ct.some(t => String(t.id) === String(tokenId))) {
+                tokens = ct;
+                cexSourceChain = ck;
+                break;
+            }
+        }
+        if (!tokens) tokens = getTokensMulti();
+    } else {
+        tokens = getTokensMulti();
+    }
     const updated = tokens.filter(t => String(t.id) !== String(tokenId));
-    if (m.type === 'single') setTokensChain(m.chain, updated); else setTokensMulti(updated);
+    const wasDeleted = updated.length < tokens.length;
+    if (m.type === 'single') {
+        setTokensChain(m.chain, updated);
+    } else if (m.type === 'cex' && cexSourceChain) {
+        setTokensChain(cexSourceChain, updated);
+    } else {
+        setTokensMulti(updated);
+    }
+    // Update progress bar total if scanning and token was actually removed
+    if (wasDeleted) {
+        const isScanning = (typeof window.isThisTabScanning === 'function' && window.isThisTabScanning()) || false;
+        if (isScanning) {
+            try { if (typeof window.decrementScanTotalTokens === 'function') window.decrementScanTotalTokens(); } catch (_) { }
+            try { if (typeof updateTokenStatsOnly === 'function') updateTokenStatsOnly(); } catch (_) { }
+            try { if (typeof updateTotalKoinOnly === 'function') updateTotalKoinOnly(); } catch (_) { }
+        }
+    }
     refreshTokensTable();
     try { loadAndDisplaySingleChainTokens(); } catch (_) { }
     renderTokenManagementList();
@@ -5850,7 +6716,11 @@ $(document).on('click', '#histClearAll', async function () {
 
         // Populate CEX checkboxes (vertical layout)
         const $cexContainer = $('#bulk-filter-cex').empty();
-        const cexList = CONFIG_UI?.CEXES || [];
+        const enabledCexList = (typeof getEnabledCEXs === 'function') ? getEnabledCEXs() : [];
+        const cexList = (CONFIG_UI?.CEXES || []).filter(cex => {
+            if (enabledCexList.length === 0) return true;
+            return enabledCexList.includes(cex.key.toUpperCase());
+        });
         cexList.forEach(cex => {
             const cexKey = cex.key;
             const cexLabel = (cex.label || cexKey).toUpperCase();
@@ -5900,6 +6770,72 @@ $(document).on('click', '#histClearAll', async function () {
             `);
         });
 
+        // ✅ MetaDEX Section — tampilkan di kolom kanan editor modal jika META_DEX=true
+        $('#bulk-meta-dex-column').hide();
+        $('.bulk-modal-grid').removeClass('has-meta-dex');
+        $('#bulk-modal-editor').removeClass('has-meta-dex-active');
+        $('#bulk-meta-dex-inputs').empty();
+        if (window.CONFIG_APP?.APP?.META_DEX === true) {
+            const metaAggs = Object.keys(window.CONFIG_DEXS || {}).filter(k => {
+                const cfg = window.CONFIG_DEXS[k];
+                if (!cfg || !cfg.isMetaDex || cfg.disabled || cfg.isBackendProvider) return false;
+                // Hanya tampilkan jika ada di META_DEX_CONFIG.aggregators (active in config)
+                if (!window.CONFIG_APP?.META_DEX_CONFIG?.aggregators?.[k]) return false;
+                return true;
+            });
+
+            // Baca modal tersimpan untuk chain ini
+            const savedChainMeta = (getFromLocalStorage('META_DEX_SETTINGS') || {})[chainKey] || {};
+
+            if (metaAggs.length > 0) {
+                const $metaDexContainer = $('#bulk-meta-dex-inputs');
+                $('#bulk-meta-dex-column').show();
+                $('.bulk-modal-grid').addClass('has-meta-dex');
+                $('#bulk-modal-editor').addClass('has-meta-dex-active');
+
+                metaAggs.forEach(aggKey => {
+                    const aggCfg = window.CONFIG_DEXS[aggKey] || {};
+                    const aggLabel = (aggCfg.label || aggKey).toUpperCase();
+                    const aggColor = aggCfg.warna || '#7c3aed';
+                    // Skip EVM-only aggregators for Solana chain
+                    if (aggCfg.evmOnly && String(chainKey).toLowerCase() === 'solana') return;
+                    // Skip Solana-only aggregators (e.g., KAMINO) for non-Solana chains
+                    if (aggCfg.solanaOnly && String(chainKey).toLowerCase() !== 'solana') return;
+
+                    const chainTag = aggCfg.evmOnly
+                        ? `<span style="background:#0ea5e9;color:#fff;padding:0 4px;border-radius:3px;font-size:9px;margin-left:4px;">EVM</span>`
+                        : aggCfg.solanaOnly
+                        ? `<span style="background:#9945ff;color:#fff;padding:0 4px;border-radius:3px;font-size:9px;margin-left:4px;">SOL</span>`
+                        : `<span style="background:#6b21a8;color:#fff;padding:0 4px;border-radius:3px;font-size:9px;margin-left:4px;">ALL</span>`;
+
+                    const savedLeft = savedChainMeta[aggKey]?.left ?? 100;
+                    const savedRight = savedChainMeta[aggKey]?.right ?? 100;
+
+                    $metaDexContainer.append(`
+                        <div style="border-left:3px solid ${aggColor}; border-radius:4px;
+                                    background:#fafafa; padding:4px 7px; margin-bottom:5px;">
+                            <div class="uk-flex uk-flex-middle" style="gap:4px; margin-bottom:3px;">
+                                <span style="background:${aggColor};color:#fff;padding:0 4px;border-radius:3px;
+                                             font-size:8px;line-height:1.6;font-weight:700;">META</span>
+                                <span style="color:${aggColor};font-weight:700;font-size:12px;">${aggLabel}</span>
+                                ${chainTag}
+                            </div>
+                            <div class="uk-flex uk-flex-middle" style="gap:4px; flex-wrap:nowrap;">
+                                <span style="color:#2563eb;font-size:10px;font-weight:600;white-space:nowrap;">KIRI</span>
+                                <input type="number" class="uk-input bulk-meta-left" data-agg="${aggKey}"
+                                       style="width:52px;height:22px;padding:1px 4px;font-size:11px;
+                                              text-align:center;border-color:${aggColor}55;" min="0" step="1" value="${savedLeft}">
+                                <span style="color:#e11d48;font-size:10px;font-weight:600;white-space:nowrap;">KANAN</span>
+                                <input type="number" class="uk-input bulk-meta-right" data-agg="${aggKey}"
+                                       style="width:52px;height:22px;padding:1px 4px;font-size:11px;
+                                              text-align:center;border-color:${aggColor}55;" min="0" step="1" value="${savedRight}">
+                            </div>
+                        </div>
+                    `);
+                });
+            }
+        }
+
         // Initial update
         updateAffectedCount();
 
@@ -5929,11 +6865,11 @@ $(document).on('click', '#histClearAll', async function () {
     // ✅ REFACTORED: Now using IndexedDB helpers from storage.js
     // Storage key format: MODAL_PROFILE_{CHAIN} (singular, not plural)
 
-    // Save last selected profile index for a chain (temporary cache, not critical data)
+    // Save last selected profile index for a chain
     async function saveLastProfileIndex(chainKey, index) {
         try {
             const storageKey = `MODAL_LAST_PROFILE_${String(chainKey || '').toUpperCase()}`;
-            localStorage.setItem(storageKey, String(index));
+            saveToLocalStorage(storageKey, index);
             console.log(`[Bulk Modal] Saved last profile index ${index} for chain: ${chainKey}`);
         } catch (e) {
             console.error('[Bulk Modal] Error saving last profile index:', e);
@@ -5944,7 +6880,7 @@ $(document).on('click', '#histClearAll', async function () {
     async function loadLastProfileIndex(chainKey) {
         try {
             const storageKey = `MODAL_LAST_PROFILE_${String(chainKey || '').toUpperCase()}`;
-            const stored = localStorage.getItem(storageKey);
+            const stored = getFromLocalStorage(storageKey, null);
             return stored !== null ? parseInt(stored) : null;
         } catch (e) {
             console.error('[Bulk Modal] Error loading last profile index:', e);
@@ -6042,25 +6978,40 @@ $(document).on('click', '#histClearAll', async function () {
         }
     }
 
-    // Get current DEX values from inputs
+    // Get current DEX values from inputs (DEX biasa + MetaDEX)
     function getCurrentDexValues() {
-        const values = {};
+        const values = { dexs: {}, meta: {} };
         $('.bulk-dex-left').each(function () {
             const dexKey = $(this).data('dex');
             const left = parseFloat($(this).val()) || 0;
             const right = parseFloat($(`.bulk-dex-right[data-dex="${dexKey}"]`).val()) || 0;
-            values[dexKey] = { left, right };
+            values.dexs[dexKey] = { left, right };
+        });
+        // ✅ MetaDEX values
+        $('.bulk-meta-left').each(function () {
+            const aggKey = $(this).data('agg');
+            const left = parseFloat($(this).val()) || 0;
+            const right = parseFloat($(`.bulk-meta-right[data-agg="${aggKey}"]`).val()) || 0;
+            values.meta[aggKey] = { left, right };
         });
         return values;
     }
 
-    // Apply profile values to DEX inputs
+    // Apply profile values to DEX inputs (DEX biasa + MetaDEX)
     function applyProfileValues(profile) {
         const ranges = profile.ranges || {};
+        const metaRanges = profile.metaRanges || {};
+        // Apply DEX biasa
         Object.keys(ranges).forEach(dexKey => {
             const { left, right } = ranges[dexKey];
             $(`.bulk-dex-left[data-dex="${dexKey}"]`).val(left);
             $(`.bulk-dex-right[data-dex="${dexKey}"]`).val(right);
+        });
+        // ✅ Apply MetaDEX
+        Object.keys(metaRanges).forEach(aggKey => {
+            const { left, right } = metaRanges[aggKey];
+            $(`.bulk-meta-left[data-agg="${aggKey}"]`).val(left);
+            $(`.bulk-meta-right[data-agg="${aggKey}"]`).val(right);
         });
     }
 
@@ -6118,7 +7069,8 @@ $(document).on('click', '#histClearAll', async function () {
         const newProfile = {
             name: profileName.trim(),
             chain: chainKey, // 🚀 Store chain info
-            ranges: currentValues,
+            ranges: currentValues.dexs,       // DEX biasa
+            metaRanges: currentValues.meta,   // ✅ MetaDEX modal per chain
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };
@@ -6226,13 +7178,25 @@ $(document).on('click', '#histClearAll', async function () {
 
     function getSelectedDexInputs() {
         const inputs = {};
+        const metaInputs = {};
+
+        // DEX biasa (hanya yang dicentang)
         $('.bulk-dex-checkbox:checked').each(function () {
             const dexKey = String($(this).val()).toLowerCase();
             const left = parseFloat($(`.bulk-dex-left[data-dex="${dexKey}"]`).val()) || 0;
             const right = parseFloat($(`.bulk-dex-right[data-dex="${dexKey}"]`).val()) || 0;
             inputs[dexKey] = { left, right };
         });
-        return inputs;
+
+        // ✅ MetaDEX (semua yang tampil — tidak ada checkbox, selalu aktif)
+        $('.bulk-meta-left').each(function () {
+            const aggKey = String($(this).data('agg')).toLowerCase();
+            const left = parseFloat($(this).val()) || 0;
+            const right = parseFloat($(`.bulk-meta-right[data-agg="${aggKey}"]`).val()) || 0;
+            metaInputs[aggKey] = { left, right };
+        });
+
+        return { dexInputs: inputs, metaInputs };
     }
 
     function getAffectedTokens() {
@@ -6267,7 +7231,7 @@ $(document).on('click', '#histClearAll', async function () {
         }
 
         // Enable/disable apply button
-        const dexInputs = getSelectedDexInputs();
+        const { dexInputs } = getSelectedDexInputs();
         const canApply = affected.length > 0 && Object.keys(dexInputs).length > 0;
         $('#bulk-apply-btn').prop('disabled', !canApply);
     }
@@ -6279,7 +7243,7 @@ $(document).on('click', '#histClearAll', async function () {
         if (!chainKey) return;
 
         const affected = getAffectedTokens();
-        const dexInputs = getSelectedDexInputs();
+        const { dexInputs, metaInputs } = getSelectedDexInputs();
 
         if (affected.length === 0 || Object.keys(dexInputs).length === 0) {
             if (typeof toast !== 'undefined' && toast.warning) {
@@ -6289,8 +7253,12 @@ $(document).on('click', '#histClearAll', async function () {
         }
 
         // Confirm before applying
-        const confirmMsg = `Anda akan mengubah modal DEX untuk ${affected.length} token.\n\nDEX yang diubah:\n${Object.entries(dexInputs).map(([dex, vals]) => `- ${dex.toUpperCase()}: KIRI=${vals.left}, KANAN=${vals.right}`).join('\n')
-            }\n\nLanjutkan?`;
+        let confirmLines = Object.entries(dexInputs).map(([dex, vals]) => `- ${dex.toUpperCase()}: KIRI=${vals.left}, KANAN=${vals.right}`);
+        if (Object.keys(metaInputs).length > 0) {
+            confirmLines.push('--- META-DEX ---');
+            Object.entries(metaInputs).forEach(([agg, vals]) => confirmLines.push(`- [META] ${agg.toUpperCase()}: KIRI=${vals.left}, KANAN=${vals.right}`));
+        }
+        const confirmMsg = `DEX yang diubah Modalnya:\n${confirmLines.join('\n')}\nLanjutkan?\n\n`;
 
         if (!confirm(confirmMsg)) return;
 
@@ -6332,6 +7300,14 @@ $(document).on('click', '#histClearAll', async function () {
 
             // Save updated tokens
             setTokensChain(chainKey, allTokens);
+
+            // ✅ Simpan MetaDEX modal ke META_DEX_SETTINGS[chain]
+            if (Object.keys(metaInputs).length > 0) {
+                const existingMetaSettings = getFromLocalStorage('META_DEX_SETTINGS') || {};
+                existingMetaSettings[chainKey] = { ...(existingMetaSettings[chainKey] || {}), ...metaInputs };
+                saveToLocalStorage('META_DEX_SETTINGS', existingMetaSettings);
+                console.log(`[Bulk Modal] ✅ META_DEX_SETTINGS saved for chain ${chainKey}:`, metaInputs);
+            }
 
             // 🔒 Flush pending writes before closing modal
             console.log('[Bulk Modal] 🔄 Flushing changes to IndexedDB before closing modal...');
