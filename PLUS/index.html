@@ -54,7 +54,7 @@
                 <img src="icons/token.png" class="top-tab-icon" alt=""> KOIN
             </button>
             <button class="top-tab-btn" data-tab="tabSettings">
-                <img src="icons/setting.png" class="top-tab-icon" alt=""> Settings
+                <img src="icons/setting.png" class="top-tab-icon" alt=""> Pengaturan
             </button>
             <button class="top-tab-btn tab-reload" onclick="reloadWithToast()">
                 <img src="icons/reload.png" class="top-tab-icon" alt=""> Reload
@@ -63,6 +63,10 @@
         <div class="top-right">
             <span class="scanning-badge" id="scanBadge">● scanning</span>
             <span class="username-chip" id="topUsername">@-</span>
+        </div>
+        <!-- Progress bar — menempel di bawah top-bar, selalu terlihat -->
+        <div class="scan-progress-strip">
+            <div class="scan-progress-bar" id="scanBar"></div>
         </div>
     </div>
 
@@ -75,9 +79,6 @@
 
     <!-- TAB MONITOR -->
     <div id="tabMonitor" class="tab-pane active">
-        <div class="monitor-progress-strip">
-            <div class="scan-progress-bar" id="scanBar"></div>
-        </div>
         <div class="monitor-cards" id="monitorList">
             <div class="token-list-empty">Jika belum ada koin, masuk menu KOIN lalu tekan + untuk menambah.<br>Jika
                 sudah ada koin, tekan START.</div>
@@ -93,7 +94,7 @@
         <div class="csv-bar">
             <button class="btn-outline" id="btnExport"><i class="bi bi-download"></i> Export CSV</button>
             <button class="btn-outline" id="btnImportTrigger"><i class="bi bi-upload"></i> Import CSV</button>
-            <input type="file" id="importFile" accept=".csv" style="display:none">
+            <input type="file" id="importFile" accept=".csv,text/csv,text/plain,text/comma-separated-values,application/octet-stream" style="display:none">
         </div>
         <div class="token-list" id="tokenList">
             <div class="token-list-empty">Belum ada KOIN. Ketuk tombol + untuk menambah.</div>
@@ -124,6 +125,10 @@
                 <div class="settings-row">
                     <label class="settings-label">Jumlah Quote DEX (1–5)</label>
                     <input class="settings-input" id="setQuote" type="number" min="1" max="5" value="3">
+                </div>
+                <div class="settings-row">
+                    <label class="settings-label"><input type="checkbox" id="setSoundMuted" class="settings-checkbox">&nbsp; &nbsp;Sunyikan  Notifikasi <span class="settings-hint"></span></label>
+                    
                 </div>
             </div>
             <button class="btn-save" id="btnSaveSettings">💾 Simpan Settings</button>

@@ -87,6 +87,7 @@ body {
   top: 0;
   left: 0;
   right: 0;
+  overflow: hidden; /* agar progress strip tidak keluar batas */
   z-index: 100;
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -329,14 +330,15 @@ body {
 }
 
 /* ══════════════════════════════════════════
-   MONITOR — PROGRESS STRIP
+   PROGRESS STRIP — menempel di bawah top-bar
 ══════════════════════════════════════════ */
-.monitor-progress-strip {
-  height: 2px;
-  background: rgba(0, 0, 0, 0.07);
-  position: sticky;
-  top: var(--topbar-h);
-  z-index: 50;
+.scan-progress-strip {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.10);
 }
 
 .scan-progress-bar {
@@ -534,6 +536,12 @@ body {
   color: var(--text2);
 }
 
+.lbl-minpnl {
+  font-size: 11px;
+  font-weight: 500;
+  color: #062a5e;
+}
+
 .mon-row-pnl .mon-dex-cell {
   font-weight: 700;
   font-size: 12px !important;
@@ -547,9 +555,9 @@ body {
   color: var(--loss);
 }
 
-/* Entire DEX column highlight when signal fires — background only, text color unchanged */
+/* Entire DEX column highlight when signal fires — lime background, all text colors stay readable */
 .col-signal {
-  background: rgba(10, 191, 122, 0.15) !important;
+  background: rgba(140, 230, 90, 0.28) !important;
 }
 
 /* CTD/DTC wrappers */
@@ -897,6 +905,23 @@ body {
   border-color: rgba(10, 191, 122, 0.35);
 }
 
+.token-list-item.token-invalid {
+  border-color: rgba(220, 80, 80, 0.5);
+  background: rgba(220, 50, 50, 0.07);
+}
+
+.token-invalid-badge {
+  font-size: 9px;
+  background: rgba(220, 50, 50, 0.18);
+  color: #ff6b6b;
+  border: 1px solid rgba(220, 50, 50, 0.35);
+  border-radius: 4px;
+  padding: 1px 5px;
+  vertical-align: middle;
+  margin-left: 3px;
+}
+
+
 .token-list-info {
   flex: 1;
   min-width: 0;
@@ -1029,9 +1054,22 @@ body {
 }
 
 .settings-label {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text2);
   font-weight: 500;
+}
+
+.settings-hint {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.settings-checkbox {
+  width: 12px;
+  height: 12px;
+  accent-color: var(--accent);
+  cursor: pointer;
 }
 
 .settings-input {

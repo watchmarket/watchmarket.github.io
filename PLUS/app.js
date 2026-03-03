@@ -14,7 +14,21 @@ let CFG = {
     interval: APP_DEV_CONFIG.defaultInterval,
     sseTimeout: APP_DEV_CONFIG.defaultSseTimeout,
     quoteCount: 3,
+    soundMuted: false,
 };
+
+// ─── Signal Sound ─────────────────────────────
+const _signalAudio = new Audio('audio.mp3');
+_signalAudio.preload = 'auto';
+function playSignalSound() {
+    // Android WebView: selalu bunyi (bypass setting mute di web)
+    // Browser biasa: ikuti setting CFG.soundMuted
+    if (!window.AndroidBridge && CFG.soundMuted) return;
+    try {
+        _signalAudio.currentTime = 0;
+        _signalAudio.play().catch(() => {});
+    } catch { }
+}
 let scanning = false;
 let scanAbort = false;
 let signalCache = [];
@@ -64,6 +78,7 @@ function loadSettings() {
     $('#setWallet').val(CFG.wallet);
     $('#setInterval').val(CFG.interval);
     $('#setQuote').val(CFG.quoteCount);
+    $('#setSoundMuted').prop('checked', !!CFG.soundMuted);
     $('#topUsername').text('@' + (CFG.username || '-'));
 }
 function saveSettings() {
@@ -71,6 +86,7 @@ function saveSettings() {
     CFG.wallet = $('#setWallet').val().trim();
     CFG.interval = parseInt($('#setInterval').val()) || 700;
     CFG.quoteCount = Math.min(5, Math.max(1, parseInt($('#setQuote').val()) || 3));
+    CFG.soundMuted = $('#setSoundMuted').prop('checked');
     localStorage.setItem(LS_SETTINGS, JSON.stringify(CFG));
     $('#topUsername').text('@' + (CFG.username || '-'));
     $('#saveOk').show(); setTimeout(() => $('#saveOk').hide(), 2000);
@@ -318,13 +334,10 @@ $('#btnSheetSave').on('click', () => {
 
     const tokens = getTokens();
     const id = $('#editId').val() || genId();
-    // Preserve existing status when editing; default true for new tokens
-    const existing = tokens.find(x => x.id === id);
-    const status = existing ? existing.status : true;
     const tok = {
         id, ticker, cex, symbolToken, scToken, decToken,
         tickerPair, symbolPair, scPair, decPair,
-        chain, modalCtD, modalDtC, status,
+        chain, modalCtD, modalDtC,
         minPnl: isFinite(minPnl) ? minPnl : null,   // null = use global setting
     };
     const idx = tokens.findIndex(x => x.id === id);
@@ -335,6 +348,11 @@ $('#btnSheetSave').on('click', () => {
 });
 
 // ─── Token List ──────────────────────────────
+function isValidToken(t) {
+    return !!(t.ticker && t.scToken && CONFIG_CEX[t.cex] && CONFIG_CHAINS[t.chain] &&
+              (t.symbolToken || isUsdtNoSymbol(t.cex, t.ticker)));
+}
+
 function renderTokenList() {
     const tokens = getTokens();
     $('#tokenCount').text(tokens.length + ' token');
@@ -346,8 +364,10 @@ function renderTokenList() {
             const chainCfg = CONFIG_CHAINS[t.chain] || {};
             const tri = t.tickerPair && t.tickerPair !== t.ticker ? '↔️' : '→';
             const pnlTxt = (isFinite(t.minPnl) && t.minPnl !== null) ? `💰 Min PnL: $${t.minPnl}` : '💰 Min PnL: default';
+            const valid = isValidToken(t);
+            const invalidBadge = valid ? '' : ' <span class="token-invalid-badge">⚠ Data kurang</span>';
             return `
-    <div class="token-list-item" id="li-${t.id}">
+    <div class="token-list-item${valid ? '' : ' token-invalid'}" id="li-${t.id}">
       <div class="token-list-badges">
         <span class="badge-cex" style="background:${cexCfg.WARNA || '#555'}">
           <img src="icons/cex/${t.cex}.png" class="badge-icon" onerror="this.style.display='none'">${cexCfg.label || t.cex}
@@ -357,7 +377,7 @@ function renderTokenList() {
         </span>
       </div>
       <div class="token-list-info">
-        <div class="token-list-sym">${t.ticker} ${tri} ${t.tickerPair || t.ticker}</div>
+        <div class="token-list-sym">${t.ticker} ${tri} ${t.tickerPair || t.ticker}${invalidBadge}</div>
         <div class="token-list-sub">$${t.modalCtD}/$${t.modalDtC} &nbsp;|&nbsp; ${pnlTxt}</div>
       </div>
       <div style="display:flex;align-items:center;gap:6px">
@@ -373,11 +393,6 @@ function renderTokenList() {
     if (!scanning) buildMonitorRows();
 }
 
-function toggleToken(id) {
-    const tokens = getTokens();
-    const t = tokens.find(x => x.id === id);
-    if (t) { t.status = !t.status; saveTokens(tokens); renderTokenList(); }
-}
 function deleteToken(id) {
     if (!confirm('Hapus token ini?')) return;
     saveTokens(getTokens().filter(x => x.id !== id));
@@ -385,7 +400,7 @@ function deleteToken(id) {
 }
 
 // ─── CSV Export / Import ─────────────────────
-const CSV_COLS = ['ticker', 'cex', 'symbolToken', 'scToken', 'decToken', 'tickerPair', 'symbolPair', 'scPair', 'decPair', 'chain', 'modalCtD', 'modalDtC', 'minPnl', 'status'];
+const CSV_COLS = ['ticker', 'cex', 'symbolToken', 'scToken', 'decToken', 'tickerPair', 'symbolPair', 'scPair', 'decPair', 'chain', 'modalCtD', 'modalDtC', 'minPnl'];
 
 $('#btnExport').on('click', () => {
     const tokens = getTokens();
@@ -410,24 +425,31 @@ $('#importFile').on('change', e => {
     const r = new FileReader();
     r.onload = ev => {
         try {
-            const lines = ev.target.result.trim().split('\n');
-            const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
-            const tokens = lines.slice(1).map(line => {
-                const vals = line.match(/(".*?"|[^,]+)/g) || [];
-                const obj = {};
-                headers.forEach((h, i) => { obj[h] = (vals[i] || '').replace(/"/g, '').trim(); });
-                obj.decToken = parseInt(obj.decToken) || 18;
-                obj.decPair = parseInt(obj.decPair) || 18;
-                obj.modalCtD = parseFloat(obj.modalCtD) || 100;
-                obj.modalDtC = parseFloat(obj.modalDtC) || 80;
-                const pnlRaw = parseFloat(obj.minPnl);
-                obj.minPnl = isFinite(pnlRaw) ? pnlRaw : null;
-                obj.status = obj.status === 'true';
-                obj.id = obj.id || genId();
-                return obj;
-            });
+            // Pakai /\r?\n/ agar CSV dari Windows (\r\n) maupun Unix (\n) sama-sama benar
+            const lines = ev.target.result.trim().split(/\r?\n/);
+            const headers = lines[0].split(',').map(h => h.replace(/["\r]/g, '').trim());
+            const tokens = lines.slice(1)
+                .map(line => {
+                    const vals = line.match(/(".*?"|[^,]+)/g) || [];
+                    const obj = {};
+                    // Hapus tanda kutip DAN \r agar status "true\r" tetap terbaca benar
+                    headers.forEach((h, i) => { obj[h] = (vals[i] || '').replace(/["\r]/g, '').trim(); });
+                    obj.decToken = parseInt(obj.decToken) || 18;
+                    obj.decPair = parseInt(obj.decPair) || 18;
+                    obj.modalCtD = parseFloat(obj.modalCtD) || 100;
+                    obj.modalDtC = parseFloat(obj.modalDtC) || 80;
+                    const pnlRaw = parseFloat(obj.minPnl);
+                    obj.minPnl = isFinite(pnlRaw) ? pnlRaw : null;
+                    obj.id = obj.id || genId();
+                    return obj;
+                })
+                .filter(t => t.ticker); // skip baris kosong
+            const invalidCount = tokens.filter(t => !isValidToken(t)).length;
             saveTokens(tokens); renderTokenList();
-            alert(`Import berhasil: ${tokens.length} token`);
+            const note = invalidCount > 0
+                ? `\n⚠ ${invalidCount} token data kurang — dinonaktifkan otomatis (tidak tampil di monitoring).\nLengkapi data via ✏️ lalu aktifkan dengan lingkaran ⬤ di menu KOIN.`
+                : '';
+            alert(`Import berhasil: ${tokens.length} token${note}`);
         } catch (err) { alert('Error import: ' + err.message); }
     };
     r.readAsText(f);
@@ -612,7 +634,7 @@ async function scanToken(tok) {
         // Show actionable hint in dex row
         const hint = diagCtD === 'MODAL BESAR' ? '↓ Kecilkan Modal'
             : diagCtD === 'AMOUNT NOL' ? '↓ Cek Harga CEX'
-                : '↓ Cek SC / Desimal';
+                : '↓ KOIN TIDAK ADA DI DEX / LP';
         const dexEl0 = card.querySelector('[data-ctd-dex="0"]');
         if (dexEl0) { dexEl0.textContent = hint; dexEl0.className = 'mon-dex-cell mc-err'; }
         for (let i = 1; i < CFG.quoteCount; i++) {
@@ -630,9 +652,9 @@ async function scanToken(tok) {
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
             if (hdrEl) { hdrEl.textContent = r.name; hdrEl.className = 'mon-dex-hdr'; }
-            if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(obToken.askPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
-            if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell ' + (r.effPrice >= obToken.askPrice ? 'mc-ask' : 'mc-bid'); }
-            if (feeEl) { feeEl.textContent = `-${r.cexFee1.toFixed(2)} | ${r.cexFee2.toFixed(2)}`; feeEl.className = 'mon-dex-cell mc-recv'; }
+            if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(obToken.askPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
+            if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
+            if (feeEl) { feeEl.textContent = `-${r.cexFee1.toFixed(2)} | ${r.cexFee2.toFixed(2)}`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
         });
     }
@@ -671,7 +693,7 @@ async function scanToken(tok) {
         // Show actionable hint in dex row
         const hint = diagDtC === 'MODAL BESAR' ? '↓ Kecilkan Modal'
             : diagDtC === 'AMOUNT NOL' ? '↓ Cek Harga CEX'
-                : '↓ Cek SC / Desimal';
+                : '↓ KOIN TIDAK ADA DI DEX / LP';
         const dexEl0 = card.querySelector('[data-dtc-dex="0"]');
         if (dexEl0) { dexEl0.textContent = hint; dexEl0.className = 'mon-dex-cell mc-err'; }
         for (let i = 1; i < CFG.quoteCount; i++) {
@@ -689,9 +711,10 @@ async function scanToken(tok) {
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
             if (hdrEl) { hdrEl.textContent = r.name; hdrEl.className = 'mon-dex-hdr'; }
-            if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(obToken.bidPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
-            if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell ' + (r.effPrice <= obToken.bidPrice ? 'mc-ask' : 'mc-bid'); }
-            if (feeEl) { feeEl.textContent = `-${r.cexFee1.toFixed(2)} | ${r.cexFee2.toFixed(2)}`; feeEl.className = 'mon-dex-cell mc-recv'; }
+            // DTC: baris XVS→LTC = harga beli di DEX (effPrice); baris JUAL CEX = harga jual di CEX (bidPrice)
+            if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(r.effPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
+            if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(obToken.bidPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
+            if (feeEl) { feeEl.textContent = `-${r.cexFee1.toFixed(2)} | ${r.cexFee2.toFixed(2)}`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
         });
     }
@@ -732,9 +755,9 @@ const MON_CTD_COLOR = '#579a69'; // hijau CEXtoDEX
 const MON_DTC_COLOR = '#d56666'; // merah DEXtoCEX
 
 function buildMonitorRows() {
-    const tokens = getTokens().filter(t => t.status);
+    const tokens = getTokens();
     if (!tokens.length) {
-        $('#monitorList').html('<div class="token-list-empty">Tidak ada token aktif. Aktifkan di tab TOKEN.</div>');
+        $('#monitorList').html('<div class="token-list-empty">Tidak ada token. Tambahkan KOIN di menu KOIN.</div>');
         return;
     }
     const n = CFG.quoteCount;
@@ -754,6 +777,7 @@ function buildMonitorRows() {
         const tri = t.tickerPair && t.tickerPair !== t.ticker;
         const sym = t.ticker + (tri ? '↔' + t.tickerPair : '');
         const pairTk = t.tickerPair || t.ticker;
+        const minPnlLbl = (isFinite(t.minPnl) && t.minPnl !== null) ? t.minPnl : APP_DEV_CONFIG.defaultMinPnl;
         return `<div class="mon-card" id="card-${t.id}" style="border-left:3px solid ${cexColor}">
   <div class="mon-card-hdr" style="background:linear-gradient(90deg,${cexColor}22 0%,var(--surface) 100%)">
     <img src="icons/cex/${t.cex}.png" class="mon-hdr-icon" onerror="this.style.display='none'">
@@ -772,7 +796,7 @@ function buildMonitorRows() {
       <tr class="mon-row-cex"><td class="mon-lbl-side"><span style='color:green;'>BELI CEX ↑</span></td>${dexRow('ctd', 'cex')}</tr>
       <tr class="mon-row-dex"><td class="mon-lbl-side">${t.ticker}→${pairTk}</td>${dexRow('ctd', 'dex')}</tr>
       <tr class="mon-row-recv"><td class="mon-lbl-side">Trade & Swap</td>${dexRow('ctd', 'fee')}</tr>
-      <tr class="mon-row-pnl"><td class="mon-lbl-side">💰 PNL</td>${dexRow('ctd', 'pnl')}</tr>
+      <tr class="mon-row-pnl"><td class="mon-lbl-side">💰 PNL <span class="lbl-minpnl">($${minPnlLbl})</span></td>${dexRow('ctd', 'pnl')}</tr>
     </tbody>
   </table>
   <table class="mon-sub-table dtc-table">
@@ -784,7 +808,7 @@ function buildMonitorRows() {
       <tr class="mon-row-cex"><td class="mon-lbl-side">${pairTk}→${t.ticker}</td>${dexRow('dtc', 'cex')}</tr>
       <tr class="mon-row-dex"><td class="mon-lbl-side lbl-pair"><span style='color:red;'>JUAL CEX ↓</span></td>${dexRow('dtc', 'dex')}</tr>
       <tr class="mon-row-recv"><td class="mon-lbl-side">Trade & Swap</td>${dexRow('dtc', 'fee')}</tr>
-      <tr class="mon-row-pnl"><td class="mon-lbl-side">💰 PNL</td>${dexRow('dtc', 'pnl')}</tr>
+      <tr class="mon-row-pnl"><td class="mon-lbl-side">💰 PNL <span class="lbl-minpnl">($${minPnlLbl})</span></td>${dexRow('dtc', 'pnl')}</tr>
     </tbody>
   </table>
   </div>
@@ -822,6 +846,7 @@ async function sendTelegram(tok, pnl, info) {
     const last = tgCooldown.get(tok.id) || 0;
     if (now - last < APP_DEV_CONFIG.telegramCooldown * 60000) return;
     tgCooldown.set(tok.id, now);
+    playSignalSound();
 
     const chain = CONFIG_CHAINS[tok.chain]?.label || tok.chain;
     const cexLbl = CONFIG_CEX[tok.cex]?.label || tok.cex;
@@ -910,8 +935,8 @@ async function runScan() {
     // Clear previous signal chips and reset table
     document.querySelectorAll('.signal-chip').forEach(c => c.remove());
     lockTabs();
-    const tokens = getTokens().filter(t => t.status);
-    if (!tokens.length) { showToast('Tidak ada token aktif!'); stopScan(); return; }
+    const tokens = getTokens();
+    if (!tokens.length) { showToast('Tidak ada token! Tambahkan KOIN dulu.'); stopScan(); return; }
     showToast('▶ Scanning dimulai…');
     await fetchUsdtRate();
 
