@@ -51,7 +51,7 @@
                 <img src="icons/monitoring.png" class="top-tab-icon" alt=""> Monitor
             </button>
             <button class="top-tab-btn" data-tab="tabToken">
-                <img src="icons/token.png" class="top-tab-icon" alt=""> Token
+                <img src="icons/token.png" class="top-tab-icon" alt=""> KOIN
             </button>
             <button class="top-tab-btn" data-tab="tabSettings">
                 <img src="icons/setting.png" class="top-tab-icon" alt=""> Settings
@@ -79,7 +79,7 @@
             <div class="scan-progress-bar" id="scanBar"></div>
         </div>
         <div class="monitor-cards" id="monitorList">
-            <div class="token-list-empty">Jika belum ada token, masuk menu TOKEN lalu tekan + untuk menambah.<br>Jika
+            <div class="token-list-empty">Jika belum ada koin, masuk menu KOIN lalu tekan + untuk menambah.<br>Jika
                 sudah ada koin, tekan START.</div>
         </div>
     </div>
@@ -87,8 +87,8 @@
     <!-- TAB TOKEN -->
     <div id="tabToken" class="tab-pane">
         <div class="token-list-header">
-            <h2>Daftar Token</h2>
-            <span class="token-count" id="tokenCount">0 token</span>
+            <h2>Daftar KOIN</h2>
+            <span class="token-count" id="tokenCount">0 KOIN</span>
         </div>
         <div class="csv-bar">
             <button class="btn-outline" id="btnExport"><i class="bi bi-download"></i> Export CSV</button>
@@ -96,7 +96,7 @@
             <input type="file" id="importFile" accept=".csv" style="display:none">
         </div>
         <div class="token-list" id="tokenList">
-            <div class="token-list-empty">Belum ada token. Ketuk tombol + untuk menambah.</div>
+            <div class="token-list-empty">Belum ada KOIN. Ketuk tombol + untuk menambah.</div>
         </div>
         <button class="fab" id="fabAdd">+</button>
     </div>
@@ -118,7 +118,7 @@
             <div class="settings-card">
                 <h3>Scan</h3>
                 <div class="settings-row">
-                    <label class="settings-label">Interval antar Token (ms)</label>
+                    <label class="settings-label">Interval antar KOIN (ms)</label>
                     <input class="settings-input" id="setInterval" type="number" step="100" value="700">
                 </div>
                 <div class="settings-row">
@@ -137,19 +137,19 @@
     <nav class="bottom-nav">
         <button class="nav-item active" data-tab="tabMonitor" id="navMonitor">
             <span class="nav-icon"><img src="icons/monitoring.png" class="nav-icon-img" alt="monitor"></span>
-            <span>Monitor</span>
+            <span>Scanner</span>
         </button>
         <button class="nav-item" data-tab="tabToken" id="navToken">
             <span class="nav-icon"><img src="icons/token.png" class="nav-icon-img" alt="token"></span>
-            <span>Token</span>
+            <span>Koin</span>
         </button>
         <button class="nav-item" data-tab="tabSettings" id="navSettings">
             <span class="nav-icon"><img src="icons/setting.png" class="nav-icon-img" alt="settings"></span>
-            <span>Settings</span>
+            <span>Pengaturan</span>
         </button>
         <button class="nav-item" id="navReload" onclick="reloadWithToast()">
             <span class="nav-icon"><img src="icons/reload.png" class="nav-icon-img" alt="reload"></span>
-            <span>Reload</span>
+            <span>Refresh</span>
         </button>
     </nav>
 

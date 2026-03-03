@@ -390,7 +390,16 @@ const CSV_COLS = ['ticker', 'cex', 'symbolToken', 'scToken', 'decToken', 'ticker
 $('#btnExport').on('click', () => {
     const tokens = getTokens();
     const rows = [CSV_COLS.join(','), ...tokens.map(t => CSV_COLS.map(c => `"${t[c] ?? ''}"`).join(','))];
-    const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+    const csvContent = rows.join('\n');
+
+    // Android WebView: blob URL download tidak didukung — pakai native bridge
+    if (window.AndroidBridge) {
+        window.AndroidBridge.saveFile('cexdex-tokens.csv', csvContent);
+        return;
+    }
+
+    // Browser biasa: gunakan blob download
+    const blob = new Blob([csvContent], { type: 'text/csv' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'cexdex-tokens.csv'; a.click();
@@ -760,9 +769,9 @@ function buildMonitorRows() {
       ${dexHdr('ctd', MON_CTD_COLOR)}
     </tr></thead>
     <tbody>
-      <tr class="mon-row-cex"><td class="mon-lbl-side">BELI CEX ↑</td>${dexRow('ctd', 'cex')}</tr>
-      <tr class="mon-row-dex"><td class="mon-lbl-side lbl-pair">${t.ticker}→${pairTk}</td>${dexRow('ctd', 'dex')}</tr>
-      <tr class="mon-row-recv"><td class="mon-lbl-side">FEE Trade&Swap</td>${dexRow('ctd', 'fee')}</tr>
+      <tr class="mon-row-cex"><td class="mon-lbl-side"><span style='color:green;'>BELI CEX ↑</span></td>${dexRow('ctd', 'cex')}</tr>
+      <tr class="mon-row-dex"><td class="mon-lbl-side">${t.ticker}→${pairTk}</td>${dexRow('ctd', 'dex')}</tr>
+      <tr class="mon-row-recv"><td class="mon-lbl-side">Trade & Swap</td>${dexRow('ctd', 'fee')}</tr>
       <tr class="mon-row-pnl"><td class="mon-lbl-side">💰 PNL</td>${dexRow('ctd', 'pnl')}</tr>
     </tbody>
   </table>
@@ -772,9 +781,9 @@ function buildMonitorRows() {
       ${dexHdr('dtc', MON_DTC_COLOR)}
     </tr></thead>
     <tbody>
-      <tr class="mon-row-cex"><td class="mon-lbl-side">JUAL CEX ↑</td>${dexRow('dtc', 'cex')}</tr>
-      <tr class="mon-row-dex"><td class="mon-lbl-side lbl-pair">${pairTk}→${t.ticker}</td>${dexRow('dtc', 'dex')}</tr>
-      <tr class="mon-row-recv"><td class="mon-lbl-side">FEE Trade&Swap</td>${dexRow('dtc', 'fee')}</tr>
+      <tr class="mon-row-cex"><td class="mon-lbl-side">${pairTk}→${t.ticker}</td>${dexRow('dtc', 'cex')}</tr>
+      <tr class="mon-row-dex"><td class="mon-lbl-side lbl-pair"><span style='color:red;'>JUAL CEX ↓</span></td>${dexRow('dtc', 'dex')}</tr>
+      <tr class="mon-row-recv"><td class="mon-lbl-side">Trade & Swap</td>${dexRow('dtc', 'fee')}</tr>
       <tr class="mon-row-pnl"><td class="mon-lbl-side">💰 PNL</td>${dexRow('dtc', 'pnl')}</tr>
     </tbody>
   </table>
@@ -863,6 +872,34 @@ function showToast(msg, duration = 2200) {
     _toastTimer = setTimeout(() => el.classList.remove('show'), duration);
 }
 
+// ─── Reset Monitor Cells ──────────────────────
+// Kosongkan semua sel tabel dan sinyal setelah setiap ronde selesai
+function resetMonitorCells() {
+    const n = CFG.quoteCount;
+    document.querySelectorAll('.mon-card').forEach(card => {
+        card.classList.remove('has-signal');
+        card.querySelectorAll('.card-status').forEach(el => el.textContent = '');
+        card.querySelectorAll('.tbl-status').forEach(el => {
+            el.textContent = ''; el.className = 'tbl-status';
+        });
+        for (let i = 0; i < n; i++) {
+            ['ctd', 'dtc'].forEach(pfx => {
+                const hdr = card.querySelector(`[data-${pfx}-hdr="${i}"]`);
+                const cex = card.querySelector(`[data-${pfx}-cex="${i}"]`);
+                const dex = card.querySelector(`[data-${pfx}-dex="${i}"]`);
+                const fee = card.querySelector(`[data-${pfx}-fee="${i}"]`);
+                const pnl = card.querySelector(`[data-${pfx}-pnl="${i}"]`);
+                if (hdr) { hdr.textContent = '-'; hdr.className = 'mon-dex-hdr'; }
+                if (cex) { cex.textContent = '-'; cex.className = 'mon-dex-cell'; }
+                if (dex) { dex.textContent = '-'; dex.className = 'mon-dex-cell'; }
+                if (fee) { fee.textContent = '-'; fee.className = 'mon-dex-cell'; }
+                if (pnl) { pnl.textContent = '-'; pnl.className = 'mon-dex-cell'; }
+            });
+        }
+    });
+    document.querySelectorAll('.signal-chip').forEach(c => c.remove());
+}
+
 // ─── Scan Loop ───────────────────────────────
 let _scanRound = 0;
 async function runScan() {
@@ -888,7 +925,13 @@ async function runScan() {
             await scanToken(tokens[i]);
             if (!scanAbort) await new Promise(r => setTimeout(r, CFG.interval));
         }
-        if (!scanAbort) await new Promise(r => setTimeout(r, 500));
+        if (!scanAbort) {
+            // Bersihkan tabel & sinyal, lalu jeda 4 detik sebelum ronde berikutnya
+            resetMonitorCells();
+            $('#scanBar').css('width', '0%');
+            showToast(`♻ Ronde ${_scanRound} selesai — jeda 4 detik...`, 3800);
+            await new Promise(r => setTimeout(r, 4000));
+        }
     }
     stopScan();
 }
