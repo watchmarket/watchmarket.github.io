@@ -22,19 +22,20 @@ const APP_DEV_CONFIG = {
 // ============================================================
 // CONFIG_CEX — 4 Exchange
 // ============================================================
-const CONFIG_CEX = {
+
+ const CONFIG_CEX = {
   binance: {
     label: "Binance",
     ICON: "icons/cex/binance.png",
     WARNA: "#e0a50c",
      
     ORDERBOOK: {
-      urlTpl: (symbol) => `https://api.binance.me/api/v3/depth?limit=5&symbol=${symbol.toUpperCase()}`,
+      urlTpl: (symbol) => `https://data-api.binance.vision/api/v3/depth?limit=5&symbol=${symbol.toUpperCase()}`,
       parser: "standard",
-      proxy: true,
+      proxy: false,
     },
     symbolFmt: (ticker) => ticker.toUpperCase() + "USDT",
-  },
+  }, 
   gate: {
     label: "Gate",
     ICON: "icons/cex/gate.png",
