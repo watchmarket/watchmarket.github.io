@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>SCANNER PRICE CRYPTO</title>
+    <link rel="icon" href="icons/favicon.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+
+<body>
+
+    <!-- ═══════════════════════════════════════
+     ONBOARDING MODAL
+═══════════════════════════════════════ -->
+    <div class="onboard-overlay" id="onboardOverlay">
+        <div class="onboard-card">
+            <div class="onboard-logo">SCANNER PRICE CRYPTO</div>
+            <div class="onboard-sub">CEX vs DEX Price Comparator</div>
+            <div class="onboard-form-group">
+                <label class="form-label">Username</label>
+                <input class="form-input" id="obUsername" type="text" placeholder="contoh: trader01" autocomplete="off">
+            </div>
+            <div class="onboard-form-group">
+                <label class="form-label">Wallet Address (EVM)</label>
+                <input class="form-input" id="obWallet" type="text" placeholder="0x..." autocomplete="off">
+            </div>
+            <div class="onboard-form-group">
+                <label class="form-label">Jumlah Quote DEX ditampilkan (1–5)</label>
+                <input class="form-input" id="obQuote" type="number" value="3" min="1" max="5">
+            </div>
+            <button class="btn-onboard" id="btnOnboard">MULAI →</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+     TOP BAR
+═══════════════════════════════════════ -->
+    <div class="top-bar">
+        <div class="app-name">
+            <img src="icons/favicon.png" class="app-logo" alt="">
+            SCANNER PRICE CRYPTO
+        </div>
+        <!-- Tab pills — visible in landscape only -->
+        <div class="top-tabs" id="topTabs">
+            <button class="top-tab-btn active" data-tab="tabMonitor">
+                <img src="icons/monitoring.png" class="top-tab-icon" alt=""> Monitor
+            </button>
+            <button class="top-tab-btn" data-tab="tabToken">
+                <img src="icons/token.png" class="top-tab-icon" alt=""> Token
+            </button>
+            <button class="top-tab-btn" data-tab="tabSettings">
+                <img src="icons/setting.png" class="top-tab-icon" alt=""> Settings
+            </button>
+            <button class="top-tab-btn tab-reload" onclick="reloadWithToast()">
+                <img src="icons/reload.png" class="top-tab-icon" alt=""> Reload
+            </button>
+        </div>
+        <div class="top-right">
+            <span class="scanning-badge" id="scanBadge">● scanning</span>
+            <span class="username-chip" id="topUsername">@-</span>
+        </div>
+    </div>
+
+    <!-- Signal Chips -->
+    <div class="signal-bar" id="signalBar"></div>
+
+    <!-- ═══════════════════════════════════════
+     TAB CONTENT
+═══════════════════════════════════════ -->
+
+    <!-- TAB MONITOR -->
+    <div id="tabMonitor" class="tab-pane active">
+        <div class="monitor-progress-strip">
+            <div class="scan-progress-bar" id="scanBar"></div>
+        </div>
+        <div class="monitor-cards" id="monitorList">
+            <div class="token-list-empty">JIKA BELUM ADA TOKEN DATA KOIN. <br/>MASUK MENU TOKEN LALU TEKAN + UNTUK MENAMBAH. <br/>JIKA SUDAH ADA KOIN SILAKAN TEKAN START</div>
+        </div>
+    </div>
+
+    <!-- TAB TOKEN -->
+    <div id="tabToken" class="tab-pane">
+        <div class="token-list-header">
+            <h2>Daftar Token</h2>
+            <span class="token-count" id="tokenCount">0 token</span>
+        </div>
+        <div class="csv-bar">
+            <button class="btn-outline" id="btnExport"><i class="bi bi-download"></i> Export CSV</button>
+            <button class="btn-outline" id="btnImportTrigger"><i class="bi bi-upload"></i> Import CSV</button>
+            <input type="file" id="importFile" accept=".csv" style="display:none">
+        </div>
+        <div class="token-list" id="tokenList">
+            <div class="token-list-empty">Belum ada token. Ketuk tombol + untuk menambah.</div>
+        </div>
+        <button class="fab" id="fabAdd">+</button>
+    </div>
+
+    <!-- TAB SETTINGS -->
+    <div id="tabSettings" class="tab-pane">
+        <div class="settings-content">
+            <div class="settings-card">
+                <h3>Akun</h3>
+                <div class="settings-row">
+                    <label class="settings-label">Username</label>
+                    <input class="settings-input" id="setUsername" type="text" placeholder="trader01">
+                </div>
+                <div class="settings-row">
+                    <label class="settings-label">Wallet Address (EVM)</label>
+                    <input class="settings-input" id="setWallet" type="text" placeholder="0x...">
+                </div>
+            </div>
+            <div class="settings-card">
+                <h3>Scan</h3>
+                <div class="settings-row">
+                    <label class="settings-label">Min PnL Signal ($)</label>
+                    <input class="settings-input" id="setMinPnl" type="number" step="0.1" value="1">
+                </div>
+                <div class="settings-row">
+                    <label class="settings-label">Interval antar Token (ms)</label>
+                    <input class="settings-input" id="setInterval" type="number" step="100" value="700">
+                </div>
+                <div class="settings-row">
+                    <label class="settings-label">Jumlah Quote DEX (1–5)</label>
+                    <input class="settings-input" id="setQuote" type="number" min="1" max="5" value="3">
+                </div>
+            </div>
+            <button class="btn-save" id="btnSaveSettings">💾 Simpan Settings</button>
+            <div class="save-ok" id="saveOk">✓ Tersimpan!</div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+     BOTTOM NAV
+═══════════════════════════════════════ -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-tab="tabMonitor" id="navMonitor">
+            <span class="nav-icon"><img src="icons/monitoring.png" class="nav-icon-img" alt="monitor"></span>
+            <span>Monitor</span>
+        </button>
+        <button class="nav-item" data-tab="tabToken" id="navToken">
+            <span class="nav-icon"><img src="icons/token.png" class="nav-icon-img" alt="token"></span>
+            <span>Token</span>
+        </button>
+        <button class="nav-item" data-tab="tabSettings" id="navSettings">
+            <span class="nav-icon"><img src="icons/setting.png" class="nav-icon-img" alt="settings"></span>
+            <span>Settings</span>
+        </button>
+        <button class="nav-item" id="navReload" onclick="reloadWithToast()">
+            <span class="nav-icon"><img src="icons/reload.png" class="nav-icon-img" alt="reload"></span>
+            <span>Reload</span>
+        </button>
+    </nav>
+
+    <!-- FAB Scan (Monitor only) -->
+    <button class="fab-scan" id="btnScan">
+        <span id="btnScanIcon" style="font-size:22px;line-height:1">▶</span>
+        <span id="btnScanLbl" style="font-size:9px;letter-spacing:1px;font-weight:700;line-height:1.2">START</span>
+    </button>
+
+    <!-- ═══════════════════════════════════════
+     BOTTOM SHEET — TOKEN FORM
+═══════════════════════════════════════ -->
+    <div class="sheet-overlay" id="sheetOverlay"></div>
+    <div class="bottom-sheet" id="tokenSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title" id="sheetTitle">Tambah Token</div>
+        <input type="hidden" id="editId">
+
+        <div class="sheet-body">
+
+            <div class="form-group">
+                <label class="form-label">Network</label>
+                <div class="chip-group" id="chainChips"></div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Exchanger</label>
+                <div class="chip-group" id="cexChips"></div>
+            </div>
+
+            <!-- Section: Token (Koin A — beli/jual di CEX) -->
+            <div class="sheet-section-title">TOKEN (Koin A — CEX)</div>
+
+            <div class="form-row-ts">
+                <div class="form-group ac-wrap">
+                    <label class="form-label">Symbol TOKEN</label>
+                    <input class="form-input" id="fTicker" type="text" placeholder="SAND" autocomplete="off"
+                        oninput="onTickerInput('token')">
+                    <div class="ac-box" id="acToken"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ticker CEX</label>
+                    <input class="form-input" id="fSymbolToken" type="text" placeholder="sandIDR">
+                </div>
+            </div>
+
+            <div class="form-row-scd">
+                <div class="form-group">
+                    <label class="form-label">SC Token</label>
+                    <input class="form-input" id="fScToken" type="text" placeholder="0x...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Dec</label>
+                    <input class="form-input" id="fDecToken" type="number" value="18">
+                </div>
+            </div>
+
+            <!-- Section: Pair (Koin B — output swap DEX) -->
+            <div class="sheet-section-title">PAIR (Koin B — DEX)</div>
+
+            <div class="form-row-ts">
+                <div class="form-group ac-wrap">
+                    <label class="form-label">Symbol PAIR</label>
+                    <input class="form-input" id="fTickerPair" type="text" placeholder="EDU"
+                        autocomplete="off" oninput="onTickerInput('pair')">
+                    <div class="ac-box" id="acPair"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ticker CEX</label>
+                    <input class="form-input" id="fSymbolPair" type="text" placeholder="eduIDR">
+                </div>
+            </div>
+
+            <div class="form-row-scd">
+                <div class="form-group">
+                    <label class="form-label">SC Pair</label>
+                    <input class="form-input" id="fScPair" type="text" placeholder="0x...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Dec</label>
+                    <input class="form-input" id="fDecPair" type="number" value="18">
+                </div>
+            </div>
+
+            <!-- Chain & Modal -->
+            <div class="sheet-section-title" style="padding-top:6px">Chain &amp; Modal</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Modal CEX→DEX:KIRI ($)</label>
+                    <input class="form-input" id="fModalCtD" type="number" value="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Modal DEX→CEX:KANAN ($)</label>
+                    <input class="form-input" id="fModalDtC" type="number" value="80">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Min PnL Signal ($) — kosong = pakai global</label>
+                    <input class="form-input" id="fMinPnl" type="number" step="0.1" placeholder="pakai global">
+                </div>
+            </div>
+
+        </div><!-- /sheet-body -->
+
+        <div class="sheet-footer">
+            <button class="btn-cancel" id="btnSheetCancel">Batal</button>
+            <button class="btn-primary" id="btnSheetSave">💾 Simpan Token</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toastMsg"></div>
+
+    <script src="config.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
