@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════
-   SCANNER MOBILE — style.css
-   Light Glassmorphism Theme  •  Minimal & Modern
+   SCANNER PRICE CRYPTO — style.css
+   Light Glassmorphism Theme  •  METAX + JUMPX
 ═══════════════════════════════════════════════ */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
 
@@ -32,6 +32,10 @@
   --profit: #0abf7a;
   --loss: #e63950;
   --warn: #f59e0b;
+
+  /* ─── METAX & JUMPX Colors ─── */
+  --metax-color: #e87122;
+  --jumpx-color: #8b5cf6;
 
   /* ─── Misc ─── */
   --radius: 16px;
@@ -80,6 +84,33 @@ body {
 }
 
 /* ══════════════════════════════════════════
+   METAX / JUMPX BADGES
+══════════════════════════════════════════ */
+.badge-metax {
+  display: inline-block;
+  background: var(--metax-color);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: .3px;
+  vertical-align: middle;
+}
+
+.badge-jumpx {
+  display: inline-block;
+  background: var(--jumpx-color);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: .3px;
+  vertical-align: middle;
+}
+
+/* ══════════════════════════════════════════
    TOP BAR
 ══════════════════════════════════════════ */
 .top-bar {
@@ -88,7 +119,6 @@ body {
   left: 0;
   right: 0;
   overflow: hidden;
-  /* agar progress strip tidak keluar batas */
   z-index: 100;
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -317,6 +347,21 @@ body {
   color: var(--loss);
 }
 
+.no-signal-notice {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(230, 57, 80, 0.10);
+  border: 1px solid rgba(230, 57, 80, 0.32);
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--loss);
+  flex-shrink: 0;
+  animation: scan-pulse 1.4s ease-in-out infinite;
+}
+
 /* ══════════════════════════════════════════
    TAB CONTENT
 ══════════════════════════════════════════ */
@@ -331,7 +376,7 @@ body {
 }
 
 /* ══════════════════════════════════════════
-   PROGRESS STRIP — menempel di bawah top-bar
+   PROGRESS STRIP
 ══════════════════════════════════════════ */
 .scan-progress-strip {
   position: absolute;
@@ -420,15 +465,36 @@ body {
   margin-left: auto;
 }
 
+.mon-num {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0b10a8;
+}
 
-/* Marker kolom LI.FI — strip kuning tipis di atas header */
-.mon-dex-hdr.lifi-col {
-  box-shadow: inset 0 3px 0 rgba(255, 220, 80, 0.85);
-  opacity: 0.88;
+/* Sub-tables — scrollable wrapper for mobile */
+.mon-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.mon-table-scroll::-webkit-scrollbar {
+  height: 3px;
+}
+
+.mon-table-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+.dtc-table .mon-lbl-hdr,
+.dtc-table .mon-lbl-side {
+  text-align: left;
 }
 
 .mon-sub-table {
   width: 100%;
+  min-width: 320px;
   border-collapse: collapse;
   font-size: 11px;
 }
@@ -453,7 +519,8 @@ body {
 }
 
 .tbl-status-err {
-  color: var(--warn);
+  color: white;
+  font-size: 10px;
 }
 
 /* DEX header cell showing an error/diagnostic reason */
@@ -497,6 +564,28 @@ body {
   color: rgba(255, 255, 255, 0.9) !important;
 }
 
+/* Source tag in DEX header — small superscript badge */
+.src-tag {
+  display: inline-block;
+  font-size: 7px;
+  font-weight: 800;
+  padding: 0px 3px;
+  border-radius: 3px;
+  vertical-align: super;
+  margin-left: 2px;
+  line-height: 1;
+}
+
+.src-tag.mx {
+  background: var(--metax-color);
+  color: #fff;
+}
+
+.src-tag.jx {
+  background: var(--jumpx-color);
+  color: #fff;
+}
+
 .mon-sub-table tbody tr {
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
@@ -517,6 +606,14 @@ body {
   white-space: nowrap;
   min-width: 72px;
   padding: 3px 6px !important;
+}
+
+.ctd-table .mon-lbl-side {
+  background: rgba(87, 154, 105, 0.10);
+}
+
+.dtc-table .mon-lbl-side {
+  background: rgba(213, 102, 102, 0.10);
 }
 
 .lbl-pair {
@@ -557,7 +654,7 @@ body {
   color: var(--loss);
 }
 
-/* Entire DEX column highlight when signal fires — lime background, all text colors stay readable */
+/* Entire DEX column highlight when signal fires */
 .col-signal {
   background: rgba(140, 230, 90, 0.28) !important;
 }
@@ -583,7 +680,7 @@ body {
 }
 
 .mc-recv {
-  color: #0e6aec;
+  color: #000000;
   font-size: 10px !important;
   font-weight: 600;
 }
@@ -632,7 +729,7 @@ body {
 }
 
 .fab-scan #btnScanCount {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   opacity: 0.88;
   line-height: 1;
@@ -1076,6 +1173,19 @@ body {
   margin-bottom: 0;
 }
 
+.settings-row-inline {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.settings-row-col {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
 .settings-label {
   font-size: 13px;
   color: var(--text2);
@@ -1121,11 +1231,11 @@ body {
   color: var(--muted);
   transition: background .15s, color .15s, border-color .15s;
   user-select: none;
+  text-transform: uppercase;
 }
 
 .fchip.on {
   border-color: transparent;
-  /* warna background dan teks di-set inline via JS sesuai WARNA config */
 }
 
 .fchip:not(.on) {
@@ -1282,6 +1392,21 @@ body {
   background: #fff;
 }
 
+.form-input.input-error {
+  border-color: var(--loss) !important;
+  background: rgba(230, 57, 80, 0.06) !important;
+}
+
+.form-input.input-error:focus {
+  border-color: var(--loss) !important;
+}
+
+.chip-group.input-error {
+  outline: 2px solid var(--loss);
+  border-radius: var(--radius-xs);
+  padding: 3px;
+}
+
 /* Layout rows */
 .form-row {
   display: grid;
@@ -1323,6 +1448,7 @@ body {
   align-items: center;
   gap: 4px;
   transition: all .15s;
+  text-transform: uppercase;
 }
 
 .chip.selected {
@@ -1507,6 +1633,101 @@ body {
 }
 
 /* ══════════════════════════════════════════
+   APP MODAL (Dialog)
+══════════════════════════════════════════ */
+.app-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 35, 50, 0.45);
+  backdrop-filter: blur(8px);
+  z-index: 600;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.app-modal-overlay.open {
+  display: flex;
+}
+
+.app-modal-card {
+  background: rgba(240, 244, 248, 0.97);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+.app-modal-icon-wrap {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.app-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.app-modal-body {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.app-modal-body.text-left {
+  text-align: left;
+}
+
+.app-modal-body ul {
+  text-align: left;
+  padding-left: 18px;
+}
+
+.app-modal-body li {
+  margin-bottom: 4px;
+}
+
+.app-modal-footer {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.app-modal-btn {
+  padding: 10px 20px;
+  border-radius: var(--radius-xs);
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+
+.app-modal-btn.btn-ok {
+  background: var(--accent);
+  color: #fff;
+}
+
+.app-modal-btn.btn-cancel {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text2);
+  border: 1px solid rgba(0, 0, 0, 0.10);
+}
+
+.app-modal-btn.btn-danger {
+  background: var(--loss);
+  color: #fff;
+}
+
+/* ══════════════════════════════════════════
    LANDSCAPE
 ══════════════════════════════════════════ */
 @media (orientation: landscape) {
@@ -1526,9 +1747,13 @@ body {
     flex-direction: row;
   }
 
-  .mon-tables-wrap .mon-sub-table {
+  .mon-tables-wrap .mon-table-scroll {
     flex: 1;
     min-width: 0;
+  }
+
+  .mon-tables-wrap .mon-sub-table {
+    min-width: 100%;
   }
 
   .dtc-table {
@@ -1569,31 +1794,4 @@ body {
   .bottom-sheet {
     max-height: 80dvh;
   }
-}
-
-/* ══════════════════════════════════════════
-   UTILS
-══════════════════════════════════════════ */
-.text-profit {
-  color: var(--profit);
-}
-
-.text-loss {
-  color: var(--loss);
-}
-
-.text-muted {
-  color: var(--muted);
-}
-
-.text-accent {
-  color: var(--accent-dk);
-}
-
-.fw-700 {
-  font-weight: 700;
-}
-
-.d-none {
-  display: none !important;
 }
