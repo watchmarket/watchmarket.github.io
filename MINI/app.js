@@ -1257,6 +1257,8 @@ async function runScan() {
     const tokens = getFilteredTokens();
     if (!tokens.length) { showToast('Tidak ada token aktif! Periksa filter di Pengaturan.'); stopScan(); return; }
     showToast('▶ Scanning dimulai…');
+    // Start Android Foreground Service (keeps CPU alive when screen off)
+    try { if (window.AndroidBridge && AndroidBridge.startBackgroundService) AndroidBridge.startBackgroundService(); } catch (e) { }
     await fetchUsdtRate();
 
     while (!scanAbort) {
@@ -1294,6 +1296,8 @@ function stopScan() {
     $('#scanBar').css('width', '0%');
     unlockTabs();
     showToast('■ Scanning dihentikan');
+    // Stop Android Foreground Service
+    try { if (window.AndroidBridge && AndroidBridge.stopBackgroundService) AndroidBridge.stopBackgroundService(); } catch (e) { }
 }
 $('#btnScan').on('click', () => {
     if (scanning) { scanAbort = true; }
