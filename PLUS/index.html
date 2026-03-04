@@ -71,7 +71,9 @@
     </div>
 
     <!-- Signal Chips -->
-    <div class="signal-bar" id="signalBar"></div>
+    <div class="signal-bar" id="signalBar">
+        <span id="noSignalNotice" class="no-signal-notice" style="display:none">● Belum Ada Info Selisih Harga</span>
+    </div>
 
     <!-- ═══════════════════════════════════════
      TAB CONTENT
@@ -282,6 +284,16 @@
 
     <!-- Toast -->
     <div class="toast" id="toastMsg"></div>
+
+    <!-- App Dialog Modal -->
+    <div class="app-modal-overlay" id="appModal">
+        <div class="app-modal-card">
+            <div class="app-modal-icon-wrap" id="appModalIcon"></div>
+            <div class="app-modal-title" id="appModalTitle"></div>
+            <div class="app-modal-body" id="appModalBody"></div>
+            <div class="app-modal-footer" id="appModalFooter"></div>
+        </div>
+    </div>
 
     <script src="config.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>

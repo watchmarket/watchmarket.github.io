@@ -7,6 +7,46 @@
 const LS_TOKENS = 'cexdex_tokens';
 const LS_SETTINGS = 'cexdex_settings';
 
+// ─── App Dialog Modal ─────────────────────────
+// Menggantikan alert() dan confirm() bawaan browser
+const MODAL_ICONS = { info: 'ℹ️', warn: '⚠️', error: '❌', success: '✅', delete: '🗑️' };
+
+function _showModal(icon, title, bodyHtml, buttons, bodyLeft = false) {
+    $('#appModalIcon').text(icon);
+    $('#appModalTitle').text(title);
+    $('#appModalBody').html(bodyHtml).toggleClass('text-left', bodyLeft);
+    $('#appModalFooter').html(
+        buttons.map((b, i) =>
+            `<button class="app-modal-btn ${b.cls}" data-idx="${i}">${b.label}</button>`
+        ).join('')
+    );
+    $('#appModal').addClass('open');
+    $('#appModalFooter').off('click').on('click', '[data-idx]', function () {
+        $('#appModal').removeClass('open');
+        const cb = buttons[+$(this).data('idx')].action;
+        if (cb) cb();
+    });
+}
+
+function showAlert(msg, title, type, onClose) {
+    const icon = MODAL_ICONS[type] || MODAL_ICONS.info;
+    _showModal(icon, title || 'Info', msg,
+        [{ label: 'OK', cls: 'btn-ok', action: onClose }]);
+}
+
+function showAlertList(items, title, onClose) {
+    const body = '<ul>' + items.map(s => `<li>${s}</li>`).join('') + '</ul>';
+    _showModal(MODAL_ICONS.warn, title || 'Perhatian', body,
+        [{ label: 'OK', cls: 'btn-ok', action: onClose }], true);
+}
+
+function showConfirm(msg, title, labelOk, onOk, onCancel) {
+    _showModal(MODAL_ICONS.delete, title || 'Konfirmasi', msg, [
+        { label: 'Batal',  cls: 'btn-cancel', action: onCancel },
+        { label: labelOk || 'Ya', cls: 'btn-ok btn-danger', action: onOk },
+    ]);
+}
+
 // ─── Runtime State ───────────────────────────
 let CFG = {
     username: '',
@@ -171,7 +211,7 @@ function openOnboarding() {
 $('#btnOnboard').on('click', () => {
     const u = $('#obUsername').val().trim();
     const w = $('#obWallet').val().trim();
-    if (!u || !w) { alert('Username dan Wallet wajib diisi!'); return; }
+    if (!u || !w) { showAlert('Username dan Wallet Address wajib diisi sebelum melanjutkan.', 'Data Belum Lengkap', 'warn'); return; }
     CFG.username = u; CFG.wallet = w;
     CFG.quoteCount = Math.min(5, Math.max(1, parseInt($('#obQuote').val()) || 3));
     localStorage.setItem(LS_SETTINGS, JSON.stringify(CFG));
@@ -221,9 +261,13 @@ function closeSheet() {
     $('#tokenSheet').removeClass('open');
     $('#sheetOverlay').removeClass('open');
     $('#acToken, #acPair').hide();
+    $('#tokenSheet .form-input').removeClass('input-error');
+    $('#chainChips, #cexChips').removeClass('input-error');
 }
 $('#sheetOverlay, #btnSheetCancel').on('click', closeSheet);
 $('#fabAdd').on('click', () => openSheet());
+// Auto-hapus highlight error saat user mulai edit field
+$('#tokenSheet').on('input change', '.form-input', function () { $(this).removeClass('input-error'); });
 
 // ─── CEX & Chain Chips ───────────────────────
 function renderCexChips(selected) {
@@ -382,22 +426,89 @@ function fillSheetForm(id) {
 }
 
 $('#btnSheetSave').on('click', () => {
-    const ticker = $('#fTicker').val().trim().toUpperCase();
-    const cex = selectedCex();
-    const symbolToken = $('#fSymbolToken').val().trim();
-    const scToken = $('#fScToken').val().trim();
-    const decToken = parseInt($('#fDecToken').val()) || 18;
-    const tickerPair = $('#fTickerPair').val().trim().toUpperCase() || ticker;
-    const symbolPair = $('#fSymbolPair').val().trim();
-    const scPair = $('#fScPair').val().trim();
-    const decPair = parseInt($('#fDecPair').val()) || 18;
-    const chain = selectedChain();
-    const modalCtD = parseFloat($('#fModalCtD').val()) || 100;
-    const modalDtC = parseFloat($('#fModalDtC').val()) || 80;
-    const minPnl = parseFloat($('#fMinPnl').val());
+    const ticker      = $('#fTicker').val().trim().toUpperCase();
+    const cex         = selectedCex();
+    const symbolToken = $('#fSymbolToken').val().trim().toUpperCase();
+    const scToken     = $('#fScToken').val().trim();
+    const decTokenRaw = $('#fDecToken').val();
+    const decToken    = parseInt(decTokenRaw);
+    const tickerPairRaw = $('#fTickerPair').val().trim().toUpperCase();
+    const tickerPair  = tickerPairRaw || ticker;
+    const symbolPair  = $('#fSymbolPair').val().trim().toUpperCase();
+    const scPair      = $('#fScPair').val().trim();
+    const decPairRaw  = $('#fDecPair').val();
+    const decPair     = parseInt(decPairRaw);
+    const chain       = selectedChain();
+    const modalCtDRaw = $('#fModalCtD').val();
+    const modalDtCRaw = $('#fModalDtC').val();
+    const modalCtD    = parseFloat(modalCtDRaw);
+    const modalDtC    = parseFloat(modalDtCRaw);
+    const minPnlRaw   = $('#fMinPnl').val().trim();
+    const minPnl      = parseFloat(minPnlRaw);
 
-    if (!ticker || !scToken) { alert('Ticker dan SC Token wajib diisi!'); return; }
-    if (!symbolToken && !isUsdtNoSymbol(cex, ticker)) { alert('Symbol CEX Token wajib diisi!'); return; }
+    // Hapus highlight error sebelumnya
+    $('#tokenSheet .form-input').removeClass('input-error');
+    $('#chainChips, #cexChips').removeClass('input-error');
+
+    // Tentukan apakah PAIR berbeda dan perlu data sendiri
+    const isPairUsdt = tickerPair.toUpperCase() === 'USDT';
+    const isPairSame = tickerPair === ticker;
+    const pairNeedsData = !isPairSame && !isPairUsdt;
+
+    // Kumpulkan error: [fieldId, pesan]
+    const errs = [];
+    if (!cex)   errs.push(['cexChips',    'Exchanger (CEX) belum dipilih']);
+    if (!chain) errs.push(['chainChips',  'Network (Chain) belum dipilih']);
+
+    // TOKEN
+    if (!ticker)
+        errs.push(['fTicker', 'Symbol TOKEN wajib diisi']);
+    else if (!/^[A-Z0-9]+$/.test(ticker))
+        errs.push(['fTicker', 'Symbol TOKEN hanya huruf/angka (A-Z, 0-9)']);
+
+    if (!isUsdtNoSymbol(cex, ticker) && !symbolToken)
+        errs.push(['fSymbolToken', 'Ticker CEX Token wajib diisi (misal: BTCUSDT)']);
+
+    if (!scToken)
+        errs.push(['fScToken', 'SC Token wajib diisi']);
+    else if (!/^0x[0-9a-fA-F]{40}$/.test(scToken))
+        errs.push(['fScToken', 'SC Token tidak valid — harus 0x + tepat 40 karakter hex']);
+
+    if (decTokenRaw === '' || isNaN(decToken) || decToken < 0 || decToken > 30)
+        errs.push(['fDecToken', 'Decimal Token harus angka antara 0–30']);
+
+    // PAIR
+    if (pairNeedsData) {
+        if (!symbolPair)
+            errs.push(['fSymbolPair', 'Ticker CEX Pair wajib diisi jika PAIR ≠ TOKEN']);
+        if (!scPair)
+            errs.push(['fScPair', 'SC Pair wajib diisi jika PAIR bukan USDT']);
+        else if (!/^0x[0-9a-fA-F]{40}$/.test(scPair))
+            errs.push(['fScPair', 'SC Pair tidak valid — harus 0x + tepat 40 karakter hex']);
+    } else if (scPair && !/^0x[0-9a-fA-F]{40}$/.test(scPair)) {
+        errs.push(['fScPair', 'SC Pair tidak valid — harus 0x + tepat 40 karakter hex']);
+    }
+
+    if (decPairRaw === '' || isNaN(decPair) || decPair < 0 || decPair > 30)
+        errs.push(['fDecPair', 'Decimal Pair harus angka antara 0–30']);
+
+    // Modal
+    if (modalCtDRaw === '' || isNaN(modalCtD) || modalCtD <= 0)
+        errs.push(['fModalCtD', 'Modal CEX→DEX harus angka lebih dari 0']);
+    if (modalDtCRaw === '' || isNaN(modalDtC) || modalDtC <= 0)
+        errs.push(['fModalDtC', 'Modal DEX→CEX harus angka lebih dari 0']);
+
+    // Min PnL (opsional — tapi jika diisi harus angka ≥ 0)
+    if (minPnlRaw !== '' && (isNaN(minPnl) || minPnl < 0))
+        errs.push(['fMinPnl', 'Min PnL harus angka ≥ 0, atau kosongkan untuk default']);
+
+    if (errs.length) {
+        errs.forEach(([id]) => $('#' + id).addClass('input-error'));
+        const firstEl = document.getElementById(errs[0][0]);
+        if (firstEl) firstEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        showAlertList(errs.map(e => e[1]), 'Validasi Form');
+        return;
+    }
 
     const tokens = getTokens();
     const id = $('#editId').val() || genId();
@@ -462,9 +573,14 @@ function renderTokenList() {
 }
 
 function deleteToken(id) {
-    if (!confirm('Hapus token ini?')) return;
-    saveTokens(getTokens().filter(x => x.id !== id));
-    renderTokenList();
+    const tok = getTokens().find(x => x.id === id);
+    const name = tok ? tok.ticker : 'token ini';
+    showConfirm(
+        `Koin <b>${name}</b> akan dihapus permanen dan tidak bisa dikembalikan.`,
+        'Hapus Koin',
+        'Hapus',
+        () => { saveTokens(getTokens().filter(x => x.id !== id)); renderTokenList(); }
+    );
 }
 
 // ─── CSV Export / Import ─────────────────────
@@ -488,22 +604,55 @@ $('#btnExport').on('click', () => {
     a.download = 'cexdex-tokens.csv'; a.click();
 });
 $('#btnImportTrigger').on('click', () => $('#importFile').click());
+// Parser CSV yang benar: menangani cell kosong, quoted value, dan CRLF
+function parseCSVLine(line) {
+    const result = [];
+    let i = 0, val = '';
+    while (i < line.length) {
+        if (line[i] === '"') {
+            i++;
+            while (i < line.length) {
+                if (line[i] === '"' && line[i + 1] === '"') { val += '"'; i += 2; } // escaped quote
+                else if (line[i] === '"') { i++; break; }
+                else { val += line[i++]; }
+            }
+            // skip trailing chars until comma
+            while (i < line.length && line[i] !== ',') i++;
+        } else if (line[i] === ',') {
+            result.push(val.trim());
+            val = ''; i++;
+            continue;
+        } else {
+            val += line[i++];
+        }
+        if (i < line.length && line[i] === ',') { result.push(val.trim()); val = ''; i++; }
+    }
+    result.push(val.replace(/\r/g, '').trim()); // last field
+    return result;
+}
+
 $('#importFile').on('change', e => {
     const f = e.target.files[0]; if (!f) return;
     const r = new FileReader();
     r.onload = ev => {
         try {
-            // Pakai /\r?\n/ agar CSV dari Windows (\r\n) maupun Unix (\n) sama-sama benar
             const lines = ev.target.result.trim().split(/\r?\n/);
-            const headers = lines[0].split(',').map(h => h.replace(/["\r]/g, '').trim());
+            // Baca header — strip BOM, quotes, whitespace
+            const headers = parseCSVLine(lines[0]).map(h => h.replace(/^\uFEFF/, '').replace(/["\r]/g, '').trim());
+            // Validasi: header 'ticker' harus ada
+            if (!headers.includes('ticker')) {
+                showAlert('Baris pertama file harus berisi header kolom dan minimal ada kolom <b>ticker</b>.', 'Format CSV Salah', 'error');
+                return;
+            }
             const tokens = lines.slice(1)
+                .filter(line => line.trim()) // skip baris benar-benar kosong
                 .map(line => {
-                    const vals = line.match(/(".*?"|[^,]+)/g) || [];
+                    const vals = parseCSVLine(line);
                     const obj = {};
-                    // Hapus tanda kutip DAN \r agar status "true\r" tetap terbaca benar
-                    headers.forEach((h, i) => { obj[h] = (vals[i] || '').replace(/["\r]/g, '').trim(); });
+                    // Map by header name — urutan kolom tidak harus sama
+                    headers.forEach((h, i) => { obj[h] = (vals[i] ?? '').replace(/["\r]/g, '').trim(); });
                     obj.decToken = parseInt(obj.decToken) || 18;
-                    obj.decPair = parseInt(obj.decPair) || 18;
+                    obj.decPair  = parseInt(obj.decPair)  || 18;
                     obj.modalCtD = parseFloat(obj.modalCtD) || 100;
                     obj.modalDtC = parseFloat(obj.modalDtC) || 80;
                     const pnlRaw = parseFloat(obj.minPnl);
@@ -511,14 +660,18 @@ $('#importFile').on('change', e => {
                     obj.id = obj.id || genId();
                     return obj;
                 })
-                .filter(t => t.ticker); // skip baris kosong
+                .filter(t => t.ticker); // skip baris tanpa ticker
+            if (!tokens.length) {
+                showAlert('Tidak ada baris data koin yang valid di dalam file CSV.', 'Import Gagal', 'error');
+                return;
+            }
             const invalidCount = tokens.filter(t => !isValidToken(t)).length;
             saveTokens(tokens); renderTokenList();
             const note = invalidCount > 0
-                ? `\n⚠ ${invalidCount} token data kurang — dinonaktifkan otomatis (tidak tampil di monitoring).\nLengkapi data via ✏️ lalu aktifkan dengan lingkaran ⬤ di menu KOIN.`
+                ? `<br><br>⚠️ <b>${invalidCount} koin</b> datanya kurang lengkap (SC kosong / CEX / chain tidak dikenal).`
                 : '';
-            alert(`Import berhasil: ${tokens.length} token${note}`);
-        } catch (err) { alert('Error import: ' + err.message); }
+            showAlert(`<b>${tokens.length} koin</b> berhasil diimpor.${note}`, 'Import Berhasil', 'success');
+        } catch (err) { showAlert('Terjadi kesalahan saat membaca file:<br>' + err.message, 'Error Import', 'error'); }
     };
     r.readAsText(f);
     e.target.value = '';
@@ -885,6 +1038,13 @@ function buildMonitorRows() {
 }
 
 // ─── Signal Chips ─────────────────────────────
+function updateNoSignalNotice() {
+    const el = document.getElementById('noSignalNotice');
+    if (!el) return;
+    const hasSignal = !!document.querySelector('#signalBar .signal-chip');
+    el.style.display = (scanning && !hasSignal) ? 'inline-flex' : 'none';
+}
+
 function updateSignalChip(tok, pnl) {
     const tokMinPnl = (isFinite(tok.minPnl) && tok.minPnl !== null) ? tok.minPnl : 1;
     const chipId = 'chip-' + tok.id;
@@ -905,6 +1065,7 @@ function updateSignalChip(tok, pnl) {
     } else if (chip) {
         chip.remove();
     }
+    updateNoSignalNotice();
 }
 
 // ─── Telegram + Android Notification ─────────────────────────────────────
@@ -1003,6 +1164,7 @@ async function runScan() {
     $('#scanBadge').addClass('active');
     // Clear previous signal chips and reset table
     document.querySelectorAll('.signal-chip').forEach(c => c.remove());
+    updateNoSignalNotice();
     lockTabs();
     const tokens = getFilteredTokens();
     if (!tokens.length) { showToast('Tidak ada token aktif! Periksa filter di Pengaturan.'); stopScan(); return; }
@@ -1015,6 +1177,7 @@ async function runScan() {
             if (scanAbort) break;
             const pct = Math.round((i + 1) / tokens.length * 100);
             $('#scanBar').css('width', pct + '%');
+            $('#btnScanCount').text(`[ ${i + 1}/${tokens.length}] KOIN`);
             await fetchUsdtRate();
             await scanToken(tokens[i]);
             if (!scanAbort) await new Promise(r => setTimeout(r, CFG.interval));
@@ -1027,6 +1190,8 @@ async function runScan() {
             // Baru kosongkan tabel & notif sinyal, lalu mulai ronde berikutnya
             if (!scanAbort) {
                 resetMonitorCells();
+                document.querySelectorAll('.signal-chip').forEach(c => c.remove());
+                updateNoSignalNotice();
             }
         }
     }
@@ -1036,6 +1201,7 @@ function stopScan() {
     scanning = false; scanAbort = false;
     $('#btnScanIcon').text('▶'); $('#btnScanLbl').text('START'); $('#btnScan').removeClass('stop');
     updateScanCount();
+    updateNoSignalNotice();
     $('#scanBadge').removeClass('active');
     $('#scanBar').css('width', '0%');
     unlockTabs();
