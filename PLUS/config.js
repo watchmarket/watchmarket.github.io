@@ -18,7 +18,7 @@ const APP_DEV_CONFIG = {
   defaultInterval: 700,
   defaultSseTimeout: 6000,
   defaultQuoteCountMetax: 2,   // jumlah quote MetaMask SSE (0 = matikan)
-  defaultQuoteCountJumpx: 2,   // jumlah quote Jumper/LiFi  (0 = matikan)
+  defaultQuoteCountJumpx: 0,   // jumlah quote Jumper/LiFi  (0 = matikan)
   telegramCooldown: 5,   // menit
 };
 
