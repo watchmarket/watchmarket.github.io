@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>MINI SCANNER MOBILE</title>
+    <title>MONITORING PRICE</title>
     <link rel="icon" href="icons/favicon.png">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -19,8 +19,9 @@
 ═══════════════════════════════════════ -->
     <div class="onboard-overlay" id="onboardOverlay">
         <div class="onboard-card">
-            <div class="onboard-logo">MINI SCANNER MOBILE</div>
-            <div class="onboard-sub">CEX vs DEX Price Comparator</div>
+            <div class="onboard-logo"><img src="icons/favicon.png" class="app-logo" alt=""> MONITORING PRICE</div>
+
+            <div class="onboard-sub">Aplikasi Pencari Selisih Harga Cryptocurrency CEX VS DEX</div>
             <div class="onboard-form-group">
                 <label class="form-label">Username</label>
                 <input class="form-input" id="obUsername" type="text" placeholder="contoh: trader01" autocomplete="off">
@@ -29,11 +30,8 @@
                 <label class="form-label">Wallet Address (EVM)</label>
                 <input class="form-input" id="obWallet" type="text" placeholder="0x..." autocomplete="off">
             </div>
-            <div class="onboard-form-group">
-                <label class="form-label">Jumlah Quote DEX ditampilkan (1–5)</label>
-                <input class="form-input" id="obQuote" type="number" value="3" min="1" max="5">
-            </div>
-            <button class="btn-onboard" id="btnOnboard">MULAI →</button>
+            <button class="btn-onboard" id="btnOnboard">MULAI →</button><br /><br />
+            <div class="onboard-version" id="onboardVersion"></div>
         </div>
     </div>
 
@@ -43,28 +41,29 @@
     <div class="top-bar">
         <div class="app-name">
             <img src="icons/favicon.png" class="app-logo" alt="">
-            MINI SCANNER MOBILE
+            MONITORING PRICE <span class="app-version" id="appVersion"></span> <span class="scanning-badge"
+                id="scanBadge">▶ SCANNING...</span>
         </div>
         <!-- Tab pills — visible in landscape only -->
         <div class="top-tabs" id="topTabs">
             <button class="top-tab-btn active" data-tab="tabMonitor">
-                <img src="icons/monitoring.png" class="top-tab-icon" alt=""> Monitor
+                <img src="icons/monitoring.png" class="top-tab-icon" alt=""> SCANNER
             </button>
             <button class="top-tab-btn" data-tab="tabToken">
                 <img src="icons/token.png" class="top-tab-icon" alt=""> KOIN
             </button>
             <button class="top-tab-btn" data-tab="tabSettings">
-                <img src="icons/setting.png" class="top-tab-icon" alt=""> Pengaturan
+                <img src="icons/setting.png" class="top-tab-icon" alt=""> SETTING
             </button>
             <button class="top-tab-btn tab-reload" onclick="reloadWithToast()">
-                <img src="icons/reload.png" class="top-tab-icon" alt=""> Reload
+                <img src="icons/reload.png" class="top-tab-icon" alt=""> RELOAD
             </button>
         </div>
         <div class="top-right">
-            <span class="scanning-badge" id="scanBadge">● scanning</span>
+
             <span class="username-chip" id="topUsername">@-</span>
         </div>
-        <!-- Progress bar — menempel di bawah top-bar, selalu terlihat -->
+        <!-- Progress bar -->
         <div class="scan-progress-strip">
             <div class="scan-progress-bar" id="scanBar"></div>
         </div>
@@ -91,12 +90,14 @@
     <div id="tabToken" class="tab-pane">
         <div class="token-list-header">
             <h2>DAFTAR KOIN :</h2>
-             <span class="token-count" id="tokenCount">Total 0 KOIN</span>
+            <span class="token-count" id="tokenCount">Total 0 KOIN</span>
         </div>
         <div class="csv-bar">
             <button class="btn-outline" id="btnExport"><i class="bi bi-download"></i> Export CSV</button>
             <button class="btn-outline" id="btnImportTrigger"><i class="bi bi-upload"></i> Import CSV</button>
-            <input type="file" id="importFile" accept=".csv,text/csv,text/plain,text/comma-separated-values,application/octet-stream" style="display:none">
+            <input type="file" id="importFile"
+                accept=".csv,text/csv,text/plain,text/comma-separated-values,application/octet-stream"
+                style="display:none">
         </div>
         <div class="token-list" id="tokenList">
             <div class="token-list-empty">Belum ada KOIN. Ketuk tombol + untuk menambah.</div>
@@ -108,43 +109,47 @@
     <div id="tabSettings" class="tab-pane">
         <div class="settings-content">
             <div class="settings-card">
-                <h3>DATA PENGGUNA</h3>
+                <h3>DATA PENGGUNA & SCANNER</h3>
                 <div class="settings-row">
                     <label class="settings-label">Username</label>
                     <input class="settings-input" id="setUsername" type="text" placeholder="trader01">
                 </div>
                 <div class="settings-row">
-                    <label class="settings-label">Wallet Address (EVM)</label>
+                    <label class="settings-label">Wallet Metamask (EVM)</label>
                     <input class="settings-input" id="setWallet" type="text" placeholder="0x...">
                 </div>
+                <div class="settings-row">
+                    <label class="settings-label"><input type="checkbox" id="setSoundMuted"
+                            class="settings-checkbox">&nbsp;&nbsp;Sunyikan Notifikasi</label>
+                </div>
+                <div class="settings-row-inline">
+                    <div class="settings-row-col">
+                        <label class="settings-label">DEX <span class="badge-metax">METAX</span></label>
+                        <input class="settings-input" id="setQuoteMetax" type="number" min="1" max="5" value="2">
+                    </div>
+                    <div class="settings-row-col">
+                        <label class="settings-label">DEX <span class="badge-jumpx">JUMPX</span></label>
+                        <input class="settings-input" id="setQuoteJumpx" type="number" min="1" max="5" value="2">
+                    </div>
+                    <div class="settings-row-col">
+                        <label class="settings-label">Jeda KOIN (ms)</label>
+                        <input class="settings-input" id="setInterval" type="number" step="100" value="700">
+                    </div>
+                </div>
+
             </div>
             <div class="settings-card">
-                <h3>SETTING SCANNER</h3>
+                <h3>FILTER KOIN [<span id="filterCoinCount">0</span> KOIN ]</h3>
                 <div class="settings-row">
-                    <label class="settings-label">Interval antar KOIN (ms)</label>
-                    <input class="settings-input" id="setInterval" type="number" step="100" value="700">
-                </div>
-                <div class="settings-row">
-                    <label class="settings-label">Jumlah Quote DEX (1–5)</label>
-                    <input class="settings-input" id="setQuote" type="number" min="1" max="5" value="3">
-                </div>
-                <div class="settings-row">
-                    <label class="settings-label"><input type="checkbox" id="setSoundMuted" class="settings-checkbox">&nbsp; &nbsp;Sunyikan  Notifikasi <span class="settings-hint"></span></label>
-                    
-                </div>
-            </div>
-            <div class="settings-card">
-                <h3>FILTER KOIN  [<span id="filterCoinCount">0</span> KOIN ]</h3>
-                
-                <div class="settings-row">
-                    <label class="settings-label">CEX Aktif <span class="settings-hint">(ketuk untuk nonaktifkan)</span></label>
+                    <label class="settings-label">CEX Aktif <span class="settings-hint">(ketuk untuk
+                            nonaktifkan)</span></label>
                     <div class="fchip-group" id="filterCexChips"></div>
                 </div>
                 <div class="settings-row">
-                    <label class="settings-label">Chain Aktif <span class="settings-hint">(ketuk untuk nonaktifkan)</span></label>
+                    <label class="settings-label">Chain Aktif <span class="settings-hint">(ketuk untuk
+                            nonaktifkan)</span></label>
                     <div class="fchip-group" id="filterChainChips"></div>
                 </div>
-                
             </div>
             <button class="btn-save" id="btnSaveSettings">💾 Simpan Settings</button>
         </div>
@@ -156,19 +161,19 @@
     <nav class="bottom-nav">
         <button class="nav-item active" data-tab="tabMonitor" id="navMonitor">
             <span class="nav-icon"><img src="icons/monitoring.png" class="nav-icon-img" alt="monitor"></span>
-            <span>Scanner</span>
+            <span>SCANNER</span>
         </button>
         <button class="nav-item" data-tab="tabToken" id="navToken">
             <span class="nav-icon"><img src="icons/token.png" class="nav-icon-img" alt="token"></span>
-            <span>Koin</span>
+            <span>DATA KOIN</span>
         </button>
         <button class="nav-item" data-tab="tabSettings" id="navSettings">
             <span class="nav-icon"><img src="icons/setting.png" class="nav-icon-img" alt="settings"></span>
-            <span>Pengaturan</span>
+            <span>PENGATURAN</span>
         </button>
         <button class="nav-item" id="navReload" onclick="reloadWithToast()">
             <span class="nav-icon"><img src="icons/reload.png" class="nav-icon-img" alt="reload"></span>
-            <span>Refresh</span>
+            <span>RELOAD</span>
         </button>
     </nav>
 
@@ -297,6 +302,7 @@
 
     <script src="config.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <audio id="audioComplete" src="complete.mp3" preload="auto"></audio>
     <script src="app.js"></script>
 </body>
 
