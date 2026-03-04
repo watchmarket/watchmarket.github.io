@@ -142,6 +142,16 @@ body {
   gap: 7px;
 }
 
+.app-version {
+  font-size: 11px;
+  font-weight: 600;
+  color: #000;
+  background: rgba(0, 0, 0, 0.06);
+  padding: 2px 6px;
+  border-radius: 8px;
+  letter-spacing: .3px;
+}
+
 .app-logo {
   width: 26px;
   height: 26px;
@@ -323,18 +333,16 @@ body {
 
 .signal-chip {
   display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(10, 191, 122, 0.10);
-  border: 1px solid rgba(10, 191, 122, 0.32);
-  border-radius: 20px;
-  padding: 2px 10px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--accent-dk);
+  flex-direction: column;
+  gap: 2px;
+  background: rgba(10, 191, 122, 0.08);
+  border: 1px solid rgba(10, 191, 122, 0.30);
+  border-radius: 10px;
+  padding: 5px 10px;
   cursor: pointer;
   flex-shrink: 0;
   transition: background .15s;
+  min-width: 110px;
 }
 
 .signal-chip:active {
@@ -342,8 +350,83 @@ body {
 }
 
 .signal-chip.loss {
-  background: rgba(230, 57, 80, 0.10);
-  border-color: rgba(230, 57, 80, 0.30);
+  background: rgba(230, 57, 80, 0.08);
+  border-color: rgba(230, 57, 80, 0.28);
+}
+
+.chip-row-top {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chip-icon {
+  width: 13px;
+  height: 13px;
+  object-fit: contain;
+  border-radius: 3px;
+}
+
+.chip-cex {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text2);
+}
+
+.chip-chain {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+.chip-row-bottom {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chip-dir {
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: .3px;
+}
+
+.dir-ctd {
+  background: rgba(87, 154, 105, 0.18);
+  color: #3a7a50;
+}
+
+.dir-dtc {
+  background: rgba(213, 102, 102, 0.18);
+  color: #b04040;
+}
+
+.chip-ticker {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.chip-pnl {
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  margin-left: auto;
+}
+
+.chip-pnl-pos {
+  color: var(--accent-dk);
+}
+
+.chip-pnl-neg {
+  color: var(--loss);
+}
+
+.signal-chip.loss .chip-cex,
+.signal-chip.loss .chip-chain {
   color: var(--loss);
 }
 
@@ -1595,6 +1678,15 @@ body {
   color: var(--accent-dk);
   text-align: center;
   margin-bottom: 4px;
+  letter-spacing: .5px;
+}
+
+.onboard-version {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  text-align: center;
+  margin-bottom: 2px;
   letter-spacing: .5px;
 }
 

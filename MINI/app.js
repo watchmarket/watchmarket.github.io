@@ -54,13 +54,14 @@ let CFG = {
     wallet: '',
     interval: APP_DEV_CONFIG.defaultInterval,
     sseTimeout: APP_DEV_CONFIG.defaultSseTimeout,
-    quoteCountMetax: 2,
-    quoteCountJumpx: 2,
+    quoteCountMetax: APP_DEV_CONFIG.defaultQuoteCountMetax,
+    quoteCountJumpx: APP_DEV_CONFIG.defaultQuoteCountJumpx,
     soundMuted: false,
     activeCex: [],    // [] = semua aktif
     activeChains: [], // [] = semua aktif
 };
 function totalQuoteCount() { return CFG.quoteCountMetax + CFG.quoteCountJumpx; }
+function isJumpxEnabled() { return APP_DEV_CONFIG.defaultQuoteCountJumpx > 0; }
 
 // Kembalikan token yang lolos filter CEX+chain, diurutkan A-Z
 function getFilteredTokens() {
@@ -83,6 +84,15 @@ function playSignalSound() {
     try {
         _signalAudio.currentTime = 0;
         _signalAudio.play().catch(() => { });
+    } catch { }
+}
+
+// ─── Complete Sound (ronde selesai) ───────────
+function playCompleteSound() {
+    if (!window.AndroidBridge && CFG.soundMuted) return;
+    try {
+        const audio = document.getElementById('audioComplete');
+        if (audio) { audio.currentTime = 0; audio.play().catch(() => { }); }
     } catch { }
 }
 let scanning = false;
@@ -187,8 +197,18 @@ function loadSettings() {
     $('#setInterval').val(CFG.interval);
     $('#setQuoteMetax').val(CFG.quoteCountMetax);
     $('#setQuoteJumpx').val(CFG.quoteCountJumpx);
+    // Hide Jumpx settings row if disabled in config
+    if (!isJumpxEnabled()) {
+        $('#setQuoteJumpx').closest('.settings-row-col').hide();
+    }
     $('#setSoundMuted').prop('checked', !!CFG.soundMuted);
     $('#topUsername').text('@' + (CFG.username || '-'));
+    // Display version
+    const ver = APP_DEV_CONFIG.appVersion || '';
+    const verEl = document.getElementById('appVersion');
+    if (verEl) verEl.textContent = 'v' + ver;
+    const obVer = document.getElementById('onboardVersion');
+    if (obVer) obVer.textContent = 'v' + ver;
     renderFilterChips();
     updateScanCount();
 }
@@ -197,7 +217,7 @@ function saveSettings() {
     CFG.wallet = $('#setWallet').val().trim();
     CFG.interval = parseInt($('#setInterval').val()) || 700;
     CFG.quoteCountMetax = Math.min(5, Math.max(1, parseInt($('#setQuoteMetax').val()) || 3));
-    CFG.quoteCountJumpx = Math.min(5, Math.max(1, parseInt($('#setQuoteJumpx').val()) || 3));
+    CFG.quoteCountJumpx = isJumpxEnabled() ? Math.min(5, Math.max(1, parseInt($('#setQuoteJumpx').val()) || 3)) : 0;
     CFG.soundMuted = $('#setSoundMuted').prop('checked');
     localStorage.setItem(LS_SETTINGS, JSON.stringify(CFG));
     $('#topUsername').text('@' + (CFG.username || '-'));
@@ -526,6 +546,7 @@ $('#btnSheetSave').on('click', () => {
     if (idx >= 0) tokens[idx] = tok; else tokens.push(tok);
     saveTokens(tokens);
     renderTokenList();
+    showToast(idx >= 0 ? '✅ Koin berhasil diperbarui' : '✅ Koin berhasil ditambahkan');
     closeSheet();
 });
 
@@ -671,10 +692,7 @@ $('#importFile').on('change', e => {
             }
             const invalidCount = tokens.filter(t => !isValidToken(t)).length;
             saveTokens(tokens); renderTokenList();
-            const note = invalidCount > 0
-                ? `<br><br>⚠️ <b>${invalidCount} koin</b> datanya kurang lengkap (SC kosong / CEX / chain tidak dikenal).`
-                : '';
-            showAlert(`<b>${tokens.length} koin</b> berhasil diimpor.${note}`, 'Import Berhasil', 'success');
+            showToast(`✅ ${tokens.length} koin berhasil diimpor`);
         } catch (err) { showAlert('Terjadi kesalahan saat membaca file:<br>' + err.message, 'Error Import', 'error'); }
     };
     r.readAsText(f);
@@ -804,6 +822,7 @@ const _lifiKeys = [
 function _lifiApiKey() { return _lifiKeys[Math.floor(Math.random() * _lifiKeys.length)]; }
 
 function fetchDexQuotesJumpx(chainId, srcToken, destToken, amountWei) {
+    if (!isJumpxEnabled()) return Promise.resolve([]);
     return new Promise(async resolve => {
         try {
             const userAddr = CFG.wallet || '0x0000000000000000000000000000000000000000';
@@ -1029,10 +1048,11 @@ async function scanToken(tok) {
     const bestCtD = ctdData.length ? ctdData[0].pnl : -999;
     const bestDtC = dtcData.length ? dtcData[dtcData.length - 1].pnl : -999;
     const best = Math.max(bestCtD, bestDtC);
-    updateSignalChip(tok, best);
+    const isCtd = bestCtD >= bestDtC;
+    const bestDir = isCtd ? 'CTD' : 'DTC';
+    updateSignalChip(tok, best, bestDir);
     if (best >= tokMinPnl) {
         card.classList.add('has-signal');
-        const isCtd = bestCtD >= bestDtC;
         const bestRow = isCtd ? ctdData[0] : dtcData[dtcData.length - 1];
         const tgInfo = bestRow ? {
             dexName: bestRow.name + (bestRow.src === 'MX' ? ' [METAX]' : ' [JUMPX]'),
@@ -1133,13 +1153,13 @@ function updateNoSignalNotice() {
     el.style.display = (scanning && !hasSignal) ? 'inline-flex' : 'none';
 }
 
-function updateSignalChip(tok, pnl) {
+function updateSignalChip(tok, pnl, dir) {
     const tokMinPnl = (isFinite(tok.minPnl) && tok.minPnl !== null) ? tok.minPnl : 1;
     const chipId = 'chip-' + tok.id;
     let chip = document.getElementById(chipId);
     if (pnl >= tokMinPnl) {
         if (!chip) {
-            chip = document.createElement('span');
+            chip = document.createElement('div');
             chip.className = 'signal-chip';
             chip.id = chipId;
             chip.onclick = () => {
@@ -1148,7 +1168,26 @@ function updateSignalChip(tok, pnl) {
             };
             document.getElementById('signalBar').appendChild(chip);
         }
-        chip.textContent = `🟢 ${tok.ticker} ${fmtPnl(pnl)}$`;
+        const cexCfg = CONFIG_CEX[tok.cex] || {};
+        const chainCfg = CONFIG_CHAINS[tok.chain] || {};
+        const cexLabel = (cexCfg.label || tok.cex || '').toUpperCase();
+        const chainLabel = (chainCfg.label || tok.chain || '').toUpperCase();
+        const dirLabel = dir === 'CTD' ? 'CEX→DEX' : 'DEX→CEX';
+        const dirClass = dir === 'CTD' ? 'dir-ctd' : 'dir-dtc';
+        const pnlClass = pnl >= 0 ? 'chip-pnl-pos' : 'chip-pnl-neg';
+
+        chip.innerHTML = `
+            <div class="chip-row-top">
+                <img src="icons/cex/${tok.cex}.png" class="chip-icon" onerror="this.style.display='none'">
+                <img src="icons/chains/${tok.chain}.png" class="chip-icon" onerror="this.style.display='none'">
+                <span class="chip-cex">${cexLabel}</span>
+                <span class="chip-chain">${chainLabel}</span>
+            </div>
+            <div class="chip-row-bottom">
+                <span class="chip-dir ${dirClass}">${dirLabel}</span>
+                <span class="chip-ticker">${tok.ticker}</span>
+                <span class="chip-pnl ${pnlClass}">${fmtPnl(pnl)}$</span>
+            </div>`;
         chip.className = 'signal-chip' + (pnl < 0 ? ' loss' : '');
     } else if (chip) {
         chip.remove();
@@ -1276,6 +1315,7 @@ async function runScan() {
             // Jeda 10 detik dulu — tabel & sinyal masih tampil agar bisa dilihat
             $('#scanBar').css('width', '0%');
             showToast(`✅ Ronde ${_scanRound} selesai — jeda 10 detik...`, 9500);
+            playCompleteSound();
             await new Promise(r => setTimeout(r, 10000));
             // Baru kosongkan tabel & notif sinyal, lalu mulai ronde berikutnya
             if (!scanAbort) {

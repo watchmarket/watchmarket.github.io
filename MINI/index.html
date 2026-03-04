@@ -20,6 +20,7 @@
     <div class="onboard-overlay" id="onboardOverlay">
         <div class="onboard-card">
             <div class="onboard-logo"><img src="icons/favicon.png" class="app-logo" alt=""> MONITORING PRICE</div>
+
             <div class="onboard-sub">Aplikasi Pencari Selisih Harga Cryptocurrency CEX VS DEX</div>
             <div class="onboard-form-group">
                 <label class="form-label">Username</label>
@@ -29,7 +30,8 @@
                 <label class="form-label">Wallet Address (EVM)</label>
                 <input class="form-input" id="obWallet" type="text" placeholder="0x..." autocomplete="off">
             </div>
-            <button class="btn-onboard" id="btnOnboard">MULAI →</button>
+            <button class="btn-onboard" id="btnOnboard">MULAI →</button><br /><br />
+            <div class="onboard-version" id="onboardVersion"></div>
         </div>
     </div>
 
@@ -39,7 +41,8 @@
     <div class="top-bar">
         <div class="app-name">
             <img src="icons/favicon.png" class="app-logo" alt="">
-            MONITORING PRICE <span class="scanning-badge" id="scanBadge">▶ SCANNING...</span>
+            MONITORING PRICE <span class="app-version" id="appVersion"></span> <span class="scanning-badge"
+                id="scanBadge">▶ SCANNING...</span>
         </div>
         <!-- Tab pills — visible in landscape only -->
         <div class="top-tabs" id="topTabs">
@@ -112,16 +115,20 @@
                     <input class="settings-input" id="setUsername" type="text" placeholder="trader01">
                 </div>
                 <div class="settings-row">
-                    <label class="settings-label">Wallet Address (EVM)</label>
+                    <label class="settings-label">Wallet Metamask (EVM)</label>
                     <input class="settings-input" id="setWallet" type="text" placeholder="0x...">
+                </div>
+                <div class="settings-row">
+                    <label class="settings-label"><input type="checkbox" id="setSoundMuted"
+                            class="settings-checkbox">&nbsp;&nbsp;Sunyikan Notifikasi</label>
                 </div>
                 <div class="settings-row-inline">
                     <div class="settings-row-col">
-                        <label class="settings-label">Quote <span class="badge-metax">METAX</span></label>
+                        <label class="settings-label">DEX <span class="badge-metax">METAX</span></label>
                         <input class="settings-input" id="setQuoteMetax" type="number" min="1" max="5" value="2">
                     </div>
                     <div class="settings-row-col">
-                        <label class="settings-label">Quote <span class="badge-jumpx">JUMPX</span></label>
+                        <label class="settings-label">DEX <span class="badge-jumpx">JUMPX</span></label>
                         <input class="settings-input" id="setQuoteJumpx" type="number" min="1" max="5" value="2">
                     </div>
                     <div class="settings-row-col">
@@ -129,10 +136,7 @@
                         <input class="settings-input" id="setInterval" type="number" step="100" value="700">
                     </div>
                 </div>
-                <div class="settings-row">
-                    <label class="settings-label"><input type="checkbox" id="setSoundMuted"
-                            class="settings-checkbox">&nbsp;&nbsp;Sunyikan Notifikasi</label>
-                </div>
+
             </div>
             <div class="settings-card">
                 <h3>FILTER KOIN [<span id="filterCoinCount">0</span> KOIN ]</h3>
@@ -298,6 +302,7 @@
 
     <script src="config.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <audio id="audioComplete" src="complete.mp3" preload="auto"></audio>
     <script src="app.js"></script>
 </body>
 
