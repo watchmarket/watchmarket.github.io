@@ -212,12 +212,44 @@ function loadSettings() {
     renderFilterChips();
     updateScanCount();
 }
+const EVM_RE = /^0x[0-9a-fA-F]{40}$/;
 function saveSettings() {
-    CFG.username = $('#setUsername').val().trim();
-    CFG.wallet = $('#setWallet').val().trim();
-    CFG.interval = parseInt($('#setInterval').val()) || 700;
-    CFG.quoteCountMetax = Math.min(5, Math.max(1, parseInt($('#setQuoteMetax').val()) || 3));
-    CFG.quoteCountJumpx = isJumpxEnabled() ? Math.min(5, Math.max(1, parseInt($('#setQuoteJumpx').val()) || 3)) : 0;
+    const username = $('#setUsername').val().trim();
+    const wallet = $('#setWallet').val().trim();
+    const intervalRaw = $('#setInterval').val();
+    const interval = parseInt(intervalRaw);
+    const qMetax = parseInt($('#setQuoteMetax').val());
+    const qJumpx = parseInt($('#setQuoteJumpx').val());
+
+    // Validasi semua input
+    $('#tabSettings .settings-input').removeClass('input-error');
+    const errs = [];
+    if (!username)
+        errs.push(['setUsername', 'Username wajib diisi']);
+    if (!wallet)
+        errs.push(['setWallet', 'Wallet Address wajib diisi']);
+    else if (!EVM_RE.test(wallet))
+        errs.push(['setWallet', 'Wallet Address tidak valid — harus 0x + tepat 40 karakter hex']);
+    if (intervalRaw === '' || isNaN(interval) || interval < 100)
+        errs.push(['setInterval', 'Jeda KOIN minimal 100 ms']);
+    if (isNaN(qMetax) || qMetax < 1 || qMetax > 5)
+        errs.push(['setQuoteMetax', 'DEX METAX harus antara 1–5']);
+    if (isJumpxEnabled() && (isNaN(qJumpx) || qJumpx < 1 || qJumpx > 5))
+        errs.push(['setQuoteJumpx', 'DEX JUMPX harus antara 1–5']);
+
+    if (errs.length) {
+        errs.forEach(([id]) => $('#' + id).addClass('input-error'));
+        const firstEl = document.getElementById(errs[0][0]);
+        if (firstEl) firstEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        showAlertList(errs.map(e => e[1]), 'Validasi Settings');
+        return;
+    }
+
+    CFG.username = username;
+    CFG.wallet = wallet;
+    CFG.interval = interval;
+    CFG.quoteCountMetax = Math.min(5, Math.max(1, qMetax));
+    CFG.quoteCountJumpx = isJumpxEnabled() ? Math.min(5, Math.max(1, qJumpx)) : 0;
     CFG.soundMuted = $('#setSoundMuted').prop('checked');
     localStorage.setItem(LS_SETTINGS, JSON.stringify(CFG));
     $('#topUsername').text('@' + (CFG.username || '-'));
@@ -236,7 +268,18 @@ function openOnboarding() {
 $('#btnOnboard').on('click', () => {
     const u = $('#obUsername').val().trim();
     const w = $('#obWallet').val().trim();
-    if (!u || !w) { showAlert('Username dan Wallet Address wajib diisi sebelum melanjutkan.', 'Data Belum Lengkap', 'warn'); return; }
+    $('#obUsername, #obWallet').removeClass('input-error');
+    if (!u || !w) {
+        if (!u) $('#obUsername').addClass('input-error');
+        if (!w) $('#obWallet').addClass('input-error');
+        showAlert('Username dan Wallet Address wajib diisi sebelum melanjutkan.', 'Data Belum Lengkap', 'warn');
+        return;
+    }
+    if (!EVM_RE.test(w)) {
+        $('#obWallet').addClass('input-error');
+        showAlert('Wallet Address tidak valid.<br>Format: <b>0x</b> + tepat <b>40</b> karakter hex (0-9, a-f).', 'Format Wallet Salah', 'warn');
+        return;
+    }
     CFG.username = u; CFG.wallet = w;
     localStorage.setItem(LS_SETTINGS, JSON.stringify(CFG));
     $('#topUsername').text('@' + u);
@@ -457,7 +500,6 @@ $('#btnSheetSave').on('click', () => {
     const decTokenRaw = $('#fDecToken').val();
     const decToken = parseInt(decTokenRaw);
     const tickerPairRaw = $('#fTickerPair').val().trim().toUpperCase();
-    const tickerPair = tickerPairRaw || ticker;
     const symbolPair = $('#fSymbolPair').val().trim().toUpperCase();
     const scPair = $('#fScPair').val().trim();
     const decPairRaw = $('#fDecPair').val();
@@ -474,24 +516,19 @@ $('#btnSheetSave').on('click', () => {
     $('#tokenSheet .form-input').removeClass('input-error');
     $('#chainChips, #cexChips').removeClass('input-error');
 
-    // Tentukan apakah PAIR berbeda dan perlu data sendiri
-    const isPairUsdt = tickerPair.toUpperCase() === 'USDT';
-    const isPairSame = tickerPair === ticker;
-    const pairNeedsData = !isPairSame && !isPairUsdt;
-
     // Kumpulkan error: [fieldId, pesan]
     const errs = [];
     if (!cex) errs.push(['cexChips', 'Exchanger (CEX) belum dipilih']);
     if (!chain) errs.push(['chainChips', 'Network (Chain) belum dipilih']);
 
-    // TOKEN
+    // TOKEN — semua wajib
     if (!ticker)
         errs.push(['fTicker', 'Symbol TOKEN wajib diisi']);
     else if (!/^[A-Z0-9]+$/.test(ticker))
         errs.push(['fTicker', 'Symbol TOKEN hanya huruf/angka (A-Z, 0-9)']);
 
-    if (!isUsdtNoSymbol(cex, ticker) && !symbolToken)
-        errs.push(['fSymbolToken', 'Ticker CEX Token wajib diisi (misal: BTCUSDT)']);
+    if (!symbolToken)
+        errs.push(['fSymbolToken', 'Ticker CEX Token wajib diisi']);
 
     if (!scToken)
         errs.push(['fScToken', 'SC Token wajib diisi']);
@@ -501,30 +538,34 @@ $('#btnSheetSave').on('click', () => {
     if (decTokenRaw === '' || isNaN(decToken) || decToken < 0 || decToken > 30)
         errs.push(['fDecToken', 'Decimal Token harus angka antara 0–30']);
 
-    // PAIR
-    if (pairNeedsData) {
-        if (!symbolPair)
-            errs.push(['fSymbolPair', 'Ticker CEX Pair wajib diisi jika PAIR ≠ TOKEN']);
-        if (!scPair)
-            errs.push(['fScPair', 'SC Pair wajib diisi jika PAIR bukan USDT']);
-        else if (!/^0x[0-9a-fA-F]{40}$/.test(scPair))
-            errs.push(['fScPair', 'SC Pair tidak valid — harus 0x + tepat 40 karakter hex']);
-    } else if (scPair && !/^0x[0-9a-fA-F]{40}$/.test(scPair)) {
+    // PAIR — semua wajib
+    if (!tickerPairRaw)
+        errs.push(['fTickerPair', 'Symbol PAIR wajib diisi']);
+    else if (!/^[A-Z0-9]+$/.test(tickerPairRaw))
+        errs.push(['fTickerPair', 'Symbol PAIR hanya huruf/angka (A-Z, 0-9)']);
+
+    if (!symbolPair)
+        errs.push(['fSymbolPair', 'Ticker CEX Pair wajib diisi']);
+
+    if (!scPair)
+        errs.push(['fScPair', 'SC Pair wajib diisi']);
+    else if (!/^0x[0-9a-fA-F]{40}$/.test(scPair))
         errs.push(['fScPair', 'SC Pair tidak valid — harus 0x + tepat 40 karakter hex']);
-    }
+
+    const tickerPair = tickerPairRaw || ticker;
 
     if (decPairRaw === '' || isNaN(decPair) || decPair < 0 || decPair > 30)
         errs.push(['fDecPair', 'Decimal Pair harus angka antara 0–30']);
 
-    // Modal
+    // Modal — semua wajib
     if (modalCtDRaw === '' || isNaN(modalCtD) || modalCtD <= 0)
         errs.push(['fModalCtD', 'Modal CEX→DEX harus angka lebih dari 0']);
     if (modalDtCRaw === '' || isNaN(modalDtC) || modalDtC <= 0)
         errs.push(['fModalDtC', 'Modal DEX→CEX harus angka lebih dari 0']);
 
-    // Min PnL (opsional — tapi jika diisi harus angka ≥ 0)
-    if (minPnlRaw !== '' && (isNaN(minPnl) || minPnl < 0))
-        errs.push(['fMinPnl', 'Min PnL harus angka ≥ 0, atau kosongkan untuk default']);
+    // Min PnL — wajib diisi
+    if (minPnlRaw === '' || isNaN(minPnl) || minPnl < 0)
+        errs.push(['fMinPnl', 'Min PnL wajib diisi (angka ≥ 0)']);
 
     if (errs.length) {
         errs.forEach(([id]) => $('#' + id).addClass('input-error'));

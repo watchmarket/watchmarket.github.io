@@ -272,9 +272,9 @@ body {
 /* Toast */
 .toast {
   position: fixed;
-  bottom: calc(var(--nav-h) + 80px);
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%) translateY(20px);
+  transform: translate(-50%, -50%) scale(0.9);
   background: rgba(26, 35, 50, 0.92);
   backdrop-filter: blur(12px);
   color: #fff;
@@ -291,7 +291,7 @@ body {
 
 .toast.show {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .username-chip {
@@ -1350,6 +1350,15 @@ body {
   background: rgba(255, 255, 255, 0.90);
 }
 
+.settings-input.input-error {
+  border-color: var(--loss) !important;
+  background: rgba(230, 57, 80, 0.06) !important;
+}
+
+.settings-input.input-error:focus {
+  border-color: var(--loss) !important;
+}
+
 .btn-save {
   width: 100%;
   padding: 13px;
@@ -1859,7 +1868,7 @@ body {
   }
 
   .toast {
-    bottom: 90px;
+    top: 50%;
   }
 
   .monitor-cards {
