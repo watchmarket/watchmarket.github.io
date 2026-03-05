@@ -65,6 +65,16 @@ function isJumpxEnabled() { return APP_DEV_CONFIG.defaultQuoteCountJumpx > 0; }
 
 // Kembalikan token yang lolos filter CEX+chain, diurutkan sesuai monitorSort
 let monitorSort = 'az'; // 'az' | 'za' | 'rand'
+let _shuffledTokens = null; // cache untuk random sort
+
+function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
 function getFilteredTokens() {
     const filtered = getTokens()
         .filter(t => {
@@ -73,7 +83,12 @@ function getFilteredTokens() {
             return cexOk && chainOk;
         });
     if (monitorSort === 'za') return filtered.sort((a, b) => (b.ticker || '').localeCompare(a.ticker || ''));
-    if (monitorSort === 'rand') return filtered.sort(() => Math.random() - 0.5);
+    if (monitorSort === 'rand') {
+        if (!_shuffledTokens) _shuffledTokens = shuffleArray([...filtered]);
+        // Filter cached list to only include tokens that still exist
+        const ids = new Set(filtered.map(t => t.id));
+        return _shuffledTokens.filter(t => ids.has(t.id));
+    }
     return filtered.sort((a, b) => (a.ticker || '').localeCompare(b.ticker || ''));
 }
 
@@ -143,8 +158,10 @@ function fmtCompact(v, sigfigs = 4) {
 // ─── Settings ────────────────────────────────
 function updateScanCount() {
     const n = getFilteredTokens().length;
+    const total = getTokens().length;
     $('#filterCoinCount').text(n);
     if (!scanning) $('#btnScanCount').text('[' + n + ' KOIN ]');
+    $('#tokenCount').text('TOTAL ' + total + ' KOIN');
 }
 
 function renderFilterChips() {
@@ -682,6 +699,9 @@ function deleteToken(id) {
                 const chip = document.getElementById('chip-' + id);
                 if (chip) chip.remove();
                 updateScanCount();
+                // Force update count on stop button during scanning
+                const remaining = getFilteredTokens().length;
+                $('#btnScanCount').text('[' + remaining + ' KOIN ]');
                 showToast(`🗑️ ${name} dihapus`);
             } else {
                 renderTokenList();
@@ -1382,8 +1402,7 @@ async function runScan() {
     document.querySelectorAll('.signal-chip').forEach(c => c.remove());
     updateNoSignalNotice();
     lockTabs();
-    const tokens = getFilteredTokens();
-    if (!tokens.length) { showToast('Tidak ada token aktif! Periksa filter di Pengaturan.'); stopScan(); return; }
+    if (!getFilteredTokens().length) { showToast('Tidak ada token aktif! Periksa filter di Pengaturan.'); stopScan(); return; }
     showToast('▶ Scanning dimulai…');
     // Start Android Foreground Service (keeps CPU alive when screen off)
     try { if (window.AndroidBridge && AndroidBridge.startBackgroundService) AndroidBridge.startBackgroundService(); } catch (e) { }
@@ -1392,6 +1411,10 @@ async function runScan() {
     const BATCH_SIZE = 2; // scan 2 koin paralel sekaligus
     while (!scanAbort) {
         _scanRound++;
+        // Re-fetch tokens setiap ronde: update hapus/tambah & acak ulang jika random
+        if (monitorSort === 'rand') _shuffledTokens = null;
+        const tokens = getFilteredTokens();
+        if (!tokens.length) break;
         for (let i = 0; i < tokens.length; i += BATCH_SIZE) {
             if (scanAbort) break;
             const batch = tokens.slice(i, Math.min(i + BATCH_SIZE, tokens.length));
@@ -1426,6 +1449,7 @@ function stopScan() {
     $('#scanBadge').removeClass('active');
     $('#scanBar').css('width', '0%');
     unlockTabs();
+    buildMonitorRows(); // rebuild — update koin yang dihapus & urutkan ulang
     showToast('■ Scanning dihentikan');
     // Stop Android Foreground Service
     try { if (window.AndroidBridge && AndroidBridge.stopBackgroundService) AndroidBridge.stopBackgroundService(); } catch (e) { }
@@ -1448,6 +1472,7 @@ function reloadWithToast() {
 // Scanner sort
 $('#monSortBar').on('click', '.sort-btn', function () {
     monitorSort = $(this).data('sort');
+    _shuffledTokens = null; // clear cache agar random mengacak ulang
     $('#monSortBar .sort-btn').removeClass('active');
     $(this).addClass('active');
     if (!scanning) buildMonitorRows();
