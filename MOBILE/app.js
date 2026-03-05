@@ -1181,8 +1181,8 @@ function setCardStatus(card, msg) {
 const MON_CTD_COLOR = '#579a69'; // hijau CEXtoDEX
 const MON_DTC_COLOR = '#d56666'; // merah DEXtoCEX
 
-function buildMonitorRows() {
-    const tokens = getFilteredTokens();
+function buildMonitorRows(tokenList) {
+    const tokens = tokenList || getFilteredTokens();
     if (!tokens.length) {
         $('#monitorList').html('<div class="token-list-empty">Tidak ada token. Tambahkan KOIN di menu DATA KOIN.</div>');
         return;
@@ -1408,13 +1408,14 @@ async function runScan() {
     try { if (window.AndroidBridge && AndroidBridge.startBackgroundService) AndroidBridge.startBackgroundService(); } catch (e) { }
     await fetchUsdtRate();
 
-    const BATCH_SIZE = 2; // scan 2 koin paralel sekaligus
+    const BATCH_SIZE = 4; // scan 4 koin paralel sekaligus
     while (!scanAbort) {
         _scanRound++;
         // Re-fetch tokens setiap ronde: update hapus/tambah & acak ulang jika random
         if (monitorSort === 'rand') _shuffledTokens = null;
         const tokens = getFilteredTokens();
         if (!tokens.length) break;
+        buildMonitorRows(tokens); // rebuild cards dengan urutan sama persis
         for (let i = 0; i < tokens.length; i += BATCH_SIZE) {
             if (scanAbort) break;
             const batch = tokens.slice(i, Math.min(i + BATCH_SIZE, tokens.length));
@@ -1449,7 +1450,6 @@ function stopScan() {
     $('#scanBadge').removeClass('active');
     $('#scanBar').css('width', '0%');
     unlockTabs();
-    buildMonitorRows(); // rebuild — update koin yang dihapus & urutkan ulang
     showToast('■ Scanning dihentikan');
     // Stop Android Foreground Service
     try { if (window.AndroidBridge && AndroidBridge.stopBackgroundService) AndroidBridge.stopBackgroundService(); } catch (e) { }
