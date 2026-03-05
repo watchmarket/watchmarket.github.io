@@ -99,6 +99,11 @@
                 accept=".csv,text/csv,text/plain,text/comma-separated-values,application/octet-stream"
                 style="display:none">
         </div>
+        <div class="filter-bar">
+            <input class="filter-search" id="tokenSearch" type="text" placeholder="🔍 Cari koin..." autocomplete="off">
+            <button class="sort-btn active" data-sort="az" id="tokSortAZ">A→Z</button>
+            <button class="sort-btn" data-sort="za" id="tokSortZA">Z→A</button>
+        </div>
         <div class="token-list" id="tokenList">
             <div class="token-list-empty">Belum ada KOIN. Ketuk tombol + untuk menambah.</div>
         </div>
@@ -177,12 +182,19 @@
         </button>
     </nav>
 
-    <!-- FAB Scan (Monitor only) -->
-    <button class="fab-scan" id="btnScan">
-        <span id="btnScanIcon">▶</span>
-        <span id="btnScanLbl">START</span>
-        <span id="btnScanCount">[0]</span>
-    </button>
+    <!-- FAB Scan + Sort (Monitor only) -->
+    <div class="scan-footer" id="scanFooter">
+        <div class="scan-sort-group" id="monSortBar">
+            <button class="sort-btn active" data-sort="az">A→Z</button>
+            <button class="sort-btn" data-sort="za">Z→A</button>
+            <button class="sort-btn" data-sort="rand">🔀</button>
+        </div>
+        <button class="fab-scan" id="btnScan">
+            <span id="btnScanIcon">▶</span>
+            <span id="btnScanLbl">START</span>
+            <span id="btnScanCount">[0]</span>
+        </button>
+    </div>
 
     <!-- ═══════════════════════════════════════
      BOTTOM SHEET — TOKEN FORM

@@ -63,15 +63,18 @@ let CFG = {
 function totalQuoteCount() { return CFG.quoteCountMetax + CFG.quoteCountJumpx; }
 function isJumpxEnabled() { return APP_DEV_CONFIG.defaultQuoteCountJumpx > 0; }
 
-// Kembalikan token yang lolos filter CEX+chain, diurutkan A-Z
+// Kembalikan token yang lolos filter CEX+chain, diurutkan sesuai monitorSort
+let monitorSort = 'az'; // 'az' | 'za' | 'rand'
 function getFilteredTokens() {
-    return getTokens()
+    const filtered = getTokens()
         .filter(t => {
             const cexOk = CFG.activeCex.length === 0 || CFG.activeCex.includes(t.cex);
             const chainOk = CFG.activeChains.length === 0 || CFG.activeChains.includes(t.chain);
             return cexOk && chainOk;
-        })
-        .sort((a, b) => (a.ticker || '').localeCompare(b.ticker || ''));
+        });
+    if (monitorSort === 'za') return filtered.sort((a, b) => (b.ticker || '').localeCompare(a.ticker || ''));
+    if (monitorSort === 'rand') return filtered.sort(() => Math.random() - 0.5);
+    return filtered.sort((a, b) => (a.ticker || '').localeCompare(b.ticker || ''));
 }
 
 // ─── Signal Sound ─────────────────────────────
@@ -291,10 +294,12 @@ $('#btnOnboard').on('click', () => {
 function lockTabs() {
     $('#navToken, #navSettings').addClass('disabled');
     $('.top-tab-btn[data-tab="tabToken"], .top-tab-btn[data-tab="tabSettings"]').addClass('disabled');
+    $('#monSortBar .sort-btn').addClass('disabled').prop('disabled', true);
 }
 function unlockTabs() {
     $('#navToken, #navSettings').removeClass('disabled');
     $('.top-tab-btn[data-tab="tabToken"], .top-tab-btn[data-tab="tabSettings"]').removeClass('disabled');
+    $('#monSortBar .sort-btn').removeClass('disabled').prop('disabled', false);
 }
 
 // ─── Bottom Navigation ───────────────────────
@@ -305,8 +310,8 @@ function switchTab(tabId) {
     $(`.nav-item[data-tab="${tabId}"]`).addClass('active');
     $('.top-tab-btn').removeClass('active');
     $(`.top-tab-btn[data-tab="${tabId}"]`).addClass('active');
-    // Show scan FAB only on monitor tab
-    $('#btnScan').css('display', tabId === 'tabMonitor' ? 'flex' : 'none');
+    // Show scan footer (sort + start) only on monitor tab
+    $('#scanFooter').css('display', tabId === 'tabMonitor' ? 'flex' : 'none');
     $('.tab-pane').removeClass('active');
     $('#' + tabId).addClass('active');
     if (tabId === 'tabToken') renderTokenList();
@@ -538,21 +543,27 @@ $('#btnSheetSave').on('click', () => {
     if (decTokenRaw === '' || isNaN(decToken) || decToken < 0 || decToken > 30)
         errs.push(['fDecToken', 'Decimal Token harus angka antara 0–30']);
 
-    // PAIR — semua wajib
-    if (!tickerPairRaw)
-        errs.push(['fTickerPair', 'Symbol PAIR wajib diisi']);
-    else if (!/^[A-Z0-9]+$/.test(tickerPairRaw))
+    // PAIR — opsional untuk stablecoin (USDT)
+    // Jika Symbol PAIR kosong → default pair = stablecoin (USDT), SC auto-fill dari USDT_SC
+    if (tickerPairRaw && !/^[A-Z0-9]+$/.test(tickerPairRaw))
         errs.push(['fTickerPair', 'Symbol PAIR hanya huruf/angka (A-Z, 0-9)']);
 
-    if (!symbolPair)
-        errs.push(['fSymbolPair', 'Ticker CEX Pair wajib diisi']);
-
-    if (!scPair)
-        errs.push(['fScPair', 'SC Pair wajib diisi']);
-    else if (!/^0x[0-9a-fA-F]{40}$/.test(scPair))
-        errs.push(['fScPair', 'SC Pair tidak valid — harus 0x + tepat 40 karakter hex']);
-
     const tickerPair = tickerPairRaw || ticker;
+    const isPairUsdt = tickerPair.toUpperCase() === 'USDT';
+    const isPairSame = tickerPair === ticker;
+    const pairNeedsData = !isPairSame && !isPairUsdt;
+
+    // Jika PAIR bukan USDT dan bukan sama dgn TOKEN → data pair wajib lengkap
+    if (pairNeedsData) {
+        if (!symbolPair)
+            errs.push(['fSymbolPair', 'Ticker CEX Pair wajib diisi jika PAIR bukan USDT']);
+        if (!scPair)
+            errs.push(['fScPair', 'SC Pair wajib diisi jika PAIR bukan USDT']);
+        else if (!/^0x[0-9a-fA-F]{40}$/.test(scPair))
+            errs.push(['fScPair', 'SC Pair tidak valid — harus 0x + tepat 40 karakter hex']);
+    } else if (scPair && !/^0x[0-9a-fA-F]{40}$/.test(scPair)) {
+        errs.push(['fScPair', 'SC Pair tidak valid — harus 0x + tepat 40 karakter hex']);
+    }
 
     if (decPairRaw === '' || isNaN(decPair) || decPair < 0 || decPair > 30)
         errs.push(['fDecPair', 'Decimal Pair harus angka antara 0–30']);
@@ -597,8 +608,25 @@ function isValidToken(t) {
         (t.symbolToken || isUsdtNoSymbol(t.cex, t.ticker)));
 }
 
+let tokenSort = 'az'; // 'az' | 'za'
+let tokenSearchQuery = '';
+
 function renderTokenList() {
-    const tokens = getTokens().sort((a, b) => (a.ticker || '').localeCompare(b.ticker || ''));
+    let tokens = getTokens();
+    // Sorting
+    if (tokenSort === 'za') tokens = tokens.sort((a, b) => (b.ticker || '').localeCompare(a.ticker || ''));
+    else tokens = tokens.sort((a, b) => (a.ticker || '').localeCompare(b.ticker || ''));
+    // Search filter
+    if (tokenSearchQuery) {
+        const q = tokenSearchQuery.toLowerCase();
+        tokens = tokens.filter(t => {
+            const ticker = (t.ticker || '').toLowerCase();
+            const pair = (t.tickerPair || '').toLowerCase();
+            const cex = (CONFIG_CEX[t.cex]?.label || t.cex || '').toLowerCase();
+            const chain = (CONFIG_CHAINS[t.chain]?.label || t.chain || '').toLowerCase();
+            return ticker.includes(q) || pair.includes(q) || cex.includes(q) || chain.includes(q);
+        });
+    }
     $('#tokenCount').text('TOTAL ' + tokens.length + ' KOIN');
     if (!tokens.length) {
         $('#tokenList').html('<div class="token-list-empty">Belum ada token. Ketuk + untuk menambah.</div>');
@@ -633,7 +661,7 @@ function renderTokenList() {
     </div>`;
         }).join(''));
     }
-    // Rebuild monitor skeleton whenever token list changes — skip during active scan
+    // Rebuild monitor skeleton — skip during active scan agar tidak ganggu proses
     if (!scanning) buildMonitorRows();
     updateScanCount();
 }
@@ -645,7 +673,20 @@ function deleteToken(id) {
         `Koin <b>${name}</b> akan dihapus permanen dan tidak bisa dikembalikan.`,
         'Hapus Koin',
         'Hapus',
-        () => { saveTokens(getTokens().filter(x => x.id !== id)); renderTokenList(); }
+        () => {
+            saveTokens(getTokens().filter(x => x.id !== id));
+            if (scanning) {
+                // Saat scanning: hapus card & chip dari DOM saja, jangan rebuild semua
+                const card = document.getElementById('card-' + id);
+                if (card) card.remove();
+                const chip = document.getElementById('chip-' + id);
+                if (chip) chip.remove();
+                updateScanCount();
+                showToast(`🗑️ ${name} dihapus`);
+            } else {
+                renderTokenList();
+            }
+        }
     );
 }
 
@@ -1150,7 +1191,11 @@ function buildMonitorRows() {
     <img src="icons/chains/${t.chain}.png" class="mon-hdr-icon" onerror="this.style.display='none'">
     <span class="mon-cex-chain">${cexLabel.toUpperCase()}-${chainLabel.toUpperCase()}</span>
     <span class="mon-sym"><span class="mon-num">[${idx + 1}]</span> ${sym}</span>
-    <span class="card-status"></span>
+    
+    <span class="mon-card-actions">
+      <button class="btn-icon mon-act" onclick="openSheet('${t.id}')" title="Edit Koin">✏️</button>
+      <button class="btn-icon danger mon-act" onclick="deleteToken('${t.id}')" title="Hapus Koin">🗑️</button>
+    </span>
   </div>
   <div class="mon-tables-wrap">
   <div class="mon-table-scroll">
@@ -1216,17 +1261,20 @@ function updateSignalChip(tok, pnl, dir) {
         const dirLabel = dir === 'CTD' ? 'CEX→DEX' : 'DEX→CEX';
         const dirClass = dir === 'CTD' ? 'dir-ctd' : 'dir-dtc';
         const pnlClass = pnl >= 0 ? 'chip-pnl-pos' : 'chip-pnl-neg';
+        const modalLbl = dir === 'CTD' ? `$${tok.modalCtD}` : `$${tok.modalDtC}`;
 
         chip.innerHTML = `
             <div class="chip-row-top">
                 <img src="icons/cex/${tok.cex}.png" class="chip-icon" onerror="this.style.display='none'">
                 <img src="icons/chains/${tok.chain}.png" class="chip-icon" onerror="this.style.display='none'">
                 <span class="chip-cex">${cexLabel}</span>
-                <span class="chip-chain">${chainLabel}</span>
+                <span class="chip-dir ${dirClass}">${dirLabel}</span>
             </div>
             <div class="chip-row-bottom">
-                <span class="chip-dir ${dirClass}">${dirLabel}</span>
                 <span class="chip-ticker">${tok.ticker}</span>
+                <span class="chip-sep">|</span>
+                <span class="chip-modal">${modalLbl}</span>
+                <span class="chip-sep">|</span>
                 <span class="chip-pnl ${pnlClass}">${fmtPnl(pnl)}$</span>
             </div>`;
         chip.className = 'signal-chip' + (pnl < 0 ? ' loss' : '');
@@ -1259,7 +1307,7 @@ async function sendTelegram(tok, pnl, info) {
     // ── Android native notification (via WebView JS Bridge) ──────────────
     if (window.AndroidBridge) {
         const title = `🟢 SIGNAL: ${tok.ticker}↔${pairLbl}`;
-        const body = `${cexLbl}↔${dexLbl} [${dir}]\nPnL: ${fmtPnl(pnl)}$  |  Modal: $${modal}`;
+        const body = `${cexLbl}↔${dexLbl} [${chain}] [${dir}]\nPnL: ${fmtPnl(pnl)}$  |  Modal: $${modal}`;
         window.AndroidBridge.showNotification(title, body);
     }
 
@@ -1383,7 +1431,7 @@ function stopScan() {
     try { if (window.AndroidBridge && AndroidBridge.stopBackgroundService) AndroidBridge.stopBackgroundService(); } catch (e) { }
 }
 $('#btnScan').on('click', () => {
-    if (scanning) { scanAbort = true; }
+    if (scanning) { scanAbort = true; stopScan(); }
     else { runScan(); }
 });
 
@@ -1395,6 +1443,29 @@ function reloadWithToast() {
     sessionStorage.setItem('justReloaded', '1');
     location.reload();
 }
+
+// ─── Sort & Search Handlers ──────────────────
+// Scanner sort
+$('#monSortBar').on('click', '.sort-btn', function () {
+    monitorSort = $(this).data('sort');
+    $('#monSortBar .sort-btn').removeClass('active');
+    $(this).addClass('active');
+    if (!scanning) buildMonitorRows();
+});
+
+// Koin sort
+$('#tokSortAZ, #tokSortZA').on('click', function () {
+    tokenSort = $(this).data('sort');
+    $('#tokSortAZ, #tokSortZA').removeClass('active');
+    $(this).addClass('active');
+    renderTokenList();
+});
+
+// Koin search
+$('#tokenSearch').on('input', function () {
+    tokenSearchQuery = $(this).val().trim();
+    renderTokenList();
+});
 
 // ─── Init ────────────────────────────────────
 $(function () {
