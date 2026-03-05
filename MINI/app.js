@@ -1300,15 +1300,17 @@ async function runScan() {
     try { if (window.AndroidBridge && AndroidBridge.startBackgroundService) AndroidBridge.startBackgroundService(); } catch (e) { }
     await fetchUsdtRate();
 
+    const BATCH_SIZE = 2; // scan 2 koin paralel sekaligus
     while (!scanAbort) {
         _scanRound++;
-        for (let i = 0; i < tokens.length; i++) {
+        for (let i = 0; i < tokens.length; i += BATCH_SIZE) {
             if (scanAbort) break;
-            const pct = Math.round((i + 1) / tokens.length * 100);
+            const batch = tokens.slice(i, Math.min(i + BATCH_SIZE, tokens.length));
+            const pct = Math.round(Math.min(i + BATCH_SIZE, tokens.length) / tokens.length * 100);
             $('#scanBar').css('width', pct + '%');
-            $('#btnScanCount').text(`[ ${i + 1}/${tokens.length}] KOIN`);
+            $('#btnScanCount').text(`[ ${Math.min(i + BATCH_SIZE, tokens.length)}/${tokens.length}] KOIN`);
             await fetchUsdtRate();
-            await scanToken(tokens[i]);
+            await Promise.all(batch.map(tok => scanToken(tok)));
             if (!scanAbort) await new Promise(r => setTimeout(r, CFG.interval));
         }
         if (!scanAbort) {
