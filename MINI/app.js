@@ -1419,7 +1419,7 @@ async function runScan() {
     stopScan();
 }
 function stopScan() {
-    scanning = false; scanAbort = false;
+    scanning = false; scanAbort = true;  // keep true so orphaned loop exits
     $('#btnScanIcon').text('▶'); $('#btnScanLbl').text('START'); $('#btnScan').removeClass('stop');
     updateScanCount();
     updateNoSignalNotice();
