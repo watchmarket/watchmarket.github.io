@@ -10,7 +10,7 @@ const LS_SETTINGS = 'cexdex_settings';
 
 // ─── App Dialog Modal ─────────────────────────
 // Menggantikan alert() dan confirm() bawaan browser
-const MODAL_ICONS = { info: 'ℹ️', warn: '⚠️', error: '❌', success: '✅', delete: '🗑️' };
+const MODAL_ICONS = { info: 'ℹ️', warn: '⚠️', error: '❌', success: '✅', delete: '❌' };
 
 function _showModal(icon, title, bodyHtml, buttons, bodyLeft = false) {
     $('#appModalIcon').text(icon);
@@ -65,6 +65,7 @@ function isJumpxEnabled() { return APP_DEV_CONFIG.defaultQuoteCountJumpx > 0; }
 
 // Kembalikan token yang lolos filter CEX+chain, diurutkan sesuai monitorSort
 let monitorSort = 'az'; // 'az' | 'za' | 'rand'
+let monitorFavOnly = false; // jika true, hanya tampilkan koin favorit di scanner
 let _shuffledTokens = null; // cache untuk random sort
 
 function shuffleArray(arr) {
@@ -80,7 +81,8 @@ function getFilteredTokens() {
         .filter(t => {
             const cexOk = CFG.activeCex.length === 0 || CFG.activeCex.includes(t.cex);
             const chainOk = CFG.activeChains.length === 0 || CFG.activeChains.includes(t.chain);
-            return cexOk && chainOk;
+            const favOk = !monitorFavOnly || t.favorite;
+            return cexOk && chainOk && favOk;
         });
     if (monitorSort === 'za') return filtered.sort((a, b) => (b.ticker || '').localeCompare(a.ticker || ''));
     if (monitorSort === 'rand') {
@@ -118,6 +120,7 @@ let scanAbort = false;
 let signalCache = [];
 const tgCooldown = new Map(); // tokenId → timestamp
 const wmCache = {};           // chain → data array
+const _obCache = {};          // tokenId → { bids, asks, bidPrice, askPrice }
 
 // ─── Utility ─────────────────────────────────
 const getTokens = () => { try { return JSON.parse(localStorage.getItem(LS_TOKENS)) || []; } catch { return []; } };
@@ -158,10 +161,8 @@ function fmtCompact(v, sigfigs = 4) {
 // ─── Settings ────────────────────────────────
 function updateScanCount() {
     const n = getFilteredTokens().length;
-    const total = getTokens().length;
     $('#filterCoinCount').text(n);
     if (!scanning) $('#btnScanCount').text('[' + n + ' KOIN ]');
-    $('#tokenCount').text('TOTAL ' + total + ' KOIN');
 }
 
 function renderFilterChips() {
@@ -203,6 +204,7 @@ function toggleFilterChip(el, type) {
         if (arr.length === Object.keys(cfg).length) arr.splice(0);
     }
     renderFilterChips();
+    renderTokenList();
     updateScanCount();
 }
 
@@ -274,6 +276,7 @@ function saveSettings() {
     localStorage.setItem(LS_SETTINGS, JSON.stringify(CFG));
     $('#topUsername').text('@' + (CFG.username || '-'));
     if (!scanning) { buildMonitorRows(); }
+    renderTokenList();
     showToast('✓ Settings tersimpan!');
 }
 
@@ -318,7 +321,6 @@ function unlockTabs() {
     $('.top-tab-btn[data-tab="tabToken"], .top-tab-btn[data-tab="tabSettings"]').removeClass('disabled');
     $('#monSortBar .sort-btn').removeClass('disabled').prop('disabled', false);
 }
-
 // ─── Bottom Navigation ───────────────────────
 function switchTab(tabId) {
     if (!tabId) return;
@@ -610,6 +612,7 @@ $('#btnSheetSave').on('click', () => {
         tickerPair, symbolPair, scPair, decPair,
         chain, modalCtD, modalDtC,
         minPnl: isFinite(minPnl) ? minPnl : null,   // null = use global setting
+        favorite: (idx >= 0 && tokens[idx].favorite) ? true : false, // preserve favorite
     };
     const idx = tokens.findIndex(x => x.id === id);
     if (idx >= 0) tokens[idx] = tok; else tokens.push(tok);
@@ -630,6 +633,12 @@ let tokenSearchQuery = '';
 
 function renderTokenList() {
     let tokens = getTokens();
+    // Settings-based filter (sinkron dengan scanner)
+    tokens = tokens.filter(t => {
+        const cexOk = CFG.activeCex.length === 0 || CFG.activeCex.includes(t.cex);
+        const chainOk = CFG.activeChains.length === 0 || CFG.activeChains.includes(t.chain);
+        return cexOk && chainOk;
+    });
     // Sorting
     if (tokenSort === 'za') tokens = tokens.sort((a, b) => (b.ticker || '').localeCompare(a.ticker || ''));
     else tokens = tokens.sort((a, b) => (a.ticker || '').localeCompare(b.ticker || ''));
@@ -672,7 +681,7 @@ function renderTokenList() {
       <div style="display:flex;align-items:center;gap:6px">
         <div class="token-list-actions">
           <button class="btn-icon" onclick="openSheet('${t.id}')">✏️</button>
-          <button class="btn-icon danger" onclick="deleteToken('${t.id}')">🗑️</button>
+          <button class="btn-icon danger" onclick="deleteToken('${t.id}')">❌</button>
         </div>
       </div>
     </div>`;
@@ -702,7 +711,7 @@ function deleteToken(id) {
                 // Force update count on stop button during scanning
                 const remaining = getFilteredTokens().length;
                 $('#btnScanCount').text('[' + remaining + ' KOIN ]');
-                showToast(`🗑️ ${name} dihapus`);
+                showToast(`❌ ${name} dihapus`);
             } else {
                 renderTokenList();
             }
@@ -1006,6 +1015,8 @@ async function scanToken(tok) {
         obToken = await fetchOrderbook(tok.cex, tok.symbolToken);
         if (!obToken || obToken.error) { setCardStatus(card, 'ERROR: KONEKSI EXCHANGER'); return; }
     }
+    // Cache orderbook for tooltip
+    _obCache[tok.id] = { bids: obToken.bids || [], asks: obToken.asks || [], bidPrice: obToken.bidPrice, askPrice: obToken.askPrice };
 
     // 2. Fetch CEX orderbook for PAIR (if triangular)
     let bidPair = 1, askPair = 1;
@@ -1177,6 +1188,20 @@ function setCardStatus(card, msg) {
     });
 }
 
+// ─── Favorite Toggle ──────────────────────────
+function toggleFavorite(id) {
+    const tokens = getTokens();
+    const idx = tokens.findIndex(t => t.id === id);
+    if (idx < 0) return;
+    tokens[idx].favorite = !tokens[idx].favorite;
+    saveTokens(tokens);
+    // Update visual without full rebuild
+    const monBtn = document.querySelector(`#card-${id} .mon-fav`);
+    if (monBtn) monBtn.classList.toggle('fav-active', tokens[idx].favorite);
+    const tokBtn = document.querySelector(`#li-${id} .tok-fav`);
+    if (tokBtn) tokBtn.classList.toggle('fav-active', tokens[idx].favorite);
+}
+
 // ─── Monitor Cards Build ──────────────────────
 const MON_CTD_COLOR = '#579a69'; // hijau CEXtoDEX
 const MON_DTC_COLOR = '#d56666'; // merah DEXtoCEX
@@ -1188,8 +1213,11 @@ function buildMonitorRows(tokenList) {
         return;
     }
     const n = totalQuoteCount();
-    const dexHdr = (pfx, color) => Array.from({ length: n }, (_, i) =>
-        `<td class="mon-dex-hdr" data-${pfx}-hdr="${i}" style="background:${color}">-</td>`
+    const dexHdr = (pfx, color, tokId) => Array.from({ length: n }, (_, i) =>
+        `<td class="mon-dex-hdr" data-${pfx}-hdr="${i}" data-tok="${tokId}" data-dir="${pfx}"
+          onmouseenter="showObTooltip(this,event)" onmouseleave="hideObTooltip()"
+          ontouchstart="showObTooltip(this,event);event.stopPropagation()"
+          style="background:${color};cursor:pointer">-</td>`
     ).join('');
     const dexRow = (pfx, attr) => Array.from({ length: n }, (_, i) =>
         `<td class="mon-dex-cell" data-${pfx}-${attr}="${i}">-</td>`
@@ -1205,16 +1233,18 @@ function buildMonitorRows(tokenList) {
         const sym = t.ticker + (tri ? '↔' + t.tickerPair : '');
         const pairTk = t.tickerPair || t.ticker;
         const minPnlLbl = (isFinite(t.minPnl) && t.minPnl !== null) ? t.minPnl : APP_DEV_CONFIG.defaultMinPnl;
-        return `<div class="mon-card" id="card-${t.id}" style="border-left:3px solid ${cexColor}">
-  <div class="mon-card-hdr" style="background:linear-gradient(90deg,${cexColor}22 0%,var(--surface) 100%)">
+        const chainColor = ch.WARNA || '#555';
+        return `<div class="mon-card" id="card-${t.id}" style="border-left:3px solid ${chainColor}">
+  <div class="mon-card-hdr" style="background:linear-gradient(135deg,${chainColor}55 0%,${chainColor}20 100%);border-bottom:2px solid ${chainColor}88">
     <img src="icons/cex/${t.cex}.png" class="mon-hdr-icon" onerror="this.style.display='none'">
     <img src="icons/chains/${t.chain}.png" class="mon-hdr-icon" onerror="this.style.display='none'">
     <span class="mon-cex-chain">${cexLabel.toUpperCase()}-${chainLabel.toUpperCase()}</span>
     <span class="mon-sym"><span class="mon-num">[${idx + 1}]</span> ${sym}</span>
     
     <span class="mon-card-actions">
+      <button class="btn-icon mon-act mon-fav ${t.favorite ? 'fav-active' : ''}" onclick="toggleFavorite('${t.id}')" title="Favorit">⭐</button>
       <button class="btn-icon mon-act" onclick="openSheet('${t.id}')" title="Edit Koin">✏️</button>
-      <button class="btn-icon danger mon-act" onclick="deleteToken('${t.id}')" title="Hapus Koin">🗑️</button>
+      <button class="btn-icon danger mon-act" onclick="deleteToken('${t.id}')" title="Hapus Koin">❌</button>
     </span>
   </div>
   <div class="mon-tables-wrap">
@@ -1222,7 +1252,7 @@ function buildMonitorRows(tokenList) {
   <table class="mon-sub-table ctd-table">
     <thead><tr class="mon-sub-hdr">
       <td class="mon-lbl-hdr" style="background:${MON_CTD_COLOR}">$${t.modalCtD}<span class="tbl-status"></span></td>
-      ${dexHdr('ctd', MON_CTD_COLOR)}
+      ${dexHdr('ctd', MON_CTD_COLOR, t.id)}
     </tr></thead>
     <tbody>
       <tr class="mon-row-cex"><td class="mon-lbl-side"><span style='color:green;'>BELI CEX ↑</span></td>${dexRow('ctd', 'cex')}</tr>
@@ -1236,7 +1266,7 @@ function buildMonitorRows(tokenList) {
   <table class="mon-sub-table dtc-table">
     <thead><tr class="mon-sub-hdr">
       <td class="mon-lbl-hdr" style="background:${MON_DTC_COLOR}">$${t.modalDtC}<span class="tbl-status"></span></td>
-      ${dexHdr('dtc', MON_DTC_COLOR)}
+      ${dexHdr('dtc', MON_DTC_COLOR, t.id)}
     </tr></thead>
     <tbody>
       <tr class="mon-row-cex"><td class="mon-lbl-side">${pairTk}→${t.ticker}</td>${dexRow('dtc', 'cex')}</tr>
@@ -1478,6 +1508,14 @@ $('#monSortBar').on('click', '.sort-btn', function () {
     if (!scanning) buildMonitorRows();
 });
 
+// Scanner favorite filter
+$('#monFavFilter').on('click', function () {
+    monitorFavOnly = !monitorFavOnly;
+    $(this).toggleClass('active', monitorFavOnly);
+    if (!scanning) buildMonitorRows();
+    updateScanCount();
+});
+
 // Koin sort
 $('#tokSortAZ, #tokSortZA').on('click', function () {
     tokenSort = $(this).data('sort');
@@ -1492,6 +1530,359 @@ $('#tokenSearch').on('input', function () {
     renderTokenList();
 });
 
+// ─── Orderbook Tooltip ────────────────────────
+let _tooltipHideTimer = null;
+function showObTooltip(el, event) {
+    clearTimeout(_tooltipHideTimer);
+    const tokId = el.dataset.tok;
+    const dir = el.dataset.dir; // 'ctd' or 'dtc'
+    const ob = _obCache[tokId];
+    const tooltip = document.getElementById('obTooltip');
+    if (!tooltip) return;
+
+    if (!ob || (!ob.asks.length && !ob.bids.length)) {
+        tooltip.innerHTML = '<div class="ob-tip-empty">Data orderbook belum tersedia.<br>Tunggu hasil scanning.</div>';
+    } else {
+        const buyPrice = ob.askPrice || 0;
+        const sellPrice = ob.bidPrice || 0;
+        const fmtIDR = (v) => Math.round(v * usdtRate);
+        const fmtPr = (p) => `${fmtCompact(p)}$ [Rp.${fmtIDR(p)}]`;
+
+        const priceHeader = `
+          <div class="ob-tip-prices">
+            <div class="ob-tip-price-row">
+              <span class="ob-tip-buy">HARGA BUY</span>
+              <span class="ob-sep"> : </span>
+              <span>${fmtPr(buyPrice)}</span>
+            </div>
+            <div class="ob-tip-price-row">
+              <span class="ob-tip-sell">HARGA SELL</span>
+              <span class="ob-sep"> : </span>
+              <span>${fmtPr(sellPrice)}</span>
+            </div>
+          </div>`;
+
+        const obList = dir === 'ctd' ? (ob.asks || []) : (ob.bids || []);
+        const dirLabel = dir === 'ctd' ? 'BELI (CEX→DEX)' : 'JUAL (DEX→CEX)';
+        const titleCls = dir === 'ctd' ? 'ob-tip-buy' : 'ob-tip-sell';
+
+        const rows = obList.slice(0, 5).map(([price, vol]) => {
+            const total = price * vol;
+            return `<div class="ob-tip-ob-row">
+              <span class="ob-tip-ob-price">${fmtPr(price)}</span>
+              <span class="ob-sep">:</span>
+              <span class="ob-tip-ob-vol">${total.toFixed(2)}$ [Rp.${fmtIDR(total)}]</span>
+            </div>`;
+        }).join('');
+
+        tooltip.innerHTML = `
+          ${priceHeader}
+          <div class="ob-tip-ob-section">
+            <div class="ob-tip-title ${titleCls}">ORDERBOOK CEX — ${dirLabel}</div>
+            ${rows || '<div class="ob-tip-empty">Tidak ada data</div>'}
+          </div>`;
+    }
+
+    // Position tooltip
+    const rect = el.getBoundingClientRect();
+    const tipW = 290;
+    let left = rect.left + window.scrollX;
+    if (left + tipW > window.innerWidth - 8) left = window.innerWidth - tipW - 8;
+    if (left < 4) left = 4;
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+    tooltip.style.display = 'block';
+}
+function hideObTooltip() {
+    _tooltipHideTimer = setTimeout(() => {
+        const tooltip = document.getElementById('obTooltip');
+        if (tooltip) tooltip.style.display = 'none';
+    }, 200);
+}
+// Close tooltip when tapping elsewhere
+document.addEventListener('touchstart', function (e) {
+    if (!e.target.closest('[data-dir]') && !e.target.closest('#obTooltip')) {
+        const tooltip = document.getElementById('obTooltip');
+        if (tooltip) tooltip.style.display = 'none';
+    }
+}, { passive: true });
+
+// ─── Kalkulator Multi Crypto (Modal) ─────────
+let _calcRows = [];
+let _calcRowId = 0;
+
+function openCalcModal() {
+    if (!_calcRows.length) {
+        addCalcRow('BTC', '', '');
+        addCalcRow('ETH', '', '');
+        addCalcRow('', '', '');
+    } else {
+        _renderCalcRows();
+    }
+    _updateCalcRateDisplay();
+    document.getElementById('calcOverlay').classList.add('open');
+}
+function closeCalcModal() {
+    document.getElementById('calcOverlay').classList.remove('open');
+}
+function _updateCalcRateDisplay() {
+    const el = document.getElementById('calcRateVal');
+    if (el) el.textContent = 'Rp ' + usdtRate.toLocaleString('id-ID');
+}
+function refreshCalcRate() {
+    fetchUsdtRate().then(() => {
+        _updateCalcRateDisplay();
+        _recalcAll();
+        convFromUsdt();
+        calcCustomConv();
+        showToast('✓ Rate IDR: Rp ' + usdtRate.toLocaleString('id-ID'));
+    });
+}
+
+// ── Multi Rows ──
+function addCalcRow(sym, price, qty) {
+    _calcRowId++;
+    _calcRows.push({ id: _calcRowId, sym: sym || '', price: price !== undefined ? price : '', qty: qty !== undefined ? qty : '' });
+    _renderCalcRows();
+}
+function removeCalcRow(id) {
+    _calcRows = _calcRows.filter(r => r.id !== id);
+    _renderCalcRows();
+}
+function clearCalcRows() {
+    _calcRows = [];
+    _calcRowId = 0;
+    _renderCalcRows();
+}
+function onCalcInput(id, field, val) {
+    const r = _calcRows.find(x => x.id === id);
+    if (r) r[field] = val;
+    _recalcOne(id);
+    _updateCalcTotal();
+}
+function _fmtIdr(idr) {
+    if (idr >= 1e9) return 'Rp ' + (idr / 1e9).toFixed(2) + ' M';
+    if (idr >= 1e6) return 'Rp ' + (idr / 1e6).toFixed(2) + ' jt';
+    if (idr >= 1e3) return 'Rp ' + Math.round(idr / 1e3) + 'K';
+    return 'Rp ' + Math.round(idr).toLocaleString('id-ID');
+}
+
+function _renderCalcRows() {
+    const container = document.getElementById('calcRows');
+    if (!container) return;
+    container.innerHTML = _calcRows.map(r => {
+        const p = parseFloat(r.price) || 0;
+        const q = parseFloat(r.qty) || 0;
+        const usdt = p * q;
+        const idr = usdt * usdtRate;
+        const usdtTxt = usdt > 0 ? '$' + usdt.toFixed(usdt < 0.01 ? 6 : 2) : '-';
+        const idrTxt = idr > 0 ? _fmtIdr(idr) : '-';
+        return `<div class="calc-data-row" id="cdr-${r.id}">
+  <div class="cc-sym"><input class="cc-inp cc-sym-inp" value="${r.sym}" placeholder="KOIN" maxlength="10"
+    oninput="onCalcInput(${r.id},'sym',this.value)"></div>
+  <div class="cc-price"><input class="cc-inp" type="number" value="${r.price}" placeholder="0.00" step="any"
+    oninput="onCalcInput(${r.id},'price',this.value)"></div>
+  <div class="cc-qty"><input class="cc-inp" type="number" value="${r.qty}" placeholder="0" step="any"
+    oninput="onCalcInput(${r.id},'qty',this.value)"></div>
+  <div class="cc-usdt cc-result" id="cdr-usdt-${r.id}">${usdtTxt}</div>
+  <div class="cc-idr cc-result" id="cdr-idr-${r.id}">${idrTxt}</div>
+  <div class="cc-del"><button class="cc-del-btn" onclick="removeCalcRow(${r.id})">✕</button></div>
+</div>`;
+    }).join('');
+    _updateCalcTotal();
+}
+function _recalcOne(id) {
+    const r = _calcRows.find(x => x.id === id);
+    if (!r) return;
+    const p = parseFloat(r.price) || 0;
+    const q = parseFloat(r.qty) || 0;
+    const usdt = p * q;
+    const idr = usdt * usdtRate;
+    const uEl = document.getElementById('cdr-usdt-' + id);
+    const iEl = document.getElementById('cdr-idr-' + id);
+    if (uEl) uEl.textContent = usdt > 0 ? '$' + usdt.toFixed(usdt < 0.01 ? 6 : 2) : '-';
+    if (iEl) iEl.textContent = idr > 0 ? _fmtIdr(idr) : '-';
+}
+function _recalcAll() {
+    _calcRows.forEach(r => _recalcOne(r.id));
+    _updateCalcTotal();
+}
+function _updateCalcTotal() {
+    let total = 0;
+    _calcRows.forEach(r => { total += (parseFloat(r.price) || 0) * (parseFloat(r.qty) || 0); });
+    const idr = total * usdtRate;
+    const uEl = document.getElementById('calcTotalUsdt');
+    const iEl = document.getElementById('calcTotalIdr');
+    if (uEl) uEl.textContent = '$' + total.toFixed(total < 0.01 ? 6 : 2);
+    if (iEl) iEl.textContent = _fmtIdr(idr);
+}
+
+// ── Konverter USDT↔IDR ──
+function convFromUsdt() {
+    const usdt = parseFloat(document.getElementById('convUsdt')?.value) || 0;
+    const el = document.getElementById('convIdr');
+    if (el) el.value = usdt ? (usdt * usdtRate).toFixed(0) : '';
+}
+function convFromIdr() {
+    const idr = parseFloat(document.getElementById('convIdr')?.value) || 0;
+    const el = document.getElementById('convUsdt');
+    if (el) el.value = (idr && usdtRate) ? (idr / usdtRate).toFixed(6) : '';
+}
+
+// ── Custom Konversi ──
+function calcCustomConv() {
+    const amt = parseFloat(document.getElementById('ccAmt')?.value) || 0;
+    const mode = document.getElementById('ccFrom')?.value;
+    const customPrice = parseFloat(document.getElementById('ccCustomPrice')?.value) || 0;
+    const priceRow = document.getElementById('ccCustomPriceRow');
+    const resultEl = document.getElementById('ccResult');
+    const tokenRow = document.getElementById('ccResTokenRow');
+
+    if (priceRow) priceRow.style.display = mode === 'custom' ? 'flex' : 'none';
+
+    if (!amt) { if (resultEl) resultEl.style.display = 'none'; return; }
+
+    let usdt = 0, idr = 0, token = null;
+    if (mode === 'usdt') {
+        usdt = amt;
+        idr = amt * usdtRate;
+    } else if (mode === 'idr') {
+        idr = amt;
+        usdt = usdtRate > 0 ? amt / usdtRate : 0;
+    } else if (mode === 'custom' && customPrice > 0) {
+        // amt = jumlah token, konversi ke USDT & IDR
+        usdt = amt * customPrice;
+        idr = usdt * usdtRate;
+        token = amt;
+    }
+
+    const uEl = document.getElementById('ccResUsdt');
+    const iEl = document.getElementById('ccResIdr');
+    const tEl = document.getElementById('ccResToken');
+    if (uEl) uEl.textContent = '$' + usdt.toFixed(usdt < 0.01 ? 6 : 4);
+    if (iEl) iEl.textContent = _fmtIdr(idr);
+    if (tokenRow) tokenRow.style.display = 'none';
+    if (resultEl) resultEl.style.display = 'block';
+}
+
+// ─── Bulk Modal Modal & PNL ─────────────────
+function openBulkModal() {
+    document.getElementById('bulkOverlay').classList.add('open');
+}
+function closeBulkModal() {
+    document.getElementById('bulkOverlay').classList.remove('open');
+}
+$('#btnBulkApply').on('click', function () {
+    const ctd = parseFloat($('#bulkCtD').val());
+    const dtc = parseFloat($('#bulkDtC').val());
+    const pnl = parseFloat($('#bulkPnl').val());
+    if (isNaN(ctd) && isNaN(dtc) && isNaN(pnl)) {
+        showAlert('Isi Modal CEX→DEX,Moda DEX→CEX & Min PNL).', 'Bulk Modal', 'warn');
+        return;
+    }
+    // Filter tokens same as renderTokenList (respect settings)
+    const allTokens = getTokens();
+    let filtered = allTokens.filter(t => {
+        const cexOk = CFG.activeCex.length === 0 || CFG.activeCex.includes(t.cex);
+        const chainOk = CFG.activeChains.length === 0 || CFG.activeChains.includes(t.chain);
+        return cexOk && chainOk;
+    });
+    if (!filtered.length) {
+        showAlert('Tidak ada koin yang cocok dengan filter aktif.', 'Bulk Modal', 'warn');
+        return;
+    }
+    const parts = [];
+    if (!isNaN(ctd) && ctd > 0) parts.push(`CEX→DEX: $${ctd}`);
+    if (!isNaN(dtc) && dtc > 0) parts.push(`DEX→CEX: $${dtc}`);
+    if (!isNaN(pnl) && pnl >= 0) parts.push(`Min PNL: $${pnl}`);
+    showConfirm(
+        `Update ${filtered.length} koin dengan:\n${parts.join(', ')}?`,
+        'Bulk Modal',
+        '✅ Terapkan',
+        () => {
+            const ids = new Set(filtered.map(t => t.id));
+            allTokens.forEach(t => {
+                if (!ids.has(t.id)) return;
+                if (!isNaN(ctd) && ctd > 0) t.modalCtD = ctd;
+                if (!isNaN(dtc) && dtc > 0) t.modalDtC = dtc;
+                if (!isNaN(pnl) && pnl >= 0) t.minPnl = pnl;
+            });
+            saveTokens(allTokens);
+            renderTokenList();
+            closeBulkModal();
+            showToast(`✅ ${filtered.length} koin berhasil diupdate!`);
+        }
+    );
+});
+
+// ─── Kalkulator Konversi Crypto (Simple) ──────
+function onCalcField(source) {
+    const usdt = parseFloat($('#cfUsdt').val()) || 0;
+    const idr = parseFloat($('#cfIdr').val()) || 0;
+    const customAmt = parseFloat($('#cfCustomAmt').val()) || 0;
+    const customPrice = parseFloat($('#cfCustomPrice').val()) || 0;
+
+    let usdtVal = 0;
+    switch (source) {
+        case 'usdt': usdtVal = usdt; break;
+        case 'idr': usdtVal = usdtRate > 0 ? idr / usdtRate : 0; break;
+        case 'custom': usdtVal = customAmt * customPrice; break;
+    }
+
+    // Fill all fields from USDT value
+    if (source !== 'usdt') $('#cfUsdt').val(usdtVal ? usdtVal.toFixed(usdtVal < 1 ? 6 : 2) : '');
+    if (source !== 'idr') $('#cfIdr').val(usdtVal && usdtRate ? Math.round(usdtVal * usdtRate) : '');
+    if (source !== 'custom' && customPrice > 0) {
+        $('#cfCustomAmt').val(usdtVal ? (usdtVal / customPrice).toFixed(6) : '');
+    }
+}
+
+async function calcUpdatePrice() {
+    showToast('⏳ Mengambil rate IDR...');
+    try {
+        await fetchUsdtRate();
+        _updateCalcRateDisplay();
+        showToast('✅ Rate IDR berhasil diupdate!');
+        const active = ['usdt', 'idr'].find(f => parseFloat($('#cf' + f.charAt(0).toUpperCase() + f.slice(1)).val()) > 0);
+        if (active) onCalcField(active);
+    } catch (e) {
+        showToast('❌ Gagal mengambil rate: ' + e.message);
+    }
+}
+
+async function calcCekToken() {
+    const sym = ($('#cfCustomSym').val() || '').trim().toLowerCase();
+    if (!sym) { showAlert('Isi symbol token terlebih dahulu (contoh: SOL)', 'Cek Token', 'warn'); return; }
+    showToast('🔍 Mencari ' + sym.toUpperCase() + '...');
+    try {
+        const resp = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${sym}&vs_currencies=usd`);
+        const data = await resp.json();
+        let price = data[sym]?.usd;
+        if (!price) {
+            // Coba search by symbol
+            const search = await fetch(`https://api.coingecko.com/api/v3/search?query=${sym}`);
+            const sData = await search.json();
+            const coin = sData.coins?.[0];
+            if (coin) {
+                const resp2 = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coin.id}&vs_currencies=usd`);
+                const data2 = await resp2.json();
+                price = data2[coin.id]?.usd;
+                if (price) $('#cfCustomSym').val(coin.symbol.toUpperCase());
+            }
+        }
+        if (price) {
+            $('#cfCustomPrice').val(price);
+            $('#cfCustomLbl').text(sym.toUpperCase());
+            showToast(`✅ ${sym.toUpperCase()} = $${price}`);
+            onCalcField('custom');
+        } else {
+            showToast('❌ Token tidak ditemukan');
+        }
+    } catch (e) {
+        showToast('❌ Error: ' + e.message);
+    }
+}
+
 // ─── Init ────────────────────────────────────
 $(function () {
     loadSettings();
@@ -1499,6 +1890,8 @@ $(function () {
     renderChainChips('bsc');
     renderTokenList();   // also builds monitor skeleton via buildMonitorRows()
     checkOnboarding();
+    // Init USDT rate
+    fetchUsdtRate().then(() => _updateCalcRateDisplay());
     // Toast after reload
     if (sessionStorage.getItem('justReloaded')) {
         sessionStorage.removeItem('justReloaded');
