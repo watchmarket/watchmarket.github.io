@@ -54,16 +54,17 @@
                 <button class="top-tab-btn" data-tab="tabToken">
                     <img src="icons/token.png" class="top-tab-icon" alt="DAFTAR KOIN CRYPTO"> 
             </button>
-            <button class="top-tab-btn" onclick="openCalcModal()">
-                <!--<i class="bi bi-calculator top-tab-icon" style="font-size:12px;margin-right:3px"></i> -->
-                  <img src="icons/kalkulator.png" class="top-tab-icon" alt="KALKULATOR CRYPTO"> 
+             <button class="top-tab-btn tab-reload" onclick="reloadWithToast()">
+                    <img src="icons/reload.png" class="top-tab-icon" alt="REFRESH HALAMAN"> 
             </button>
+            
 
             <button class="top-tab-btn" data-tab="tabSettings">
                     <img src="icons/setting.png" class="top-tab-icon" alt="PENGATURAN APLIKASI"> 
                 </button>
-                <button class="top-tab-btn tab-reload" onclick="reloadWithToast()">
-                    <img src="icons/reload.png" class="top-tab-icon" alt="REFRESH HALAMAN"> 
+               <button class="top-tab-btn" onclick="openCalcModal()">
+                <!--<i class="bi bi-calculator top-tab-icon" style="font-size:12px;margin-right:3px"></i> -->
+                  <img src="icons/kalkulator.png" class="top-tab-icon" alt="KALKULATOR CRYPTO"> 
             </button>
         </div>
             <!-- <span class="username-chip" id="topUsername">@-</span> -->
@@ -178,20 +179,22 @@
             <span class="nav-icon"><img src="icons/token.png" class="nav-icon-img" alt="daftar koin"></span>
             <span>DATA KOIN</span>
         </button>
-         <button class="nav-item" id="navCalc" onclick="openCalcModal()">
-            <!-- <span class="nav-icon"><i class="bi bi-calculator" style="font-size:22px"></i></span> -->
-            <span class="nav-icon"><img src="icons/kalkulator.png" class="nav-icon-img" alt="kalkulator crypto"></span>
-            <span>KALKULATOR</span>
+         <button class="nav-item" id="navReload" onclick="reloadWithToast()">
+            <span class="nav-icon"><img src="icons/reload.png" class="nav-icon-img" alt="reload"></span>
+            <span>RELOAD</span>
         </button>
         <button class="nav-item" data-tab="tabSettings" id="navSettings">
             <span class="nav-icon"><img src="icons/setting.png" class="nav-icon-img" alt="pengaturan aplikasi"></span>
             <span>PENGATURAN</span>
         </button>
-       
-        <button class="nav-item" id="navReload" onclick="reloadWithToast()">
-            <span class="nav-icon"><img src="icons/reload.png" class="nav-icon-img" alt="reload"></span>
-            <span>RELOAD</span>
+         <button class="nav-item" id="navCalc" onclick="openCalcModal()">
+            <!-- <span class="nav-icon"><i class="bi bi-calculator" style="font-size:22px"></i></span> -->
+            <span class="nav-icon"><img src="icons/kalkulator.png" class="nav-icon-img" alt="kalkulator crypto"></span>
+            <span>KALKULATOR</span>
         </button>
+        
+       
+       
     </nav>
 
     <!-- FAB Scan + Sort (Monitor only) -->

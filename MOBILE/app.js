@@ -10,7 +10,7 @@ const LS_SETTINGS = 'cexdex_settings';
 
 // ─── App Dialog Modal ─────────────────────────
 // Menggantikan alert() dan confirm() bawaan browser
-const MODAL_ICONS = { info: 'ℹ️', warn: '⚠️', error: '❌', success: '✅', delete: '❌' };
+const MODAL_ICONS = { info: 'ℹ️', warn: '⚠️', error: '🗑️', success: '✅', delete: '🗑️' };
 
 function _showModal(icon, title, bodyHtml, buttons, bodyLeft = false) {
     $('#appModalIcon').text(icon);
@@ -593,9 +593,9 @@ $('#btnSheetSave').on('click', () => {
     if (modalDtCRaw === '' || isNaN(modalDtC) || modalDtC <= 0)
         errs.push(['fModalDtC', 'Modal DEX→CEX harus angka lebih dari 0']);
 
-    // Min PnL — wajib diisi
-    if (minPnlRaw === '' || isNaN(minPnl) || minPnl < 0)
-        errs.push(['fMinPnl', 'Min PnL wajib diisi (angka ≥ 0)']);
+    // Min PnL — opsional (kosong = pakai setting global), jika diisi harus angka ≥ 0
+    if (minPnlRaw !== '' && (isNaN(minPnl) || minPnl < 0))
+        errs.push(['fMinPnl', 'Min PnL harus angka ≥ 0, atau kosongkan untuk pakai setting global']);
 
     if (errs.length) {
         errs.forEach(([id]) => $('#' + id).addClass('input-error'));
@@ -607,6 +607,7 @@ $('#btnSheetSave').on('click', () => {
 
     const tokens = getTokens();
     const id = $('#editId').val() || genId();
+    const idx = tokens.findIndex(x => x.id === id);
     const tok = {
         id, ticker, cex, symbolToken, scToken, decToken,
         tickerPair, symbolPair, scPair, decPair,
@@ -614,11 +615,14 @@ $('#btnSheetSave').on('click', () => {
         minPnl: isFinite(minPnl) ? minPnl : null,   // null = use global setting
         favorite: (idx >= 0 && tokens[idx].favorite) ? true : false, // preserve favorite
     };
-    const idx = tokens.findIndex(x => x.id === id);
     if (idx >= 0) tokens[idx] = tok; else tokens.push(tok);
     saveTokens(tokens);
     renderTokenList();
-    showToast(idx >= 0 ? '✅ Koin berhasil diperbarui' : '✅ Koin berhasil ditambahkan');
+    if (scanning) {
+        showToast((idx >= 0 ? '✅ Koin diperbarui' : '✅ Koin ditambahkan') + ' — berlaku pada putaran berikutnya');
+    } else {
+        showToast(idx >= 0 ? '✅ Koin berhasil diperbarui' : '✅ Koin berhasil ditambahkan');
+    }
     closeSheet();
 });
 
@@ -681,7 +685,7 @@ function renderTokenList() {
       <div style="display:flex;align-items:center;gap:6px">
         <div class="token-list-actions">
           <button class="btn-icon" onclick="openSheet('${t.id}')">✏️</button>
-          <button class="btn-icon danger" onclick="deleteToken('${t.id}')">❌</button>
+          <button class="btn-icon danger" onclick="deleteToken('${t.id}')">🗑️</button>
         </div>
       </div>
     </div>`;
@@ -711,7 +715,7 @@ function deleteToken(id) {
                 // Force update count on stop button during scanning
                 const remaining = getFilteredTokens().length;
                 $('#btnScanCount').text('[' + remaining + ' KOIN ]');
-                showToast(`❌ ${name} dihapus`);
+                showToast(`🗑️ ${name} dihapus — berlaku pada putaran berikutnya`);
             } else {
                 renderTokenList();
             }
@@ -1088,8 +1092,8 @@ async function scanToken(tok) {
             const pnlEl = card.querySelector(`[data-ctd-pnl="${i}"]`);
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
-            const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MX</span>' : '<span class="src-tag jx">JX</span>';
-            if (hdrEl) { hdrEl.innerHTML = r.name + ' ' + srcTag; hdrEl.className = 'mon-dex-hdr'; }
+            const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : '<span class="src-tag jx">JM</span>';
+            if (hdrEl) { hdrEl.innerHTML = srcTag + ' ' + r.name; hdrEl.className = 'mon-dex-hdr'; }
             if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(obToken.askPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
             if (feeEl) { feeEl.textContent = `-${r.cexFee1.toFixed(2)}|${r.cexFee2.toFixed(2)}`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
@@ -1244,7 +1248,7 @@ function buildMonitorRows(tokenList) {
     <span class="mon-card-actions">
       <button class="btn-icon mon-act mon-fav ${t.favorite ? 'fav-active' : ''}" onclick="toggleFavorite('${t.id}')" title="Favorit">⭐</button>
       <button class="btn-icon mon-act" onclick="openSheet('${t.id}')" title="Edit Koin">✏️</button>
-      <button class="btn-icon danger mon-act" onclick="deleteToken('${t.id}')" title="Hapus Koin">❌</button>
+      <button class="btn-icon danger mon-act" onclick="deleteToken('${t.id}')" title="Hapus Koin">🗑️</button>
     </span>
   </div>
   <div class="mon-tables-wrap">
@@ -1540,12 +1544,29 @@ function showObTooltip(el, event) {
     const tooltip = document.getElementById('obTooltip');
     if (!tooltip) return;
 
+    // Build token/pair/CEX/DEX info header
+    const tok = getTokens().find(t => t.id === tokId);
+    const cexLabel = tok ? (CONFIG_CEX[tok.cex]?.label || tok.cex).toUpperCase() : '?';
+    const chainLabel = tok ? (CONFIG_CHAINS[tok.chain]?.label || tok.chain).toUpperCase() : '?';
+    const tokenSym = tok ? tok.ticker : '?';
+    const pairSym = tok ? (tok.tickerPair || tok.ticker) : '?';
+    const dexName = el.textContent.trim() || '?';
+    const infoHeader = `<div class="ob-tip-info">
+      <span class="ob-tip-lbl">Token</span> <b>${tokenSym}↔${pairSym}</b>
+      &nbsp;·&nbsp; <span class="ob-tip-lbl">CEX</span> <b>${cexLabel}</b>
+      &nbsp;·&nbsp; <span class="ob-tip-lbl">DEX</span> <b>${dexName}</b>
+      &nbsp;·&nbsp; <span class="ob-tip-lbl">Chain</span> <b>${chainLabel}</b>
+    </div>`;
+
     if (!ob || (!ob.asks.length && !ob.bids.length)) {
-        tooltip.innerHTML = '<div class="ob-tip-empty">Data orderbook belum tersedia.<br>Tunggu hasil scanning.</div>';
+        tooltip.innerHTML = infoHeader + '<div class="ob-tip-empty">Data orderbook belum tersedia.<br>Tunggu hasil scanning.</div>';
     } else {
         const buyPrice = ob.askPrice || 0;
         const sellPrice = ob.bidPrice || 0;
-        const fmtIDR = (v) => Math.round(v * usdtRate);
+        const fmtIDR = (v) => {
+            const idr = v * usdtRate;
+            return idr > 0 && idr < 1 ? idr.toFixed(2) : Math.round(idr).toLocaleString('id-ID');
+        };
         const fmtPr = (p) => `${fmtCompact(p)}$ [Rp.${fmtIDR(p)}]`;
 
         const priceHeader = `
@@ -1576,6 +1597,7 @@ function showObTooltip(el, event) {
         }).join('');
 
         tooltip.innerHTML = `
+          ${infoHeader}
           ${priceHeader}
           <div class="ob-tip-ob-section">
             <div class="ob-tip-title ${titleCls}">ORDERBOOK CEX — ${dirLabel}</div>
@@ -1664,7 +1686,9 @@ function _fmtIdr(idr) {
     if (idr >= 1e9) return 'Rp ' + (idr / 1e9).toFixed(2) + ' M';
     if (idr >= 1e6) return 'Rp ' + (idr / 1e6).toFixed(2) + ' jt';
     if (idr >= 1e3) return 'Rp ' + Math.round(idr / 1e3) + 'K';
-    return 'Rp ' + Math.round(idr).toLocaleString('id-ID');
+    if (idr >= 1)   return 'Rp ' + Math.round(idr).toLocaleString('id-ID');
+    if (idr > 0)    return 'Rp ' + idr.toFixed(2);
+    return 'Rp 0';
 }
 
 function _renderCalcRows() {
@@ -1776,8 +1800,11 @@ $('#btnBulkApply').on('click', function () {
     const ctd = parseFloat($('#bulkCtD').val());
     const dtc = parseFloat($('#bulkDtC').val());
     const pnl = parseFloat($('#bulkPnl').val());
-    if (isNaN(ctd) && isNaN(dtc) && isNaN(pnl)) {
-        showAlert('Isi Modal CEX→DEX,Moda DEX→CEX & Min PNL).', 'Bulk Modal', 'warn');
+    const ctdValid = !isNaN(ctd) && ctd > 0;
+    const dtcValid = !isNaN(dtc) && dtc > 0;
+    const pnlValid = !isNaN(pnl) && pnl >= 0;
+    if (!ctdValid && !dtcValid && !pnlValid) {
+        showAlert('Isi minimal salah satu: Modal CEX→DEX, Modal DEX→CEX, atau Min PNL (nilai harus > 0).', 'Bulk Modal', 'warn');
         return;
     }
     // Filter tokens same as renderTokenList (respect settings)
@@ -1792,9 +1819,9 @@ $('#btnBulkApply').on('click', function () {
         return;
     }
     const parts = [];
-    if (!isNaN(ctd) && ctd > 0) parts.push(`CEX→DEX: $${ctd}`);
-    if (!isNaN(dtc) && dtc > 0) parts.push(`DEX→CEX: $${dtc}`);
-    if (!isNaN(pnl) && pnl >= 0) parts.push(`Min PNL: $${pnl}`);
+    if (ctdValid) parts.push(`CEX→DEX: $${ctd}`);
+    if (dtcValid) parts.push(`DEX→CEX: $${dtc}`);
+    if (pnlValid) parts.push(`Min PNL: $${pnl}`);
     showConfirm(
         `Update ${filtered.length} koin dengan:\n${parts.join(', ')}?`,
         'Bulk Modal',
@@ -1803,9 +1830,9 @@ $('#btnBulkApply').on('click', function () {
             const ids = new Set(filtered.map(t => t.id));
             allTokens.forEach(t => {
                 if (!ids.has(t.id)) return;
-                if (!isNaN(ctd) && ctd > 0) t.modalCtD = ctd;
-                if (!isNaN(dtc) && dtc > 0) t.modalDtC = dtc;
-                if (!isNaN(pnl) && pnl >= 0) t.minPnl = pnl;
+                if (ctdValid) t.modalCtD = ctd;
+                if (dtcValid) t.modalDtC = dtc;
+                if (pnlValid) t.minPnl = pnl;
             });
             saveTokens(allTokens);
             renderTokenList();
@@ -1831,7 +1858,10 @@ function onCalcField(source) {
 
     // Fill all fields from USDT value
     if (source !== 'usdt') $('#cfUsdt').val(usdtVal ? usdtVal.toFixed(usdtVal < 1 ? 6 : 2) : '');
-    if (source !== 'idr') $('#cfIdr').val(usdtVal && usdtRate ? Math.round(usdtVal * usdtRate) : '');
+    if (source !== 'idr') {
+        const idrVal = usdtVal && usdtRate ? usdtVal * usdtRate : 0;
+        $('#cfIdr').val(idrVal ? (idrVal < 1 ? idrVal.toFixed(4) : Math.round(idrVal)) : '');
+    }
     if (source !== 'custom' && customPrice > 0) {
         $('#cfCustomAmt').val(usdtVal ? (usdtVal / customPrice).toFixed(6) : '');
     }
@@ -1846,7 +1876,7 @@ async function calcUpdatePrice() {
         const active = ['usdt', 'idr'].find(f => parseFloat($('#cf' + f.charAt(0).toUpperCase() + f.slice(1)).val()) > 0);
         if (active) onCalcField(active);
     } catch (e) {
-        showToast('❌ Gagal mengambil rate: ' + e.message);
+        showToast('🗑️ Gagal mengambil rate: ' + e.message);
     }
 }
 
@@ -1876,10 +1906,10 @@ async function calcCekToken() {
             showToast(`✅ ${sym.toUpperCase()} = $${price}`);
             onCalcField('custom');
         } else {
-            showToast('❌ Token tidak ditemukan');
+            showToast('🗑️ Token tidak ditemukan');
         }
     } catch (e) {
-        showToast('❌ Error: ' + e.message);
+        showToast('🗑️ Error: ' + e.message);
     }
 }
 
