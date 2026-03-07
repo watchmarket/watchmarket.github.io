@@ -66,6 +66,7 @@ function isJumpxEnabled() { return APP_DEV_CONFIG.defaultQuoteCountJumpx > 0; }
 // Kembalikan token yang lolos filter CEX+chain, diurutkan sesuai monitorSort
 let monitorSort = 'az'; // 'az' | 'za' | 'rand'
 let _shuffledTokens = null; // cache untuk random sort
+let showFavOnly = false; // filter tampilkan favorit saja
 
 function shuffleArray(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -80,16 +81,42 @@ function getFilteredTokens() {
         .filter(t => {
             const cexOk = CFG.activeCex.length === 0 || CFG.activeCex.includes(t.cex);
             const chainOk = CFG.activeChains.length === 0 || CFG.activeChains.includes(t.chain);
-            return cexOk && chainOk;
+            const favOk = !showFavOnly || t.favorite;
+            return cexOk && chainOk && favOk;
         });
-    if (monitorSort === 'za') return filtered.sort((a, b) => (b.ticker || '').localeCompare(a.ticker || ''));
-    if (monitorSort === 'rand') {
+    let sorted;
+    if (monitorSort === 'za') sorted = filtered.sort((a, b) => (b.ticker || '').localeCompare(a.ticker || ''));
+    else if (monitorSort === 'rand') {
         if (!_shuffledTokens) _shuffledTokens = shuffleArray([...filtered]);
-        // Filter cached list to only include tokens that still exist
         const ids = new Set(filtered.map(t => t.id));
-        return _shuffledTokens.filter(t => ids.has(t.id));
+        sorted = _shuffledTokens.filter(t => ids.has(t.id));
+    } else {
+        sorted = filtered.sort((a, b) => (a.ticker || '').localeCompare(b.ticker || ''));
     }
-    return filtered.sort((a, b) => (a.ticker || '').localeCompare(b.ticker || ''));
+    // Favorites always appear first (when not in fav-only mode)
+    if (!showFavOnly) return [...sorted.filter(t => t.favorite), ...sorted.filter(t => !t.favorite)];
+    return sorted;
+}
+
+// ─── Favorites ────────────────────────────────
+function toggleFavorite(id) {
+    const tokens = getTokens();
+    const tok = tokens.find(t => t.id === id);
+    if (!tok) return;
+    tok.favorite = !tok.favorite;
+    saveTokens(tokens);
+    const btn = document.querySelector(`#card-${id} .fav-star`);
+    if (btn) btn.classList.toggle('fav-on', tok.favorite);
+    updateScanCount();
+}
+
+function toggleFavFilter() {
+    showFavOnly = !showFavOnly;
+    $('#btnFavFilter, #btnFavFilterT').toggleClass('fav-filter-on', showFavOnly);
+    _shuffledTokens = null;
+    if (!scanning) buildMonitorRows();
+    updateScanCount();
+    showToast(showFavOnly ? '★ Menampilkan Favorit saja' : '★ Semua koin ditampilkan');
 }
 
 // ─── Signal Sound ─────────────────────────────
@@ -118,6 +145,7 @@ let scanAbort = false;
 let signalCache = [];
 const tgCooldown = new Map(); // tokenId → timestamp
 const wmCache = {};           // chain → data array
+const _obCache = {};          // tokenId → { bids, asks, bidPrice, askPrice }
 
 // ─── Utility ─────────────────────────────────
 const getTokens = () => { try { return JSON.parse(localStorage.getItem(LS_TOKENS)) || []; } catch { return []; } };
@@ -160,7 +188,10 @@ function updateScanCount() {
     const n = getFilteredTokens().length;
     const total = getTokens().length;
     $('#filterCoinCount').text(n);
-    if (!scanning) $('#btnScanCount').text('[' + n + ' KOIN ]');
+    if (!scanning) {
+        $('#btnScanCount').text('[' + n + ' KOIN ]');
+        $('#btnScanCountT').text('[' + n + ']');
+    }
     $('#tokenCount').text('TOTAL ' + total + ' KOIN');
 }
 
@@ -307,34 +338,49 @@ $('#btnOnboard').on('click', () => {
     $('#onboardOverlay').removeClass('open');
 });
 
+// ─── Contextual Nav ───────────────────────────
+const _ctxNavMap = { main: 'bnavMain', scanner: 'bnavScanner', token: 'bnavToken', setting: 'bnavSetting' };
+const _ctxTabMap = { main: 'ttabMain', scanner: 'ttabScanner', token: 'ttabToken', setting: 'ttabSetting' };
+function showNavCtx(ctx) {
+    $('.bnav-pane').css('display', 'none');
+    $('#' + (_ctxNavMap[ctx] || 'bnavMain')).css('display', 'flex');
+}
+function showTopTabCtx(ctx) {
+    $('.ttab-pane').css('display', 'none');
+    $('#' + (_ctxTabMap[ctx] || 'ttabMain')).css('display', 'flex');
+}
+
 // ─── Tab Lock / Unlock ────────────────────────
 function lockTabs() {
     $('#navToken, #navSettings').addClass('disabled');
-    $('.top-tab-btn[data-tab="tabToken"], .top-tab-btn[data-tab="tabSettings"]').addClass('disabled');
-    $('#monSortBar .sort-btn').addClass('disabled').prop('disabled', true);
+    $('#ttabMain .top-tab-btn[data-tab="tabToken"], #ttabMain .top-tab-btn[data-tab="tabSettings"]').addClass('disabled');
+    $('#monSortBar .sort-btn, #monSortBarT .sort-btn').addClass('disabled').prop('disabled', true);
+    $('.bnav-back, .ttab-back').addClass('disabled').prop('disabled', true);
 }
 function unlockTabs() {
     $('#navToken, #navSettings').removeClass('disabled');
-    $('.top-tab-btn[data-tab="tabToken"], .top-tab-btn[data-tab="tabSettings"]').removeClass('disabled');
-    $('#monSortBar .sort-btn').removeClass('disabled').prop('disabled', false);
+    $('#ttabMain .top-tab-btn[data-tab="tabToken"], #ttabMain .top-tab-btn[data-tab="tabSettings"]').removeClass('disabled');
+    $('#monSortBar .sort-btn, #monSortBarT .sort-btn').removeClass('disabled').prop('disabled', false);
+    $('.bnav-back, .ttab-back').removeClass('disabled').prop('disabled', false);
 }
-
 // ─── Bottom Navigation ───────────────────────
+const _tabCtxMap = { tabMonitor: 'scanner', tabToken: 'token', tabSettings: 'setting' };
 function switchTab(tabId) {
     if (!tabId) return;
     if (scanning && tabId !== 'tabMonitor') return; // locked during scan
+    const ctx = _tabCtxMap[tabId] || 'main';
     $('.nav-item').removeClass('active');
     $(`.nav-item[data-tab="${tabId}"]`).addClass('active');
-    $('.top-tab-btn').removeClass('active');
-    $(`.top-tab-btn[data-tab="${tabId}"]`).addClass('active');
-    // Show scan footer (sort + start) only on monitor tab
-    $('#scanFooter').css('display', tabId === 'tabMonitor' ? 'flex' : 'none');
+    $('#ttabMain .top-tab-btn').removeClass('active');
+    $(`#ttabMain .top-tab-btn[data-tab="${tabId}"]`).addClass('active');
+    showNavCtx(ctx);
+    showTopTabCtx(ctx);
     $('.tab-pane').removeClass('active');
     $('#' + tabId).addClass('active');
     if (tabId === 'tabToken') renderTokenList();
 }
-$('.nav-item[data-tab]').on('click', function () { switchTab($(this).data('tab')); });
-$('.top-tab-btn[data-tab]').on('click', function () { switchTab($(this).data('tab')); });
+$('.bnav-pane .nav-item[data-tab]').on('click', function () { switchTab($(this).data('tab')); });
+$('.ttab-pane .top-tab-btn[data-tab]').on('click', function () { switchTab($(this).data('tab')); });
 
 
 // ─── Bottom Sheet ────────────────────────────
@@ -701,7 +747,7 @@ function deleteToken(id) {
                 updateScanCount();
                 // Force update count on stop button during scanning
                 const remaining = getFilteredTokens().length;
-                $('#btnScanCount').text('[' + remaining + ' KOIN ]');
+                $('#btnScanCount').text('[' + remaining + ' KOIN ]'); $('#btnScanCountT').text('[' + remaining + ']');
                 showToast(`🗑️ ${name} dihapus`);
             } else {
                 renderTokenList();
@@ -1006,6 +1052,8 @@ async function scanToken(tok) {
         obToken = await fetchOrderbook(tok.cex, tok.symbolToken);
         if (!obToken || obToken.error) { setCardStatus(card, 'ERROR: KONEKSI EXCHANGER'); return; }
     }
+    // Cache orderbook for tooltip
+    _obCache[tok.id] = { bids: obToken.bids || [], asks: obToken.asks || [], bidPrice: obToken.bidPrice, askPrice: obToken.askPrice };
 
     // 2. Fetch CEX orderbook for PAIR (if triangular)
     let bidPair = 1, askPair = 1;
@@ -1188,8 +1236,11 @@ function buildMonitorRows(tokenList) {
         return;
     }
     const n = totalQuoteCount();
-    const dexHdr = (pfx, color) => Array.from({ length: n }, (_, i) =>
-        `<td class="mon-dex-hdr" data-${pfx}-hdr="${i}" style="background:${color}">-</td>`
+    const dexHdr = (pfx, color, tokId) => Array.from({ length: n }, (_, i) =>
+        `<td class="mon-dex-hdr" data-${pfx}-hdr="${i}" data-tok="${tokId}" data-dir="${pfx}"
+          onmouseenter="showObTooltip(this,event)" onmouseleave="hideObTooltip()"
+          ontouchstart="showObTooltip(this,event);event.stopPropagation()"
+          style="background:${color};cursor:pointer">-</td>`
     ).join('');
     const dexRow = (pfx, attr) => Array.from({ length: n }, (_, i) =>
         `<td class="mon-dex-cell" data-${pfx}-${attr}="${i}">-</td>`
@@ -1213,6 +1264,7 @@ function buildMonitorRows(tokenList) {
     <span class="mon-sym"><span class="mon-num">[${idx + 1}]</span> ${sym}</span>
     
     <span class="mon-card-actions">
+      <button class="btn-icon fav-star${t.favorite ? ' fav-on' : ''}" onclick="toggleFavorite('${t.id}')" title="${t.favorite ? 'Hapus Favorit' : 'Tambah Favorit'}">★</button>
       <button class="btn-icon mon-act" onclick="openSheet('${t.id}')" title="Edit Koin">✏️</button>
       <button class="btn-icon danger mon-act" onclick="deleteToken('${t.id}')" title="Hapus Koin">🗑️</button>
     </span>
@@ -1222,7 +1274,7 @@ function buildMonitorRows(tokenList) {
   <table class="mon-sub-table ctd-table">
     <thead><tr class="mon-sub-hdr">
       <td class="mon-lbl-hdr" style="background:${MON_CTD_COLOR}">$${t.modalCtD}<span class="tbl-status"></span></td>
-      ${dexHdr('ctd', MON_CTD_COLOR)}
+      ${dexHdr('ctd', MON_CTD_COLOR, t.id)}
     </tr></thead>
     <tbody>
       <tr class="mon-row-cex"><td class="mon-lbl-side"><span style='color:green;'>BELI CEX ↑</span></td>${dexRow('ctd', 'cex')}</tr>
@@ -1236,7 +1288,7 @@ function buildMonitorRows(tokenList) {
   <table class="mon-sub-table dtc-table">
     <thead><tr class="mon-sub-hdr">
       <td class="mon-lbl-hdr" style="background:${MON_DTC_COLOR}">$${t.modalDtC}<span class="tbl-status"></span></td>
-      ${dexHdr('dtc', MON_DTC_COLOR)}
+      ${dexHdr('dtc', MON_DTC_COLOR, t.id)}
     </tr></thead>
     <tbody>
       <tr class="mon-row-cex"><td class="mon-lbl-side">${pairTk}→${t.ticker}</td>${dexRow('dtc', 'cex')}</tr>
@@ -1395,8 +1447,10 @@ let _scanRound = 0;
 async function runScan() {
     if (scanning) return;
     scanning = true; scanAbort = false;
-    $('#btnScanIcon').text('■'); $('#btnScanLbl').text('STOP'); $('#btnScan').addClass('stop');
-    $('#btnScanCount').text('');
+    $('#btnScanIcon, #btnScanIconT').text('■');
+    $('#btnScanLbl, #btnScanLblT').text('STOP');
+    $('#btnScan, #btnScanT').addClass('stop');
+    $('#btnScanCount, #btnScanCountT').text('');
     $('#scanBadge').addClass('active');
     // Clear previous signal chips and reset table
     document.querySelectorAll('.signal-chip').forEach(c => c.remove());
@@ -1421,7 +1475,8 @@ async function runScan() {
             const batch = tokens.slice(i, Math.min(i + BATCH_SIZE, tokens.length));
             const pct = Math.round(Math.min(i + BATCH_SIZE, tokens.length) / tokens.length * 100);
             $('#scanBar').css('width', pct + '%');
-            $('#btnScanCount').text(`[ ${Math.min(i + BATCH_SIZE, tokens.length)}/${tokens.length}] KOIN`);
+            const _scProg = `[ ${Math.min(i + BATCH_SIZE, tokens.length)}/${tokens.length}]`;
+            $('#btnScanCount').text(_scProg + ' KOIN'); $('#btnScanCountT').text(_scProg);
             await fetchUsdtRate();
             await Promise.all(batch.map(tok => scanToken(tok)));
             if (!scanAbort) await new Promise(r => setTimeout(r, CFG.interval));
@@ -1444,7 +1499,9 @@ async function runScan() {
 }
 function stopScan() {
     scanning = false; scanAbort = true;  // keep true so orphaned loop exits
-    $('#btnScanIcon').text('▶'); $('#btnScanLbl').text('START'); $('#btnScan').removeClass('stop');
+    $('#btnScanIcon, #btnScanIconT').text('▶');
+    $('#btnScanLbl, #btnScanLblT').text('START');
+    $('#btnScan, #btnScanT').removeClass('stop');
     updateScanCount();
     updateNoSignalNotice();
     $('#scanBadge').removeClass('active');
@@ -1458,9 +1515,15 @@ $('#btnScan').on('click', () => {
     if (scanning) { scanAbort = true; stopScan(); }
     else { runScan(); }
 });
+$(document).on('click', '#btnScanT', () => {
+    if (scanning) { scanAbort = true; stopScan(); }
+    else { runScan(); }
+});
 
 // ─── Settings Binding ─────────────────────────
-$('#btnSaveSettings').on('click', saveSettings);
+$('#btnSaveSettings, #btnSaveSettingsT').on('click', saveSettings);
+
+
 
 // ─── Reload with Toast ───────────────────────
 function reloadWithToast() {
@@ -1469,28 +1532,195 @@ function reloadWithToast() {
 }
 
 // ─── Sort & Search Handlers ──────────────────
-// Scanner sort
-$('#monSortBar').on('click', '.sort-btn', function () {
-    monitorSort = $(this).data('sort');
-    _shuffledTokens = null; // clear cache agar random mengacak ulang
-    $('#monSortBar .sort-btn').removeClass('active');
-    $(this).addClass('active');
+// Scanner sort (sync both portrait and landscape bars)
+function _applyScanSort(sortVal) {
+    monitorSort = sortVal;
+    _shuffledTokens = null;
+    $('#monSortBar .sort-btn, #monSortBarT .sort-btn').removeClass('active');
+    $(`#monSortBar .sort-btn[data-sort="${sortVal}"], #monSortBarT .sort-btn[data-sort="${sortVal}"]`).addClass('active');
     if (!scanning) buildMonitorRows();
-});
+}
+$('#monSortBar').on('click', '.sort-btn', function () { _applyScanSort($(this).data('sort')); });
+$(document).on('click', '#monSortBarT .sort-btn', function () { _applyScanSort($(this).data('sort')); });
 
-// Koin sort
-$('#tokSortAZ, #tokSortZA').on('click', function () {
+// Koin sort (sync portrait + landscape)
+$(document).on('click', '#tokSortAZ, #tokSortZA, #tokSortAZT, #tokSortZAT', function () {
     tokenSort = $(this).data('sort');
-    $('#tokSortAZ, #tokSortZA').removeClass('active');
-    $(this).addClass('active');
+    $('#tokSortAZ, #tokSortZA, #tokSortAZT, #tokSortZAT').removeClass('active');
+    $(`#tokSortAZ[data-sort="${tokenSort}"], #tokSortZA[data-sort="${tokenSort}"], #tokSortAZT[data-sort="${tokenSort}"], #tokSortZAT[data-sort="${tokenSort}"]`).addClass('active');
     renderTokenList();
 });
 
-// Koin search
-$('#tokenSearch').on('input', function () {
+// Koin search (sync portrait + landscape)
+$(document).on('input', '#tokenSearch', function () {
     tokenSearchQuery = $(this).val().trim();
+    $('#tokenSearchT').val(tokenSearchQuery);
     renderTokenList();
 });
+$(document).on('input', '#tokenSearchT', function () {
+    tokenSearchQuery = $(this).val().trim();
+    $('#tokenSearch').val(tokenSearchQuery);
+    renderTokenList();
+});
+
+// ─── Orderbook Tooltip ────────────────────────
+let _tooltipHideTimer = null;
+function showObTooltip(el, event) {
+    clearTimeout(_tooltipHideTimer);
+    const tokId = el.dataset.tok;
+    const dir = el.dataset.dir; // 'ctd' or 'dtc'
+    const ob = _obCache[tokId];
+    const tooltip = document.getElementById('obTooltip');
+    if (!tooltip) return;
+
+    const _fmtIdrTip = (v) => {
+        if (v >= 1_000_000) return 'Rp.' + Math.round(v / 1000) * 1000;
+        if (v >= 1_000) return 'Rp.' + Math.round(v / 100) * 100;
+        return 'Rp.' + Math.round(v);
+    };
+    const _fmtPriceTip = (p) => p < 0.001 ? p.toExponential(3) : p < 1 ? p.toPrecision(4) : p.toFixed(2);
+    const _buildRows = (entries) => entries.slice(0, 5).map(([price, vol]) => {
+        const volUsdt = price * vol;
+        return `<div class="ob-tip-row">${_fmtPriceTip(price)}$ [${_fmtIdrTip(price * usdtRate)}] : ${volUsdt.toFixed(2)}$ [${_fmtIdrTip(volUsdt * usdtRate)}]</div>`;
+    }).join('');
+
+    if (!ob || (!ob.asks.length && !ob.bids.length)) {
+        tooltip.innerHTML = '<div class="ob-tip-empty">Data orderbook belum tersedia.<br>Tunggu hasil scanning.</div>';
+    } else if (dir === 'ctd') {
+        const rows = _buildRows(ob.asks || []);
+        tooltip.innerHTML = `<div class="ob-tip-title ob-tip-buy">📗 CEX→DEX</div>${rows || '<div class="ob-tip-empty">Tidak ada data</div>'}`;
+    } else {
+        const rows = _buildRows(ob.bids || []);
+        tooltip.innerHTML = `<div class="ob-tip-title ob-tip-sell">📕 DEX→CEX</div>${rows || '<div class="ob-tip-empty">Tidak ada data</div>'}`;
+    }
+
+    // Position tooltip
+    const rect = el.getBoundingClientRect();
+    const tipW = 280;
+    let left = rect.left + window.scrollX;
+    if (left + tipW > window.innerWidth - 8) left = window.innerWidth - tipW - 8;
+    if (left < 4) left = 4;
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+    tooltip.style.display = 'block';
+}
+function hideObTooltip() {
+    _tooltipHideTimer = setTimeout(() => {
+        const tooltip = document.getElementById('obTooltip');
+        if (tooltip) tooltip.style.display = 'none';
+    }, 200);
+}
+// Close tooltip when tapping elsewhere
+document.addEventListener('touchstart', function (e) {
+    if (!e.target.closest('[data-dir]') && !e.target.closest('#obTooltip')) {
+        const tooltip = document.getElementById('obTooltip');
+        if (tooltip) tooltip.style.display = 'none';
+    }
+}, { passive: true });
+
+// ─── Kalkulator Crypto ────────────────────────
+const _calcPrices = { btc: 0, eth: 0, bnb: 0, custom: 0 };
+
+function openCalcModal() {
+    _updateCalcRateDisplay();
+    if (!_calcPrices.btc) calcUpdatePrice();
+    document.getElementById('calcOverlay').classList.add('open');
+}
+function closeCalcModal() {
+    document.getElementById('calcOverlay').classList.remove('open');
+}
+function _updateCalcRateDisplay() {
+    const el = document.getElementById('calcRateVal');
+    if (el) el.textContent = 'Rp ' + usdtRate.toLocaleString('id-ID');
+}
+
+async function calcUpdatePrice() {
+    try {
+        const pairs = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT'];
+        const res = await fetch('https://data-api.binance.vision/api/v3/ticker/price?symbols=' + encodeURIComponent(JSON.stringify(pairs)));
+        const data = await res.json();
+        data.forEach(item => {
+            const p = parseFloat(item.price);
+            if (item.symbol === 'BTCUSDT') { _calcPrices.btc = p; _setCalcPriceBadge('cpBtc', p); }
+            if (item.symbol === 'ETHUSDT') { _calcPrices.eth = p; _setCalcPriceBadge('cpEth', p); }
+            if (item.symbol === 'BNBUSDT') { _calcPrices.bnb = p; _setCalcPriceBadge('cpBnb', p); }
+        });
+        await fetchUsdtRate();
+        _updateCalcRateDisplay();
+        // recalc from current USDT value if any
+        const usdt = parseFloat(document.getElementById('cfUsdt')?.value) || 0;
+        if (usdt) _fillFromUsdt(usdt);
+        showToast('✓ Harga diperbarui');
+    } catch { showToast('⚠ Gagal ambil harga'); }
+}
+
+async function calcCekToken() {
+    const sym = (document.getElementById('cfCustomSym')?.value || '').trim().toUpperCase();
+    if (!sym) { showToast('Masukkan symbol token dahulu'); return; }
+    try {
+        const res = await fetch(`https://data-api.binance.vision/api/v3/ticker/price?symbol=${sym}USDT`);
+        const data = await res.json();
+        if (data.price) {
+            _calcPrices.custom = parseFloat(data.price);
+            const priceEl = document.getElementById('cfCustomPrice');
+            if (priceEl) priceEl.value = _calcPrices.custom;
+            const lblEl = document.getElementById('cfCustomLbl');
+            if (lblEl) lblEl.textContent = sym;
+            showToast(`✓ ${sym}: $${_calcPrices.custom}`);
+            // recalc
+            const usdt = parseFloat(document.getElementById('cfUsdt')?.value) || 0;
+            if (usdt) _fillFromUsdt(usdt);
+        } else {
+            showToast(`⚠ ${sym}USDT tidak ditemukan di Binance`);
+        }
+    } catch { showToast('⚠ Gagal ambil harga token'); }
+}
+
+function _setCalcPriceBadge(id, price) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = price >= 1000
+        ? '$' + price.toLocaleString('en-US', { maximumFractionDigits: 0 })
+        : '$' + price.toFixed(price < 0.01 ? 6 : 2);
+}
+
+function _fmtCalcVal(v) {
+    if (!v || !isFinite(v)) return '';
+    if (v >= 1e6) return v.toFixed(2);
+    if (v >= 100) return v.toFixed(2);
+    if (v >= 1) return v.toFixed(4);
+    return v.toFixed(8).replace(/\.?0+$/, '');
+}
+
+function _fillFromUsdt(usdt) {
+    const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && document.activeElement !== el) el.value = (val && isFinite(val)) ? _fmtCalcVal(val) : '';
+    };
+    set('cfUsdt', usdt);
+    set('cfIdr', usdt * usdtRate);
+    set('cfBtc', _calcPrices.btc > 0 ? usdt / _calcPrices.btc : null);
+    set('cfEth', _calcPrices.eth > 0 ? usdt / _calcPrices.eth : null);
+    set('cfBnb', _calcPrices.bnb > 0 ? usdt / _calcPrices.bnb : null);
+    const custP = parseFloat(document.getElementById('cfCustomPrice')?.value) || _calcPrices.custom;
+    set('cfCustomAmt', custP > 0 ? usdt / custP : null);
+}
+
+function onCalcField(field) {
+    const v = (id) => parseFloat(document.getElementById(id)?.value) || 0;
+    let usdt = 0;
+    if (field === 'usdt')   usdt = v('cfUsdt');
+    else if (field === 'idr')    usdt = usdtRate > 0 ? v('cfIdr') / usdtRate : 0;
+    else if (field === 'btc')    usdt = v('cfBtc') * _calcPrices.btc;
+    else if (field === 'eth')    usdt = v('cfEth') * _calcPrices.eth;
+    else if (field === 'bnb')    usdt = v('cfBnb') * _calcPrices.bnb;
+    else if (field === 'custom') {
+        const custP = parseFloat(document.getElementById('cfCustomPrice')?.value) || _calcPrices.custom;
+        usdt = v('cfCustomAmt') * custP;
+        _calcPrices.custom = custP || _calcPrices.custom;
+    }
+    _fillFromUsdt(usdt);
+}
 
 // ─── Init ────────────────────────────────────
 $(function () {
@@ -1499,6 +1729,11 @@ $(function () {
     renderChainChips('bsc');
     renderTokenList();   // also builds monitor skeleton via buildMonitorRows()
     checkOnboarding();
+    // Init USDT rate
+    fetchUsdtRate().then(() => _updateCalcRateDisplay());
+    // Show scanner context on startup (tabMonitor is default active tab)
+    showNavCtx('scanner');
+    showTopTabCtx('scanner');
     // Toast after reload
     if (sessionStorage.getItem('justReloaded')) {
         sessionStorage.removeItem('justReloaded');
