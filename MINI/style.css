@@ -883,6 +883,30 @@ body {
   box-shadow: 0 4px 20px rgba(230, 57, 80, 0.40), var(--shadow);
 }
 
+/* Auto-reload toggle button */
+.btn-autoreload {
+  height: 30px;
+  width: 34px;
+  border-radius: 14px;
+  background: #d6d9f7;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: opacity .2s, background .2s, border-color .2s;
+  flex-shrink: 0;
+}
+.btn-autoreload.active {
+  opacity: 1;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.btn-autoreload:active {
+  transform: scale(.9);
+}
+
 /* ══════════════════════════════════════════
    BOTTOM NAV
 ══════════════════════════════════════════ */

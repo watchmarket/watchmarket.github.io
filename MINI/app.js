@@ -117,6 +117,7 @@ function playCompleteSound() {
 }
 let scanning = false;
 let scanAbort = false;
+let autoReload = false; // default: sekali scan
 let signalCache = [];
 const tgCooldown = new Map(); // tokenId → timestamp
 const wmCache = {};           // chain → data array
@@ -1461,12 +1462,17 @@ async function runScan() {
             if (!scanAbort) await new Promise(r => setTimeout(r, CFG.interval));
         }
         if (!scanAbort) {
-            // Jeda 10 detik dulu — tabel & sinyal masih tampil agar bisa dilihat
             $('#scanBar').css('width', '0%');
+            if (!autoReload) {
+                // Sekali scan: selesai langsung stop, hasil tetap tampil
+                showToast(`✅ Scan selesai!`);
+                playCompleteSound();
+                break;
+            }
+            // Auto-reload: jeda 10 detik lalu mulai ronde berikutnya
             showToast(`✅ Ronde ${_scanRound} selesai — jeda 10 detik...`, 9500);
             playCompleteSound();
             await new Promise(r => setTimeout(r, 10000));
-            // Baru kosongkan tabel & notif sinyal, lalu mulai ronde berikutnya
             if (!scanAbort) {
                 resetMonitorCells();
                 document.querySelectorAll('.signal-chip').forEach(c => c.remove());
@@ -1493,6 +1499,26 @@ $('#btnScan').on('click', () => {
     else { runScan(); }
 });
 
+// ─── Auto-Reload Toggle ───────────────────────
+function _applyAutoReload() {
+    const btn = document.getElementById('btnAutoReload');
+    if (!btn) return;
+    if (autoReload) {
+        btn.classList.add('active');
+        btn.title = 'Mode: Auto-Reload (aktif)';
+    } else {
+        btn.classList.remove('active');
+        btn.title = 'Mode: Sekali Scan';
+    }
+}
+$('#btnAutoReload').on('click', function () {
+    if (scanning) return; // jangan ubah saat scanning berlangsung
+    autoReload = !autoReload;
+    localStorage.setItem('scanAutoReload', autoReload ? '1' : '0');
+    _applyAutoReload();
+    showToast(autoReload ? '🔁 Auto Reload Scanner Aktif' : '🔂 Sekali Scan Aktif');
+});
+
 // ─── Settings Binding ─────────────────────────
 $('#btnSaveSettings').on('click', saveSettings);
 
@@ -1504,10 +1530,10 @@ function reloadWithToast() {
 
 // ─── Sort & Search Handlers ──────────────────
 // Scanner sort
-$('#monSortBar').on('click', '.sort-btn', function () {
+$('#monSortBar').on('click', '.sort-btn:not(#monFavFilter)', function () {
     monitorSort = $(this).data('sort');
     _shuffledTokens = null; // clear cache agar random mengacak ulang
-    $('#monSortBar .sort-btn').removeClass('active');
+    $('#monSortBar .sort-btn:not(#monFavFilter)').removeClass('active');
     $(this).addClass('active');
     if (!scanning) buildMonitorRows();
 });
@@ -1915,6 +1941,9 @@ async function calcCekToken() {
 
 // ─── Init ────────────────────────────────────
 $(function () {
+    // Restore auto-reload state
+    autoReload = localStorage.getItem('scanAutoReload') === '1';
+    _applyAutoReload();
     loadSettings();
     renderCexChips('indodax');
     renderChainChips('bsc');
