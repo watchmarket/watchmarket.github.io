@@ -4,7 +4,7 @@
 // ============================================================
 
 const APP_DEV_CONFIG = {
-  appVersion: "2026.03.05",
+  appVersion: "2026.03.08",
   telegramBotToken: "8053447166:AAH7YYbyZ4eBoPX31D8h3bCYdzEeIaiG4JU",
   telegramGroupId: "-5271018516",
   corsProxy: "https://vercel-proxycors.vercel.app/?url=",
