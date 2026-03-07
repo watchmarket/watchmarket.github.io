@@ -27,7 +27,7 @@
                 <input class="form-input" id="obUsername" type="text" placeholder="contoh: trader01" autocomplete="off">
             </div>
             <div class="onboard-form-group">
-                <label class="form-label">Wallet Address (EVM)</label>
+                <label class="form-label">Wallet Metamask (EVM)</label>
                 <input class="form-input" id="obWallet" type="text" placeholder="0x..." autocomplete="off">
             </div>
             <button class="btn-onboard" id="btnOnboard">MULAI →</button><br /><br />
@@ -42,60 +42,31 @@
         <div class="app-name">
             <img src="icons/favicon.png" class="app-logo" alt="">
             MONITORING PRICE <span class="app-version" id="appVersion"></span> <span class="scanning-badge"
-                id="scanBadge">▶ SCANNING...</span><span class="username-chip" id="topUsername">@-</span>
+                id="scanBadge">▶ SCANNING...</span>
         </div>
        
         <div class="top-right">
-             <!-- Tab pills — visible in landscape only -->
+ <!-- Tab pills — visible in landscape only -->
         <div class="top-tabs" id="topTabs">
-            <!-- Main pane -->
-            <div class="ttab-pane" id="ttabMain">
-                <button class="top-tab-btn active" data-tab="tabMonitor">
-                    <img src="icons/monitoring.png" class="top-tab-icon" alt=""> 
+            <button class="top-tab-btn active" data-tab="tabMonitor">
+                    <img src="icons/monitoring.png" class="top-tab-icon" alt="SCANNER HARGA CRYPTO"> 
                 </button>
                 <button class="top-tab-btn" data-tab="tabToken">
-                    <img src="icons/token.png" class="top-tab-icon" alt=""> 
-                </button>
-                <button class="top-tab-btn" onclick="openCalcModal()">
-                    <i class="bi bi-calculator top-tab-icon" style="font-size:12px;margin-right:3px"></i> 
-                </button>
-                <button class="top-tab-btn" data-tab="tabSettings">
-                    <img src="icons/setting.png" class="top-tab-icon" alt=""> 
-                </button>
-                
-                <button class="top-tab-btn tab-reload" onclick="reloadWithToast()">
-                    <img src="icons/reload.png" class="top-tab-icon" alt=""> 
-                </button>
-            </div>
-            <!-- Scanner context pane -->
-            <div class="ttab-pane" id="ttabScanner" style="display:none">
-                <div class="ttab-sort-group" id="monSortBarT">
-                    <button class="sort-btn active" data-sort="az">A→Z</button>
-                    <button class="sort-btn" data-sort="za">Z→A</button>
-                    <button class="sort-btn" data-sort="rand">🔀</button>
-                </div>
-                                <button class="fav-filter-btn" id="btnFavFilterT" onclick="toggleFavFilter()" title="Tampilkan Favorit">★</button>
-                <button class="fab-scan ttab-scan-btn" id="btnScanT">
-                    <span id="btnScanIconT">▶</span>
-                    <span id="btnScanLblT">START</span>
-                    <span id="btnScanCountT"></span>
-                </button>
+                    <img src="icons/token.png" class="top-tab-icon" alt="DAFTAR KOIN CRYPTO"> 
+            </button>
+            <button class="top-tab-btn" onclick="openCalcModal()">
+                <!--<i class="bi bi-calculator top-tab-icon" style="font-size:12px;margin-right:3px"></i> -->
+                  <img src="icons/kalkulator.png" class="top-tab-icon" alt="KALKULATOR CRYPTO"> 
+            </button>
 
-                <button class="top-tab-btn ttab-back" onclick="showTopTabCtx('main')"><img src="icons/back.png" class="back-icon" alt="back"></button>
-            </div>
-            <!-- Token context pane -->
-            <div class="ttab-pane" id="ttabToken" style="display:none">
-                <button class="top-tab-btn ttab-back" onclick="showTopTabCtx('main')"><img src="icons/back.png" class="back-icon" alt="back"></button>
-                <input class="filter-search ttab-search" id="tokenSearchT" type="text" placeholder="🔍 Cari koin..." autocomplete="off">
-                <button class="sort-btn active" data-sort="az" id="tokSortAZT">A→Z</button>
-                <button class="sort-btn" data-sort="za" id="tokSortZAT">Z→A</button>
-            </div>
-            <!-- Settings context pane -->
-            <div class="ttab-pane" id="ttabSetting" style="display:none">
-                <button class="top-tab-btn ttab-back" onclick="showTopTabCtx('main')"><img src="icons/back.png" class="back-icon" alt="back"></button>
-                <button class="ttab-save" id="btnSaveSettingsT">💾 Simpan</button>
-            </div>
+            <button class="top-tab-btn" data-tab="tabSettings">
+                    <img src="icons/setting.png" class="top-tab-icon" alt="PENGATURAN APLIKASI"> 
+                </button>
+                <button class="top-tab-btn tab-reload" onclick="reloadWithToast()">
+                    <img src="icons/reload.png" class="top-tab-icon" alt="REFRESH HALAMAN"> 
+            </button>
         </div>
+            <!-- <span class="username-chip" id="topUsername">@-</span> -->
         </div>
         <!-- Progress bar -->
         <div class="scan-progress-strip">
@@ -127,16 +98,22 @@
             <span class="token-count" id="tokenCount">Total 0 KOIN</span>
         </div>
         <div class="csv-bar">
-            <button class="btn-outline" id="btnExport"><i class="bi bi-download"></i> Export CSV</button>
-            <button class="btn-outline" id="btnImportTrigger"><i class="bi bi-upload"></i> Import CSV</button>
+            <button class="btn-outline" id="btnExport"><i class="bi bi-download"></i> Export</button>
+            <button class="btn-outline" id="btnImportTrigger"><i class="bi bi-upload"></i> Import</button>
+            <button class="btn-open-bulk" onclick="openBulkModal()"><i class="bi bi-currency-dollar"></i> Modal</button>
+            <button class="btn-outline btn-add-koin" id="fabAdd"><i class="bi bi-plus-lg"></i> Tambah</button>
             <input type="file" id="importFile"
                 accept=".csv,text/csv,text/plain,text/comma-separated-values,application/octet-stream"
                 style="display:none">
         </div>
+        <div class="filter-bar">
+            <input class="filter-search" id="tokenSearch" type="text" placeholder="🔍 Cari koin..." autocomplete="off">
+            <button class="sort-btn active" data-sort="az" id="tokSortAZ">A→Z</button>
+            <button class="sort-btn" data-sort="za" id="tokSortZA">Z→A</button>
+        </div>
         <div class="token-list" id="tokenList">
             <div class="token-list-empty">Belum ada KOIN. Ketuk tombol + untuk menambah.</div>
         </div>
-        <button class="fab" id="fabAdd">+</button>
     </div>
 
     <!-- TAB SETTINGS -->
@@ -185,70 +162,52 @@
                     <div class="fchip-group" id="filterChainChips"></div>
                 </div>
             </div>
+            <button class="btn-save" id="btnSaveSettings">💾 Simpan Settings</button>
         </div>
     </div>
 
     <!-- ═══════════════════════════════════════
-     BOTTOM NAV (Contextual Panes)
+     BOTTOM NAV
 ═══════════════════════════════════════ -->
     <nav class="bottom-nav">
-        <!-- Main pane: semua menu utama -->
-        <div class="bnav-pane" id="bnavMain" style="display:none">
-            <button class="nav-item active" data-tab="tabMonitor" id="navMonitor">
-                <span class="nav-icon"><img src="icons/monitoring.png" class="nav-icon-img" alt="monitor"></span>
-                <span>SCANNER</span>
-            </button>
-            <button class="nav-item" data-tab="tabToken" id="navToken">
-                <span class="nav-icon"><img src="icons/token.png" class="nav-icon-img" alt="token"></span>
-                <span>DATA KOIN</span>
-            </button>
-             <button class="nav-item" id="navCalc" onclick="openCalcModal()">
-                <span class="nav-icon"><i class="bi bi-calculator" style="font-size:22px"></i></span>
-                <span>KALKULATOR</span>
-            </button>
-            <button class="nav-item" data-tab="tabSettings" id="navSettings">
-                <span class="nav-icon"><img src="icons/setting.png" class="nav-icon-img" alt="settings"></span>
-                <span>PENGATURAN</span>
-            </button>
-           
-            <button class="nav-item" id="navReload" onclick="reloadWithToast()">
-                <span class="nav-icon"><img src="icons/reload.png" class="nav-icon-img" alt="reload"></span>
-                <span>RELOAD</span>
-            </button>
-        </div>
-
-        <!-- Scanner context pane: sort + start -->
-        <div class="bnav-pane" id="bnavScanner">
-                        <button class="bnav-back" onclick="showNavCtx('main')"><img src="icons/back.png" class="back-icon" alt="back"></button>
-
-            <div class="bnav-sort-group" id="monSortBar">
-                <button class="sort-btn active" data-sort="az">A→Z</button>
-                <button class="sort-btn" data-sort="za">Z→A</button>
-                <button class="sort-btn" data-sort="rand">🔀</button>
-            </div>
-                        <button class="fav-filter-btn" id="btnFavFilter" onclick="toggleFavFilter()" title="Tampilkan Favorit">★</button>
-
-            <button class="fab-scan bnav-scan-btn" id="btnScan">
-                <span id="btnScanIcon">▶</span>
-                <span id="btnScanLbl">START</span>
-                <span id="btnScanCount">[0]</span>
-            </button>
-        </div>
-
-        <!-- Token context pane -->
-        <div class="bnav-pane" id="bnavToken" style="display:none">
-            <button class="bnav-back" onclick="showNavCtx('main')"><img src="icons/back.png" class="back-icon" alt="back"></button>
-            <input class="filter-search bnav-search" id="tokenSearch" type="text" placeholder="🔍 Cari koin..." autocomplete="off">
-            <button class="sort-btn active" data-sort="az" id="tokSortAZ">A→Z</button>
-            <button class="sort-btn" data-sort="za" id="tokSortZA">Z→A</button>
-        </div>
-
-        <!-- Settings context pane: save -->
-        <div class="bnav-pane" id="bnavSetting" style="display:none">
-            <button class="bnav-back" onclick="showNavCtx('main')"><img src="icons/back.png" class="back-icon" alt="back"></button>
-            <button class="bnav-save" id="btnSaveSettings">💾 Simpan Settings</button>
-        </div>
+        <button class="nav-item active" data-tab="tabMonitor" id="navMonitor">
+            <span class="nav-icon"><img src="icons/monitoring.png" class="nav-icon-img" alt="scanner price"></span>
+            <span>SCANNER</span>
+        </button>
+        <button class="nav-item" data-tab="tabToken" id="navToken">
+            <span class="nav-icon"><img src="icons/token.png" class="nav-icon-img" alt="daftar koin"></span>
+            <span>DATA KOIN</span>
+        </button>
+         <button class="nav-item" id="navCalc" onclick="openCalcModal()">
+            <!-- <span class="nav-icon"><i class="bi bi-calculator" style="font-size:22px"></i></span> -->
+            <span class="nav-icon"><img src="icons/kalkulator.png" class="nav-icon-img" alt="kalkulator crypto"></span>
+            <span>KALKULATOR</span>
+        </button>
+        <button class="nav-item" data-tab="tabSettings" id="navSettings">
+            <span class="nav-icon"><img src="icons/setting.png" class="nav-icon-img" alt="pengaturan aplikasi"></span>
+            <span>PENGATURAN</span>
+        </button>
+       
+        <button class="nav-item" id="navReload" onclick="reloadWithToast()">
+            <span class="nav-icon"><img src="icons/reload.png" class="nav-icon-img" alt="reload"></span>
+            <span>RELOAD</span>
+        </button>
     </nav>
+
+    <!-- FAB Scan + Sort (Monitor only) -->
+    <div class="scan-footer" id="scanFooter">
+        <div class="scan-sort-group" id="monSortBar">
+            <button class="sort-btn active" data-sort="az">A→Z</button>
+            <button class="sort-btn" data-sort="za">Z→A</button>
+            <button class="sort-btn" data-sort="rand">🔀</button>
+            <button class="sort-btn" id="monFavFilter">⭐</button>
+        </div>
+        <button class="fab-scan" id="btnScan">
+            <span id="btnScanIcon">▶</span>
+            <span id="btnScanLbl">START</span>
+            <span id="btnScanCount">[0]</span>
+        </button>
+    </div>
 
     <!-- ═══════════════════════════════════════
      BOTTOM SHEET — TOKEN FORM
@@ -353,6 +312,33 @@
         </div>
     </div>
 
+    <!-- Bulk Update Modal -->
+    <div class="bulk-overlay" id="bulkOverlay" onclick="if(event.target===this)closeBulkModal()">
+        <div class="bulk-modal">
+            <div class="bulk-modal-hdr">
+                <span class="bulk-modal-title">✏️ BULK MODAL</span>
+                <button class="bulk-modal-close" onclick="closeBulkModal()">✕</button>
+            </div>
+            <div class="bulk-modal-body">
+                <div class="bulk-inputs">
+                    <div class="bulk-field">
+                        <label class="bulk-label">CEX→DEX $</label>
+                        <input class="bulk-input" id="bulkCtD" type="number" placeholder="Kiri">
+                    </div>
+                    <div class="bulk-field">
+                        <label class="bulk-label">DEX→CEX $</label>
+                        <input class="bulk-input" id="bulkDtC" type="number" placeholder="Kanan">
+                    </div>
+                    <div class="bulk-field">
+                        <label class="bulk-label">Min PNL $</label>
+                        <input class="bulk-input" id="bulkPnl" type="number" step="0.1" placeholder="Min PnL">
+                    </div>
+                </div>
+                <button class="btn-bulk-apply" id="btnBulkApply">✅ TERAPKAN SEMUA</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast -->
     <div class="toast" id="toastMsg"></div>
 
@@ -364,55 +350,59 @@
 ═══════════════════════════════════════ -->
     <div class="calc-overlay" id="calcOverlay" onclick="if(event.target===this)closeCalcModal()">
         <div class="calc-modal">
-            <button class="calc-modal-close" onclick="closeCalcModal()">✕</button>
-            <div class="calc-modal-title">🧮 KALKULATOR CRYPTO</div>
-            <div class="calc-modal-sub">Konversi Harga Crypto Secara Realtime</div>
-            <div class="calc-rate-badge">IDR Rate: <span id="calcRateVal">Rp 16.000</span></div>
+            <!-- Header -->
+            <div class="calc-modal-hdr">
+                <span class="calc-modal-title">🧮 KALKULATOR CRYPTO</span>
+                <button class="calc-modal-close" onclick="closeCalcModal()">✕</button>
+            </div>
+            <div class="calc-subtitle">Konversi Harga Crypto Secara Realtime</div>
 
-            <hr class="calc-divider">
-
-            <!-- Fixed rows -->
-            <div class="calc-fields">
-                <div class="calc-field-row">
-                    <label class="calc-field-lbl">USDT</label>
-                    <input class="calc-field-inp" id="cfUsdt" type="number" placeholder="0.00" step="any" oninput="onCalcField('usdt')">
-                </div>
-                <div class="calc-field-row">
-                    <label class="calc-field-lbl">IDR</label>
-                    <input class="calc-field-inp" id="cfIdr" type="number" placeholder="0.00" step="any" oninput="onCalcField('idr')">
-                </div>
-                <div class="calc-field-row">
-                    <label class="calc-field-lbl">BTC <span class="calc-price-badge" id="cpBtc"></span></label>
-                    <input class="calc-field-inp" id="cfBtc" type="number" placeholder="0.00" step="any" oninput="onCalcField('btc')">
-                </div>
-                <div class="calc-field-row">
-                    <label class="calc-field-lbl">ETH <span class="calc-price-badge" id="cpEth"></span></label>
-                    <input class="calc-field-inp" id="cfEth" type="number" placeholder="0.00" step="any" oninput="onCalcField('eth')">
-                </div>
-                <div class="calc-field-row">
-                    <label class="calc-field-lbl">BNB <span class="calc-price-badge" id="cpBnb"></span></label>
-                    <input class="calc-field-inp" id="cfBnb" type="number" placeholder="0.00" step="any" oninput="onCalcField('bnb')">
-                </div>
+            <!-- Rate Bar -->
+            <div class="calc-rate-strip">
+                <span class="calc-rate-lbl">USDT/IDR :</span>
+                <span class="calc-rate-val" id="calcRateVal">Rp 16.000</span>
             </div>
 
-            <hr class="calc-divider">
+            <!-- Modal Body -->
+            <div class="calc-modal-body">
 
-            <!-- Custom Token -->
-            <div class="calc-custom-label">CUSTOM TOKEN</div>
-            <div class="calc-custom-inputs">
-                <input class="calc-field-inp" id="cfCustomSym" type="text" placeholder="Symbol (e.g., SOL)" maxlength="12" autocomplete="off">
-                <input class="calc-field-inp" id="cfCustomPrice" type="number" placeholder="Harga ($)" step="any" oninput="onCalcField('custom')">
-            </div>
-            <div class="calc-field-row" style="margin-top:4px">
-                <label class="calc-field-lbl" id="cfCustomLbl">TOKEN</label>
-                <input class="calc-field-inp" id="cfCustomAmt" type="number" placeholder="0.00" step="any" oninput="onCalcField('custom')">
-            </div>
+                <!-- Field Rows: USDT, IDR, BTC, ETH, BNB -->
+                <div class="calc-fields">
+                    <div class="calc-field-row">
+                        <label class="calc-field-lbl">USDT</label>
+                        <input class="calc-field-inp" id="cfUsdt" type="number" placeholder="0.00" step="any"
+                            oninput="onCalcField('usdt')">
+                    </div>
+                    <div class="calc-field-row">
+                        <label class="calc-field-lbl">IDR</label>
+                        <input class="calc-field-inp" id="cfIdr" type="number" placeholder="0.00" step="any"
+                            oninput="onCalcField('idr')">
+                    </div>
+                </div>
 
-            <!-- Buttons -->
-            <div class="calc-btn-row">
-                <button class="calc-btn-cek" onclick="calcCekToken()">🔍 CEK TOKEN</button>
-                <button class="calc-btn-update" onclick="calcUpdatePrice()">↻ UPDATE PRICE</button>
-            </div>
+                <div class="calc-divider"></div>
+
+                <!-- Custom Token -->
+                <div class="calc-custom-label">CUSTOM TOKEN</div>
+                <div class="calc-custom-inputs">
+                    <input class="calc-field-inp" id="cfCustomSym" type="text" placeholder="Symbol (e.g., SOL)"
+                        maxlength="12" autocomplete="off">
+                    <input class="calc-field-inp" id="cfCustomPrice" type="number" placeholder="Harga ($)" step="any"
+                        oninput="onCalcField('custom')">
+                </div>
+                <div class="calc-field-row" style="margin-top:6px">
+                    <label class="calc-field-lbl" id="cfCustomLbl">TOKEN</label>
+                    <input class="calc-field-inp" id="cfCustomAmt" type="number" placeholder="0.00" step="any"
+                        oninput="onCalcField('custom')">
+                </div>
+
+                <!-- Buttons -->
+                <div class="calc-btn-row">
+                    <button class="calc-btn-cek" onclick="calcCekToken()">🔍 CEK TOKEN</button>
+                    <button class="calc-btn-update" onclick="calcUpdatePrice()">↻ UPDATE PRICE</button>
+                </div>
+
+            </div><!-- /calc-modal-body -->
         </div><!-- /calc-modal -->
     </div><!-- /calc-overlay -->
 
