@@ -19,6 +19,8 @@ const APP_DEV_CONFIG = {
   defaultSseTimeout: 6000,
   defaultQuoteCountMetax: 2,   // jumlah quote MetaMask SSE (0 = matikan)
   defaultQuoteCountJumpx: 2,   // jumlah quote Jumper/LiFi  (0 = matikan)
+  defaultAutoLevel: true,     // Auto Level CEX (false = nonaktif, true = aktif)
+  defaultLevelCount: 2,        // jumlah level orderbook (1–4)
   telegramCooldown: 5,   // menit
 };
 
