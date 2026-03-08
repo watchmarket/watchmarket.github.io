@@ -163,7 +163,10 @@ function fmtCompact(v, sigfigs = 4) {
 function updateScanCount() {
     const n = getFilteredTokens().length;
     $('#filterCoinCount').text(n);
-    if (!scanning) $('#btnScanCount').text('[' + n + ' KOIN ]');
+    if (!scanning) {
+        $('#btnScanCount').text('[' + n + ' KOIN ]');
+        $('#btnScan').prop('disabled', n === 0).toggleClass('disabled', n === 0);
+    }
 }
 
 function renderFilterChips() {

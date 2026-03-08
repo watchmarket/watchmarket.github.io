@@ -834,6 +834,14 @@ body {
   font-size: 10px;
   border-radius: 14px;
   background: #d6d9f7;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  transition: background .2s, border-color .2s, color .2s;
+}
+
+.scan-sort-group .sort-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
 }
 
 .fab-scan {
@@ -876,6 +884,13 @@ body {
 
 .fab-scan:active {
   transform: scale(.91);
+}
+
+.fab-scan.disabled,
+.fab-scan:disabled {
+  opacity: 0.38;
+  pointer-events: none;
+  box-shadow: none;
 }
 
 .fab-scan.stop {
