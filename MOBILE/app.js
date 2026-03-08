@@ -117,6 +117,7 @@ function playCompleteSound() {
 }
 let scanning = false;
 let scanAbort = false;
+let autoReload = false; // default: sekali scan
 let signalCache = [];
 const tgCooldown = new Map(); // tokenId → timestamp
 const wmCache = {};           // chain → data array
@@ -162,7 +163,10 @@ function fmtCompact(v, sigfigs = 4) {
 function updateScanCount() {
     const n = getFilteredTokens().length;
     $('#filterCoinCount').text(n);
-    if (!scanning) $('#btnScanCount').text('[' + n + ' KOIN ]');
+    if (!scanning) {
+        $('#btnScanCount').text('[' + n + ' KOIN ]');
+        $('#btnScan').prop('disabled', n === 0).toggleClass('disabled', n === 0);
+    }
 }
 
 function renderFilterChips() {
@@ -893,7 +897,7 @@ function parseDexQuoteMetax(q) {
 
 // ─── JUMPX: LiFi/Jumper REST API ─────────────
 const _lifiKeys = [
-    "e057a54c-1459-44ab-ac50-faa645763c43.a87045f9-d438-4f5a-8707-57f2b7c239b3",
+   /* "e057a54c-1459-44ab-ac50-faa645763c43.a87045f9-d438-4f5a-8707-57f2b7c239b3",
     "8ed53cb9-d883-4f85-9429-116c0193e8f4.3341cd43-bbd1-40e2-ac1b-1969af85a2c6",
     "632e463a-7cf2-4c51-b962-ef78a6608419.98102f8e-7b7c-4a4a-aa3d-d37424b1b4df",
     "057a2f7f-cba7-4db0-b325-ba402737550e.e8851b8d-492a-491d-bf75-80a755f890eb",
@@ -912,7 +916,7 @@ const _lifiKeys = [
     "a6f75d89-282c-4865-a588-1987d3a00da8.c22a17e7-1aa5-41b8-8d83-efd24a0a684a",
     "12d54546-961e-4706-bf7c-3d868a26c5bf.862448ac-1cbe-411c-9803-5e77d4f38a54",
     "876c98f2-6c5f-451c-9305-2f834e855daf.8bb1259a-bd7b-461a-960c-ecd254b48f50",
-    "ce36f6d6-303c-4514-946f-8693000ef077.58a4926e-8e5f-4c20-925e-811470a5064c",
+    "ce36f6d6-303c-4514-946f-8693000ef077.58a4926e-8e5f-4c20-925e-811470a5064c",*/
     "e190ef8a-3eff-4fd6-ab41-69c23e765032.c113ce05-1ead-4c66-8a76-b48b893bbee5",
     "114f7124-f64a-42ee-963b-254819128e6d.5aacb323-2c24-4b20-9f85-080c31ac50d6",
     "100f9d4d-2d7d-453b-ae0c-ef531b47f003.0f2f6e44-b8f3-4480-b873-4a17fd8806c7",
@@ -1139,8 +1143,8 @@ async function scanToken(tok) {
             const pnlEl = card.querySelector(`[data-dtc-pnl="${i}"]`);
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
-            const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MX</span>' : '<span class="src-tag jx">JX</span>';
-            if (hdrEl) { hdrEl.innerHTML = r.name + ' ' + srcTag; hdrEl.className = 'mon-dex-hdr'; }
+            const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : '<span class="src-tag jx">JM</span>';
+            if (hdrEl) { hdrEl.innerHTML = srcTag + ' ' + r.name; hdrEl.className = 'mon-dex-hdr'; }
             if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(r.effPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(obToken.bidPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
             if (feeEl) { feeEl.textContent = `-${r.cexFee1.toFixed(2)}|${r.cexFee2.toFixed(2)}`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
@@ -1172,7 +1176,7 @@ async function scanToken(tok) {
         card.classList.add('has-signal');
         const bestRow = isCtd ? ctdData[0] : dtcData[dtcData.length - 1];
         const tgInfo = bestRow ? {
-            dexName: bestRow.name + (bestRow.src === 'MX' ? ' [METAX]' : ' [JUMPX]'),
+            dexName: bestRow.name + (bestRow.src === 'MX' ? ' [MT]' : ' [JM]'),
             totalFee: bestRow.totalFee,
             modal: isCtd ? tok.modalCtD : tok.modalDtC,
             dir: isCtd ? 'CEX→DEX' : 'DEX→CEX',
@@ -1461,12 +1465,17 @@ async function runScan() {
             if (!scanAbort) await new Promise(r => setTimeout(r, CFG.interval));
         }
         if (!scanAbort) {
-            // Jeda 10 detik dulu — tabel & sinyal masih tampil agar bisa dilihat
             $('#scanBar').css('width', '0%');
+            if (!autoReload) {
+                // Sekali scan: selesai langsung stop, hasil tetap tampil
+                showToast(`✅ Scan selesai!`);
+                playCompleteSound();
+                break;
+            }
+            // Auto-reload: jeda 10 detik lalu mulai ronde berikutnya
             showToast(`✅ Ronde ${_scanRound} selesai — jeda 10 detik...`, 9500);
             playCompleteSound();
             await new Promise(r => setTimeout(r, 10000));
-            // Baru kosongkan tabel & notif sinyal, lalu mulai ronde berikutnya
             if (!scanAbort) {
                 resetMonitorCells();
                 document.querySelectorAll('.signal-chip').forEach(c => c.remove());
@@ -1493,6 +1502,26 @@ $('#btnScan').on('click', () => {
     else { runScan(); }
 });
 
+// ─── Auto-Reload Toggle ───────────────────────
+function _applyAutoReload() {
+    const btn = document.getElementById('btnAutoReload');
+    if (!btn) return;
+    if (autoReload) {
+        btn.classList.add('active');
+        btn.title = 'Mode: Auto-Reload (aktif)';
+    } else {
+        btn.classList.remove('active');
+        btn.title = 'Mode: Sekali Scan';
+    }
+}
+$('#btnAutoReload').on('click', function () {
+    if (scanning) return; // jangan ubah saat scanning berlangsung
+    autoReload = !autoReload;
+    localStorage.setItem('scanAutoReload', autoReload ? '1' : '0');
+    _applyAutoReload();
+    showToast(autoReload ? '🔁 Auto Reload Scanner Aktif' : '🔂 Sekali Scan Aktif');
+});
+
 // ─── Settings Binding ─────────────────────────
 $('#btnSaveSettings').on('click', saveSettings);
 
@@ -1504,10 +1533,10 @@ function reloadWithToast() {
 
 // ─── Sort & Search Handlers ──────────────────
 // Scanner sort
-$('#monSortBar').on('click', '.sort-btn', function () {
+$('#monSortBar').on('click', '.sort-btn:not(#monFavFilter)', function () {
     monitorSort = $(this).data('sort');
     _shuffledTokens = null; // clear cache agar random mengacak ulang
-    $('#monSortBar .sort-btn').removeClass('active');
+    $('#monSortBar .sort-btn:not(#monFavFilter)').removeClass('active');
     $(this).addClass('active');
     if (!scanning) buildMonitorRows();
 });
@@ -1915,6 +1944,9 @@ async function calcCekToken() {
 
 // ─── Init ────────────────────────────────────
 $(function () {
+    // Restore auto-reload state
+    autoReload = localStorage.getItem('scanAutoReload') === '1';
+    _applyAutoReload();
     loadSettings();
     renderCexChips('indodax');
     renderChainChips('bsc');
