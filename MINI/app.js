@@ -1638,9 +1638,11 @@ function _applyAutoReload() {
     if (!btn) return;
     if (autoReload) {
         btn.classList.add('active');
+        btn.textContent = '🔁';
         btn.title = 'Mode: Auto-Reload (aktif)';
     } else {
         btn.classList.remove('active');
+        btn.textContent = '🔄';
         btn.title = 'Mode: Sekali Scan';
     }
 }
@@ -1697,10 +1699,10 @@ function reloadWithToast() {
 
 // ─── Sort & Search Handlers ──────────────────
 // Scanner sort
-$('#monSortBar').on('click', '.sort-btn:not(#monFavFilter)', function () {
+$('#monSortBar').on('click', '.sort-btn:not(#monFavFilter):not(#btnAutoReload)', function () {
     monitorSort = $(this).data('sort');
     _shuffledTokens = null; // clear cache agar random mengacak ulang
-    $('#monSortBar .sort-btn:not(#monFavFilter)').removeClass('active');
+    $('#monSortBar .sort-btn:not(#monFavFilter):not(#btnAutoReload)').removeClass('active');
     $(this).addClass('active');
     if (!scanning) buildMonitorRows();
 });
