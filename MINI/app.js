@@ -677,7 +677,9 @@ function renderTokenList() {
             return ticker.includes(q) || pair.includes(q) || cex.includes(q) || chain.includes(q);
         });
     }
+    const favCount = tokens.filter(t => t.favorite).length;
     $('#tokenCount').text('TOTAL ' + tokens.length + ' KOIN');
+    $('#favCount').text(favCount > 0 ? `⭐ ${favCount}/${tokens.length}` : '');
     if (!tokens.length) {
         $('#tokenList').html('<div class="token-list-empty">Belum ada token. Ketuk + untuk menambah.</div>');
     } else {
@@ -817,7 +819,7 @@ $('#importFile').on('change', e => {
                     obj.modalDtC = parseFloat(obj.modalDtC) || 80;
                     const pnlRaw = parseFloat(obj.minPnl);
                     obj.minPnl = isFinite(pnlRaw) ? pnlRaw : null;
-                    obj.favorite = obj.favorite === 'true' || obj.favorite === true;
+                    obj.favorite = String(obj.favorite).toLowerCase() === 'true';
                     obj.id = obj.id || genId();
                     return obj;
                 })
