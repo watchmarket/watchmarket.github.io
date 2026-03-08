@@ -706,6 +706,16 @@ body {
   color: #fff;
 }
 
+.src-tag.kb {
+  background: #0b7e18;
+  color: #fff;
+}
+
+.src-tag.ox {
+  background: #1a1a1a;
+  color: #fff;
+}
+
 .mon-sub-table tbody tr {
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
@@ -837,12 +847,27 @@ body {
 }
 
 .scan-sort-group .sort-btn {
-  padding: 5px 10px;
+  height: 30px;
+  min-width: 34px;
+  padding: 0 10px;
   font-size: 10px;
+  line-height: 1;
   border-radius: 14px;
   background: #d6d9f7;
   border: 1.5px solid rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: background .2s, border-color .2s, color .2s;
+}
+
+/* Tombol emoji — ukuran seragam */
+.scan-sort-group .sort-btn[data-sort="rand"],
+#monFavFilter,
+#btnAutoReload {
+  width: 34px;
+  padding: 0;
+  font-size: 18px;
 }
 
 .scan-sort-group .sort-btn.active {
@@ -906,28 +931,7 @@ body {
 }
 
 /* Auto-reload toggle button */
-.btn-autoreload {
-  height: 30px;
-  width: 34px;
-  border-radius: 14px;
-  background: #d6d9f7;
-  border: 1.5px solid rgba(0, 0, 0, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 16px;
-  transition: opacity .2s, background .2s, border-color .2s;
-  flex-shrink: 0;
-}
-.btn-autoreload.active {
-  opacity: 1;
-  background: var(--accent);
-  border-color: var(--accent);
-}
-.btn-autoreload:active {
-  transform: scale(.9);
-}
+/* .btn-autoreload removed — now uses .sort-btn */
 
 /* ══════════════════════════════════════════
    BOTTOM NAV
@@ -1191,7 +1195,7 @@ body {
 }
 
 .sort-btn.disabled {
-  opacity: 0.35;
+  opacity: 0.85;
   pointer-events: none;
 }
 
