@@ -244,7 +244,8 @@ function loadSettings() {
     $('#setQuoteJumpx').val(CFG.quoteCountJumpx);
     // Hide Jumpx settings row if disabled in config
     if (!isJumpxEnabled()) {
-        $('#setQuoteJumpx').closest('.settings-row-col').hide();
+        CFG.quoteCountJumpx = 0;
+        $('#setQuoteJumpx').closest('.settings-field').hide();
     }
     $('#setSoundMuted').prop('checked', !CFG.soundMuted); // centang = suara ON
     // Hide Auto Level settings jika dimatikan dari config.js
