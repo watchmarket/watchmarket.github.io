@@ -631,6 +631,13 @@ body {
   font-weight: 600;
 }
 
+.al-badge {
+  font-size: 11px;
+  line-height: 1;
+}
+.al-ok  { opacity: 0.9; }
+.al-warn { opacity: 0.95; }
+
 .tbl-status-err {
   color: white;
   font-size: 10px;
@@ -1119,6 +1126,12 @@ body {
   letter-spacing: .3px;
 }
 
+.token-count-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .token-count {
   font-size: 12px;
   color: var(--accent-dk);
@@ -1126,6 +1139,16 @@ body {
   padding: 2px 10px;
   border-radius: 20px;
   border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.fav-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: #c9870a;
+  background: rgba(255, 200, 50, 0.15);
+  padding: 2px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(201, 135, 10, 0.25);
 }
 
 /* Sort & Search Bars */
@@ -1601,13 +1624,142 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 5px;
 }
 
 .settings-row-col {
   display: flex;
   flex-direction: column;
   gap: 5px;
+}
+
+/* ── New settings layout classes ── */
+.set-section {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  padding: 10px 0 8px;
+  border-top: 1px solid var(--glass-border);
+  margin-top: 4px;
+  margin-bottom: 10px;
+}
+.set-section:first-of-type {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.settings-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.settings-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.set-wallet-row {
+  margin-bottom: 12px;
+}
+
+/* Toggle row (icon + text + iOS switch) */
+.settings-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.45);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xs);
+  margin-bottom: 4px;
+}
+
+.settings-toggle-lbl {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-toggle-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.settings-toggle-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.settings-toggle-desc {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* iOS-style toggle switch */
+.settings-toggle-chk {
+  width: 40px;
+  height: 23px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: #ccc;
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: background .2s;
+  flex-shrink: 0;
+  border: none;
+  outline: none;
+}
+.settings-toggle-chk:checked {
+  background: var(--accent);
+}
+.settings-toggle-chk::before {
+  content: '';
+  position: absolute;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #fff;
+  top: 3px;
+  left: 3px;
+  transition: transform .2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.settings-toggle-chk:checked::before {
+  transform: translateX(17px);
+}
+
+/* Auto Level inline checkbox label */
+.al-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.speed-chips {
+  display: flex;
+  gap: 4px;
+}
+.speed-chips .sort-btn {
+  flex: 1;
+  padding: 5px 4px;
+  font-size: 9.5px;
+  text-align: center;
 }
 
 .settings-label {

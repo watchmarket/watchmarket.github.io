@@ -96,7 +96,10 @@
     <div id="tabToken" class="tab-pane">
         <div class="token-list-header">
             <h2>DAFTAR KOIN :</h2>
-            <span class="token-count" id="tokenCount">Total 0 KOIN</span>
+            <div class="token-count-group">
+                <span class="token-count" id="tokenCount">Total 0 KOIN</span>
+                <span class="fav-count" id="favCount"></span>
+            </div>
         </div>
         <div class="csv-bar">
             <button class="btn-outline" id="btnExport"><i class="bi bi-download"></i> Export</button>
@@ -111,6 +114,7 @@
             <input class="filter-search" id="tokenSearch" type="text" placeholder="🔍 Cari koin..." autocomplete="off">
             <button class="sort-btn active" data-sort="az" id="tokSortAZ">A→Z</button>
             <button class="sort-btn" data-sort="za" id="tokSortZA">Z→A</button>
+            <button class="sort-btn" id="tokFavFilter" title="Filter Favorit">⭐</button>
         </div>
         <div class="token-list" id="tokenList">
             <div class="token-list-empty">Belum ada KOIN. Ketuk tombol + untuk menambah.</div>
@@ -122,34 +126,62 @@
         <div class="settings-content">
             <div class="settings-card">
                 <h3>DATA PENGGUNA & SCANNER</h3>
-                <div class="settings-row">
-                    <label class="settings-label">Username</label>
-                    <input class="settings-input" id="setUsername" type="text" placeholder="trader01">
+
+                <!-- Identitas -->
+                <div class="set-section">👤 Identitas</div>
+                <div class="settings-grid-2">
+                    <div class="settings-field">
+                        <label class="settings-label">Username</label>
+                        <input class="settings-input" id="setUsername" type="text" placeholder="trader01">
+                    </div>
+                    <div class="settings-field">
+                        <label class="settings-label">Kecepatan Scan</label>
+                        <div class="speed-chips" id="speedChips">
+                            <button class="sort-btn" data-speed="800">SLOW</button>
+                            <button class="sort-btn" data-speed="600">MEDIUM</button>
+                            <button class="sort-btn" data-speed="400">FAST</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="settings-row">
+                <div class="settings-field set-wallet-row">
                     <label class="settings-label">Wallet Metamask (EVM)</label>
                     <input class="settings-input" id="setWallet" type="text" placeholder="0x...">
                 </div>
-                <div class="settings-row">
-                    <label class="settings-label"><input type="checkbox" id="setSoundMuted"
-                            class="settings-checkbox">&nbsp;&nbsp;Sunyikan Notifikasi</label>
-                </div>
-                <div class="settings-row-inline">
-                    <div class="settings-row-col">
-                        <label class="settings-label">DEX <span class="badge-metax">METAX</span></label>
-                        <input class="settings-input" id="setQuoteMetax" type="number" min="1" max="5" value="2">
+
+                <!-- Preferensi -->
+                <div class="set-section">⚙️ Preferensi</div>
+                <div class="settings-toggle-row">
+                    <div class="settings-toggle-lbl">
+                        <span class="settings-toggle-icon">🔔</span>
+                        <div>
+                            <div class="settings-toggle-title">Sunyikan Notifikasi</div>
+                            <div class="settings-toggle-desc">Matikan suara saat sinyal ditemukan</div>
+                        </div>
                     </div>
-                    <div class="settings-row-col">
-                        <label class="settings-label">DEX <span class="badge-jumpx">JUMPX</span></label>
-                        <input class="settings-input" id="setQuoteJumpx" type="number" min="1" max="5" value="2">
-                    </div>
-                    <div class="settings-row-col">
-                        <label class="settings-label">Jeda KOIN (ms)</label>
-                        <input class="settings-input" id="setInterval" type="number" step="100" value="700">
-                    </div>
+                    <input type="checkbox" id="setSoundMuted" class="settings-toggle-chk">
                 </div>
 
+                <!-- DEX & Auto Level -->
+                <div class="set-section">📊 DEX & Auto Level</div>
+                <div class="settings-grid-3">
+                    <div class="settings-field">
+                        <label class="settings-label">DEX <span class="badge-metax">MT</span></label>
+                        <input class="settings-input" id="setQuoteMetax" type="number" min="1" max="5" value="2">
+                    </div>
+                    <div class="settings-field">
+                        <label class="settings-label">DEX <span class="badge-jumpx">JM</span></label>
+                        <input class="settings-input" id="setQuoteJumpx" type="number" min="1" max="5" value="2">
+                    </div>
+                    <div class="settings-field">
+                        <div class="al-toggle-row">
+                            <input type="checkbox" id="setAutoLevel" class="settings-checkbox">
+                            <label class="settings-label" for="setAutoLevel">Auto Level CEX</label>
+                        </div>
+                        <input class="settings-input" id="setLevelCount" type="number" min="1" max="4" value="2">
+                    </div>
+                </div>
             </div>
+
             <div class="settings-card">
                 <h3>FILTER KOIN [<span id="filterCoinCount">0</span> KOIN ]</h3>
                 <div class="settings-row">
@@ -163,7 +195,6 @@
                     <div class="fchip-group" id="filterChainChips"></div>
                 </div>
             </div>
-            <button class="btn-save" id="btnSaveSettings">💾 Simpan Settings</button>
         </div>
     </div>
 
