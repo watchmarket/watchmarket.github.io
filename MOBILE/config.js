@@ -4,7 +4,7 @@
 // ============================================================
 
 const APP_DEV_CONFIG = {
-  appVersion: "2026.03.08",
+  appVersion: "03.09",
   telegramBotToken: "8053447166:AAH7YYbyZ4eBoPX31D8h3bCYdzEeIaiG4JU",
   telegramGroupId: "-5271018516",
   corsProxy: "https://vercel-proxycors.vercel.app/?url=",
@@ -15,10 +15,10 @@ const APP_DEV_CONFIG = {
     binance: 0.001,
   },
   defaultMinPnl: 1,
-  defaultInterval: 700,
+  defaultInterval: 300,
   defaultSseTimeout: 6000,
-  defaultQuoteCountMetax: 3,   // jumlah quote MetaMask SSE (0 = matikan)
-  defaultQuoteCountJumpx: 0,   // jumlah quote Jumper/LiFi  (0 = matikan)
+  defaultQuoteCountMetax: 2,   // jumlah quote MetaMask SSE (0 = matikan)
+  defaultQuoteCountJumpx: 2,   // jumlah quote Jumper/LiFi  (0 = matikan)
   telegramCooldown: 5,   // menit
 };
 
