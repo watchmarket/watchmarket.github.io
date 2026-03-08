@@ -2091,11 +2091,12 @@ $('#btnBulkApply').on('click', function () {
     }
     // Filter tokens same as renderTokenList (respect settings)
     const allTokens = getTokens();
-    let filtered = allTokens.filter(t => {
+    const inScope = (t) => {
         const cexOk = CFG.activeCex.length === 0 || CFG.activeCex.includes(t.cex);
         const chainOk = CFG.activeChains.length === 0 || CFG.activeChains.includes(t.chain);
-        return cexOk && chainOk && !t.favorite; // koin favorit dikecualikan
-    });
+        return cexOk && chainOk;
+    };
+    let filtered = allTokens.filter(t => inScope(t) && !t.favorite);
     if (!filtered.length) {
         showAlert('Tidak ada koin yang cocok dengan filter aktif.', 'Bulk Modal', 'warn');
         return;
@@ -2104,8 +2105,10 @@ $('#btnBulkApply').on('click', function () {
     if (ctdValid) parts.push(`CEX→DEX: $${ctd}`);
     if (dtcValid) parts.push(`DEX→CEX: $${dtc}`);
     if (pnlValid) parts.push(`Min PNL: $${pnl}`);
-    const favSkipped = allTokens.filter(t => t.favorite).length;
-    const favNote = favSkipped > 0 ? `\n(⭐ ${favSkipped} koin favorit dilewati)` : '';
+    // Hitung favorit hanya dari koin yang lolos filter CEX/chain yang sama
+    const favSkipped = allTokens.filter(t => inScope(t) && t.favorite).length;
+    const totalScope = filtered.length + favSkipped;
+    const favNote = favSkipped > 0 ? `\n(⭐ ${favSkipped} dari ${totalScope} koin favorit dilewati)` : '';
     showConfirm(
         `Update ${filtered.length} koin dengan:\n${parts.join(', ')}?${favNote}`,
         'Bulk Modal',
