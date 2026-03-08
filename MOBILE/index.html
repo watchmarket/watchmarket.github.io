@@ -48,15 +48,16 @@
         <div class="top-right">
  <!-- Tab pills — visible in landscape only -->
         <div class="top-tabs" id="topTabs">
-            <button class="top-tab-btn active" data-tab="tabMonitor">
+            <button class="top-tab-btn " data-tab="tabMonitor">
                     <img src="icons/monitoring.png" class="top-tab-icon" alt="SCANNER HARGA CRYPTO"> 
                 </button>
-                <button class="top-tab-btn" data-tab="tabToken">
-                    <img src="icons/token.png" class="top-tab-icon" alt="DAFTAR KOIN CRYPTO"> 
-            </button>
-             <button class="top-tab-btn tab-reload" onclick="reloadWithToast()">
+                 <button class="top-tab-btn tab-reload" onclick="reloadWithToast()">
                     <img src="icons/reload.png" class="top-tab-icon" alt="REFRESH HALAMAN"> 
             </button>
+                <button class="top-tab-btn active" data-tab="tabToken">
+                    <img src="icons/token.png" class="top-tab-icon" alt="DAFTAR KOIN CRYPTO"> 
+            </button>
+            
             
 
             <button class="top-tab-btn" data-tab="tabSettings">
@@ -85,7 +86,7 @@
 ═══════════════════════════════════════ -->
 
     <!-- TAB MONITOR -->
-    <div id="tabMonitor" class="tab-pane active">
+    <div id="tabMonitor" class="tab-pane ">
         <div class="monitor-cards" id="monitorList">
             <div class="token-list-empty">Jika belum ada koin, masuk menu KOIN lalu tekan + untuk menambah.<br>Jika
                 sudah ada koin, tekan START.</div>
@@ -93,7 +94,7 @@
     </div>
 
     <!-- TAB TOKEN -->
-    <div id="tabToken" class="tab-pane">
+    <div id="tabToken" class="tab-pane active">
         <div class="token-list-header">
             <h2>DAFTAR KOIN :</h2>
             <div class="token-count-group">
@@ -202,18 +203,19 @@
      BOTTOM NAV
 ═══════════════════════════════════════ -->
     <nav class="bottom-nav">
-        <button class="nav-item active" data-tab="tabMonitor" id="navMonitor">
+        <button class="nav-item " data-tab="tabMonitor" id="navMonitor">
             <span class="nav-icon"><img src="icons/monitoring.png" class="nav-icon-img" alt="scanner price"></span>
             <span>SCANNER</span>
-        </button>
-        <button class="nav-item" data-tab="tabToken" id="navToken">
-            <span class="nav-icon"><img src="icons/token.png" class="nav-icon-img" alt="daftar koin"></span>
-            <span>DATA KOIN</span>
         </button>
          <button class="nav-item" id="navReload" onclick="reloadWithToast()">
             <span class="nav-icon"><img src="icons/reload.png" class="nav-icon-img" alt="reload"></span>
             <span>RELOAD</span>
         </button>
+        <button class="nav-item active" data-tab="tabToken" id="navToken">
+            <span class="nav-icon"><img src="icons/token.png" class="nav-icon-img" alt="daftar koin"></span>
+            <span>DATA KOIN</span>
+        </button>
+        
         <button class="nav-item" data-tab="tabSettings" id="navSettings">
             <span class="nav-icon"><img src="icons/setting.png" class="nav-icon-img" alt="pengaturan aplikasi"></span>
             <span>PENGATURAN</span>

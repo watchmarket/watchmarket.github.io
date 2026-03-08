@@ -721,7 +721,7 @@ function renderTokenList() {
         <div class="token-list-sub">$${t.modalCtD}/$${t.modalDtC} &nbsp;|&nbsp; ${pnlTxt}</div>
       </div>
       <div style="display:flex;align-items:center;gap:6px">
-        <button class="tok-fav ${t.favorite ? 'fav-active' : ''}" onclick="toggleFavorite('${t.id}')" title="Favorit">⭐</button>
+        <button class="tok-fav btn-icon ${t.favorite ? 'fav-active' : ''}" onclick="toggleFavorite('${t.id}')" title="Favorit">⭐</button>
         <div class="token-list-actions">
           <button class="btn-icon" onclick="openSheet('${t.id}')">✏️</button>
           <button class="btn-icon danger" onclick="deleteToken('${t.id}')">🗑️</button>
@@ -1276,7 +1276,7 @@ async function scanToken(tok) {
             if (hdrEl) { hdrEl.innerHTML = srcTag + ' ' + r.name; hdrEl.className = 'mon-dex-hdr'; }
             if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(obToken.askPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
-            if (feeEl) { feeEl.textContent = `-${r.cexFee1.toFixed(2)}|${r.cexFee2.toFixed(2)}`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
+            if (feeEl) { feeEl.textContent = `-${r.totalFee.toFixed(2)}$`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
         });
         // Fill remaining empty columns with explanation
@@ -1323,7 +1323,7 @@ async function scanToken(tok) {
             if (hdrEl) { hdrEl.innerHTML = srcTag + ' ' + r.name; hdrEl.className = 'mon-dex-hdr'; }
             if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(r.effPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(obToken.bidPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
-            if (feeEl) { feeEl.textContent = `-${r.cexFee1.toFixed(2)}|${r.cexFee2.toFixed(2)}`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
+            if (feeEl) { feeEl.textContent = `-${r.totalFee.toFixed(2)}$`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
         });
         // Fill remaining empty columns with explanation
@@ -1446,7 +1446,7 @@ function buildMonitorRows(tokenList) {
     <tbody>
       <tr class="mon-row-cex"><td class="mon-lbl-side"><span style='color:green;'>BELI CEX ↑</span></td>${dexRow('ctd', 'cex')}</tr>
       <tr class="mon-row-dex"><td class="mon-lbl-side">${t.ticker}→${pairTk}</td>${dexRow('ctd', 'dex')}</tr>
-      <tr class="mon-row-recv"><td class="mon-lbl-side">Trade & Swap</td>${dexRow('ctd', 'fee')}</tr>
+      <tr class="mon-row-recv"><td class="mon-lbl-side">ALL FEE</td>${dexRow('ctd', 'fee')}$</tr>
       <tr class="mon-row-pnl"><td class="mon-lbl-side">💰 PNL <span class="lbl-minpnl">($${minPnlLbl})</span></td>${dexRow('ctd', 'pnl')}</tr>
     </tbody>
   </table>
@@ -1460,7 +1460,7 @@ function buildMonitorRows(tokenList) {
     <tbody>
       <tr class="mon-row-cex"><td class="mon-lbl-side">${pairTk}→${t.ticker}</td>${dexRow('dtc', 'cex')}</tr>
       <tr class="mon-row-dex"><td class="mon-lbl-side lbl-pair"><span style='color:red;'>JUAL CEX ↓</span></td>${dexRow('dtc', 'dex')}</tr>
-      <tr class="mon-row-recv"><td class="mon-lbl-side">Trade & Swap</td>${dexRow('dtc', 'fee')}</tr>
+      <tr class="mon-row-recv"><td class="mon-lbl-side">ALL FEE</td>${dexRow('dtc', 'fee')}$</tr>
       <tr class="mon-row-pnl"><td class="mon-lbl-side">💰 PNL <span class="lbl-minpnl">($${minPnlLbl})</span></td>${dexRow('dtc', 'pnl')}</tr>
     </tbody>
   </table>
@@ -2222,6 +2222,9 @@ $(function () {
     renderChainChips('bsc');
     renderTokenList();   // also builds monitor skeleton via buildMonitorRows()
     checkOnboarding();
+    // Sync scanFooter visibility dengan tab yang aktif di HTML saat load
+    const initTab = $('.nav-item.active[data-tab]').data('tab') || 'tabMonitor';
+    $('#scanFooter').css('display', initTab === 'tabMonitor' ? 'flex' : 'none');
     // Init USDT rate
     fetchUsdtRate().then(() => _updateCalcRateDisplay());
     // Toast after reload
