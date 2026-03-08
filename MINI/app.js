@@ -59,6 +59,8 @@ let CFG = {
     soundMuted: false,
     activeCex: [],    // [] = semua aktif
     activeChains: [], // [] = semua aktif
+    autoLevel: false, // Auto Level: hitung berdasarkan kedalaman orderbook
+    levelCount: 2,    // Jumlah level orderbook (1–4)
 };
 function totalQuoteCount() { return CFG.quoteCountMetax + CFG.quoteCountJumpx; }
 function isJumpxEnabled() { return APP_DEV_CONFIG.defaultQuoteCountJumpx > 0; }
@@ -193,6 +195,7 @@ function toggleFilterChip(el, type) {
     const key = el.dataset.key;
     const arr = type === 'cex' ? CFG.activeCex : CFG.activeChains;
     const cfg = type === 'cex' ? CONFIG_CEX : CONFIG_CHAINS;
+    const label = cfg[key]?.label || key;
     const idx = arr.indexOf(key);
     // Jika semua aktif (arr kosong), berarti kita mulai dari "semua ON"
     // Klik pertama pada salah satu = matikan yang lain, aktifkan hanya ini
@@ -208,8 +211,17 @@ function toggleFilterChip(el, type) {
         if (arr.length === Object.keys(cfg).length) arr.splice(0);
     }
     renderFilterChips();
+    _persistCFG();
     renderTokenList();
     updateScanCount();
+
+    // Toast info status
+    const isNowOn = arr.length === 0 || arr.includes(key);
+    if (arr.length === 0) {
+        showToast(`✅ Semua ${type === 'cex' ? 'CEX' : 'Chain'} aktif`);
+    } else {
+        showToast(`${isNowOn ? '✅' : '○'} ${label} ${isNowOn ? 'diaktifkan' : 'dinonaktifkan'}`);
+    }
 }
 
 function loadSettings() {
@@ -228,6 +240,13 @@ function loadSettings() {
         $('#setQuoteJumpx').closest('.settings-row-col').hide();
     }
     $('#setSoundMuted').prop('checked', !!CFG.soundMuted);
+    $('#setAutoLevel').prop('checked', !!CFG.autoLevel);
+    $('#setLevelCount').val(CFG.levelCount ?? 2);
+    // Speed chips — tandai yang aktif berdasarkan CFG.interval
+    const speeds = [800, 600, 400];
+    const nearest = speeds.reduce((a, b) => Math.abs(b - CFG.interval) < Math.abs(a - CFG.interval) ? b : a);
+    $('#speedChips .sort-btn').removeClass('active');
+    $(`#speedChips [data-speed="${nearest}"]`).addClass('active');
     $('#topUsername').text('@' + (CFG.username || '-'));
     // Display version
     const ver = APP_DEV_CONFIG.appVersion || '';
@@ -239,50 +258,47 @@ function loadSettings() {
     updateScanCount();
 }
 const EVM_RE = /^0x[0-9a-fA-F]{40}$/;
-function saveSettings() {
-    const username = $('#setUsername').val().trim();
-    const wallet = $('#setWallet').val().trim();
-    const intervalRaw = $('#setInterval').val();
-    const interval = parseInt(intervalRaw);
+
+// ─── Auto-save helpers ────────────────────────
+function _persistCFG() {
+    localStorage.setItem(LS_SETTINGS, JSON.stringify(CFG));
+}
+
+// Simpan field non-kritis langsung saat berubah (tanpa toast)
+function _autoSaveFields() {
     const qMetax = parseInt($('#setQuoteMetax').val());
     const qJumpx = parseInt($('#setQuoteJumpx').val());
-
-    // Validasi semua input
-    $('#tabSettings .settings-input').removeClass('input-error');
-    const errs = [];
-    if (!username)
-        errs.push(['setUsername', 'Username wajib diisi']);
-    if (!wallet)
-        errs.push(['setWallet', 'Wallet Address wajib diisi']);
-    else if (!EVM_RE.test(wallet))
-        errs.push(['setWallet', 'Wallet Address tidak valid — harus 0x + tepat 40 karakter hex']);
-    if (intervalRaw === '' || isNaN(interval) || interval < 100)
-        errs.push(['setInterval', 'Jeda KOIN minimal 100 ms']);
-    if (isNaN(qMetax) || qMetax < 1 || qMetax > 5)
-        errs.push(['setQuoteMetax', 'DEX METAX harus antara 1–5']);
-    if (isJumpxEnabled() && (isNaN(qJumpx) || qJumpx < 1 || qJumpx > 5))
-        errs.push(['setQuoteJumpx', 'DEX JUMPX harus antara 1–5']);
-
-    if (errs.length) {
-        errs.forEach(([id]) => $('#' + id).addClass('input-error'));
-        const firstEl = document.getElementById(errs[0][0]);
-        if (firstEl) firstEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        showAlertList(errs.map(e => e[1]), 'Validasi Settings');
-        return;
-    }
-
-    CFG.username = username;
-    CFG.wallet = wallet;
-    CFG.interval = interval;
-    CFG.quoteCountMetax = Math.min(5, Math.max(1, qMetax));
-    CFG.quoteCountJumpx = isJumpxEnabled() ? Math.min(5, Math.max(1, qJumpx)) : 0;
+    if (!isNaN(qMetax) && qMetax >= 1 && qMetax <= 5)
+        CFG.quoteCountMetax = qMetax;
+    if (isJumpxEnabled() && !isNaN(qJumpx) && qJumpx >= 1 && qJumpx <= 5)
+        CFG.quoteCountJumpx = qJumpx;
     CFG.soundMuted = $('#setSoundMuted').prop('checked');
-    localStorage.setItem(LS_SETTINGS, JSON.stringify(CFG));
-    $('#topUsername').text('@' + (CFG.username || '-'));
-    if (!scanning) { buildMonitorRows(); }
+    CFG.autoLevel  = $('#setAutoLevel').prop('checked');
+    CFG.levelCount = Math.min(4, Math.max(1, parseInt($('#setLevelCount').val()) || 2));
+    _persistCFG();
+    if (!scanning) buildMonitorRows();
     renderTokenList();
-    showToast('✓ Settings tersimpan!');
 }
+
+// Simpan username & wallet saat blur — validasi inline
+function _saveUserInfo() {
+    const username = $('#setUsername').val().trim();
+    const wallet   = $('#setWallet').val().trim();
+    $('#setUsername, #setWallet').removeClass('input-error');
+    let hasErr = false;
+    if (!username) { $('#setUsername').addClass('input-error'); hasErr = true; }
+    if (!wallet) { $('#setWallet').addClass('input-error'); hasErr = true; }
+    else if (!EVM_RE.test(wallet)) { $('#setWallet').addClass('input-error'); hasErr = true; }
+    if (hasErr) return;
+    CFG.username = username;
+    CFG.wallet   = wallet;
+    _persistCFG();
+    $('#topUsername').text('@' + username);
+    showToast('✓ Data pengguna tersimpan');
+}
+
+// Tetap ada untuk kompatibilitas (dipakai loadSettings & onboarding)
+function saveSettings() { _saveUserInfo(); _autoSaveFields(); }
 
 // ─── Onboarding ──────────────────────────────
 function checkOnboarding() {
@@ -728,7 +744,7 @@ function deleteToken(id) {
 }
 
 // ─── CSV Export / Import ─────────────────────
-const CSV_COLS = ['ticker', 'cex', 'symbolToken', 'scToken', 'decToken', 'tickerPair', 'symbolPair', 'scPair', 'decPair', 'chain', 'modalCtD', 'modalDtC', 'minPnl'];
+const CSV_COLS = ['ticker', 'cex', 'symbolToken', 'scToken', 'decToken', 'tickerPair', 'symbolPair', 'scPair', 'decPair', 'chain', 'modalCtD', 'modalDtC', 'minPnl', 'favorite'];
 
 $('#btnExport').on('click', () => {
     const tokens = getTokens();
@@ -737,7 +753,7 @@ $('#btnExport').on('click', () => {
 
     // Android WebView: blob URL download tidak didukung — pakai native bridge
     if (window.AndroidBridge) {
-        window.AndroidBridge.saveFile('cexdex-tokens.csv', csvContent);
+        window.AndroidBridge.saveFile('monitoring-tokens.csv', csvContent);
         return;
     }
 
@@ -745,7 +761,7 @@ $('#btnExport').on('click', () => {
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'cexdex-tokens.csv'; a.click();
+    a.download = 'monitoring-tokens.csv'; a.click();
 });
 $('#btnImportTrigger').on('click', () => $('#importFile').click());
 // Parser CSV yang benar: menangani cell kosong, quoted value, dan CRLF
@@ -801,6 +817,7 @@ $('#importFile').on('change', e => {
                     obj.modalDtC = parseFloat(obj.modalDtC) || 80;
                     const pnlRaw = parseFloat(obj.minPnl);
                     obj.minPnl = isFinite(pnlRaw) ? pnlRaw : null;
+                    obj.favorite = obj.favorite === 'true' || obj.favorite === true;
                     obj.id = obj.id || genId();
                     return obj;
                 })
@@ -1008,6 +1025,33 @@ function computeQuotePnl(parsed, destDec, bidPrice, modal, cexKey, askPrice, dir
     }
 }
 
+// ─── Auto Level Calculation ──────────────────
+// Hitung weighted avg price & actual modal dari orderbook depth
+function calculateAutoVolume(orderbook, maxModal, levels, side) {
+    try {
+        const book = (orderbook[side] || []).slice(0, Math.min(levels, 4));
+        if (!book.length) return null;
+        let totalUSDT = 0, totalCoins = 0, lastPrice = 0, levelsUsed = 0;
+        for (let i = 0; i < book.length; i++) {
+            const price = parseFloat(book[i][0]), amount = parseFloat(book[i][1]);
+            if (!price || !amount) continue;
+            const volUSDT = price * amount;
+            lastPrice = price;
+            levelsUsed = i + 1;
+            if (totalUSDT + volUSDT >= maxModal) {
+                const remaining = maxModal - totalUSDT;
+                totalCoins += remaining / price;
+                totalUSDT = maxModal;
+                break;
+            }
+            totalUSDT += volUSDT;
+            totalCoins += amount;
+        }
+        if (totalCoins <= 0 || totalUSDT <= 0) return null;
+        return { actualModal: totalUSDT, avgPrice: totalUSDT / totalCoins, lastLevelPrice: lastPrice, levelsUsed };
+    } catch { return null; }
+}
+
 async function scanToken(tok) {
     const chainCfg = CONFIG_CHAINS[tok.chain];
     if (!chainCfg) return;
@@ -1043,9 +1087,42 @@ async function scanToken(tok) {
     }
     if (!pairSc || !tok.scToken) { setCardStatus(card, 'SC kosong'); return; }
 
-    // 3. Fetch DEX quotes from BOTH aggregators in parallel
-    const weiCtD = toWei(obToken.askPrice > 0 ? tok.modalCtD / obToken.askPrice : 0, tok.decToken);
-    const weiDtC = toWei(isTriangular ? (askPair > 0 ? tok.modalDtC / askPair : 0) : tok.modalDtC, pairDec);
+    // 3. Auto Level: hitung weighted avg price & actual modal dari orderbook depth
+    let alCtD = null, alDtC = null;
+    if (CFG.autoLevel && obToken.asks.length && obToken.bids.length) {
+        alCtD = calculateAutoVolume(obToken, tok.modalCtD, CFG.levelCount, 'asks');
+        alDtC = calculateAutoVolume(obToken, tok.modalDtC, CFG.levelCount, 'bids');
+    }
+    const modalCtD  = alCtD ? alCtD.actualModal : tok.modalCtD;
+    const askCtD    = alCtD ? alCtD.avgPrice    : obToken.askPrice;
+    const modalDtC  = alDtC ? alDtC.actualModal : tok.modalDtC;
+    const bidDtC    = alDtC ? alDtC.avgPrice    : obToken.bidPrice;
+    const dispAskCtD = alCtD ? alCtD.lastLevelPrice : obToken.askPrice;
+    const dispBidDtC = alDtC ? alDtC.lastLevelPrice : obToken.bidPrice;
+
+    // 4. Fetch DEX quotes from BOTH aggregators in parallel
+    const weiCtD = toWei(askCtD > 0 ? modalCtD / askCtD : 0, tok.decToken);
+    const weiDtC = toWei(isTriangular ? (askPair > 0 ? modalDtC / askPair : 0) : modalDtC, pairDec);
+
+    // Update header modal: tampilkan actualModal + status jika Auto Level aktif
+    const ctdHdr = card.querySelector('[data-modal-hdr="ctd"]');
+    const dtcHdr = card.querySelector('[data-modal-hdr="dtc"]');
+    if (CFG.autoLevel) {
+        if (ctdHdr) {
+            const full = !alCtD || alCtD.actualModal >= tok.modalCtD * 0.99;
+            const amt  = alCtD ? alCtD.actualModal.toFixed(2) : tok.modalCtD;
+            ctdHdr.innerHTML = `$${amt} <span class="al-badge ${full ? 'al-ok' : 'al-warn'}">${full ? '✅' : '⚠️'}</span><span class="tbl-status"></span>`;
+        }
+        if (dtcHdr) {
+            const full = !alDtC || alDtC.actualModal >= tok.modalDtC * 0.99;
+            const amt  = alDtC ? alDtC.actualModal.toFixed(2) : tok.modalDtC;
+            dtcHdr.innerHTML = `$${amt} <span class="al-badge ${full ? 'al-ok' : 'al-warn'}">${full ? '✅' : '⚠️'}</span><span class="tbl-status"></span>`;
+        }
+    } else {
+        if (ctdHdr) ctdHdr.innerHTML = `$${tok.modalCtD}<span class="tbl-status"></span>`;
+        if (dtcHdr) dtcHdr.innerHTML = `$${tok.modalDtC}<span class="tbl-status"></span>`;
+    }
+
     const diagCtD = diagnoseWei(weiCtD);
     const diagDtC = diagnoseWei(weiDtC);
     const chainId = chainCfg.Kode_Chain;
@@ -1056,18 +1133,18 @@ async function scanToken(tok) {
         fetchDexQuotesJumpx(chainId, pairSc, tok.scToken, weiDtC),
     ]);
 
-    // 4. Combine & sort CTD quotes (METAX + JUMPX) by PnL descending
+    // 5. Combine & sort CTD quotes (METAX + JUMPX) by PnL descending
     const tokMinPnl = (isFinite(tok.minPnl) && tok.minPnl !== null) ? tok.minPnl : 1;
     const allCtD = [];
-    mxCtD.forEach(q => { const p = parseDexQuoteMetax(q); if (p) allCtD.push(computeQuotePnl(p, pairDec, bidPair, tok.modalCtD, tok.cex, obToken.askPrice, 'ctd')); });
-    jxCtD.forEach(q => { const p = parseDexQuoteJumpx(q); if (p) allCtD.push(computeQuotePnl(p, pairDec, bidPair, tok.modalCtD, tok.cex, obToken.askPrice, 'ctd')); });
+    mxCtD.forEach(q => { const p = parseDexQuoteMetax(q); if (p) allCtD.push(computeQuotePnl(p, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd')); });
+    jxCtD.forEach(q => { const p = parseDexQuoteJumpx(q); if (p) allCtD.push(computeQuotePnl(p, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd')); });
     allCtD.sort((a, b) => b.pnl - a.pnl); // best first
     const ctdData = allCtD.slice(0, n);
 
-    // 5. Combine & sort DTC quotes by PnL ascending (best rightmost)
+    // 6. Combine & sort DTC quotes by PnL ascending (best rightmost)
     const allDtC = [];
-    mxDtC.forEach(q => { const p = parseDexQuoteMetax(q); if (p) allDtC.push(computeQuotePnl(p, tok.decToken, obToken.bidPrice, tok.modalDtC, tok.cex, obToken.askPrice, 'dtc')); });
-    jxDtC.forEach(q => { const p = parseDexQuoteJumpx(q); if (p) allDtC.push(computeQuotePnl(p, tok.decToken, obToken.bidPrice, tok.modalDtC, tok.cex, obToken.askPrice, 'dtc')); });
+    mxDtC.forEach(q => { const p = parseDexQuoteMetax(q); if (p) allDtC.push(computeQuotePnl(p, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc')); });
+    jxDtC.forEach(q => { const p = parseDexQuoteJumpx(q); if (p) allDtC.push(computeQuotePnl(p, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc')); });
     allDtC.sort((a, b) => a.pnl - b.pnl); // best last
     const dtcData = allDtC.slice(0, n);
 
@@ -1076,7 +1153,7 @@ async function scanToken(tok) {
     if (ctdStatus) ctdStatus.textContent = '';
     for (let i = 0; i < n; i++) {
         const cexEl = card.querySelector(`[data-ctd-cex="${i}"]`);
-        if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(obToken.askPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
+        if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(dispAskCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
     }
     if (!ctdData.length) {
         const reason = diagCtD || 'TIDAK ADA LP / DEX';
@@ -1123,7 +1200,7 @@ async function scanToken(tok) {
     if (dtcStatus) dtcStatus.textContent = '';
     for (let i = 0; i < n; i++) {
         const cexEl = card.querySelector(`[data-dtc-cex="${i}"]`);
-        if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(obToken.bidPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
+        if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(dispBidDtC)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
     }
     if (!dtcData.length) {
         const reason = diagDtC || '';
@@ -1259,7 +1336,7 @@ function buildMonitorRows(tokenList) {
   <div class="mon-table-scroll">
   <table class="mon-sub-table ctd-table">
     <thead><tr class="mon-sub-hdr">
-      <td class="mon-lbl-hdr" style="background:${MON_CTD_COLOR}">$${t.modalCtD}<span class="tbl-status"></span></td>
+      <td class="mon-lbl-hdr" data-modal-hdr="ctd" style="background:${MON_CTD_COLOR}">$${t.modalCtD}<span class="tbl-status"></span></td>
       ${dexHdr('ctd', MON_CTD_COLOR, t.id)}
     </tr></thead>
     <tbody>
@@ -1273,7 +1350,7 @@ function buildMonitorRows(tokenList) {
   <div class="mon-table-scroll">
   <table class="mon-sub-table dtc-table">
     <thead><tr class="mon-sub-hdr">
-      <td class="mon-lbl-hdr" style="background:${MON_DTC_COLOR}">$${t.modalDtC}<span class="tbl-status"></span></td>
+      <td class="mon-lbl-hdr" data-modal-hdr="dtc" style="background:${MON_DTC_COLOR}">$${t.modalDtC}<span class="tbl-status"></span></td>
       ${dexHdr('dtc', MON_DTC_COLOR, t.id)}
     </tr></thead>
     <tbody>
@@ -1522,8 +1599,42 @@ $('#btnAutoReload').on('click', function () {
     showToast(autoReload ? '🔁 Auto Reload Scanner Aktif' : '🔂 Sekali Scan Aktif');
 });
 
-// ─── Settings Binding ─────────────────────────
-$('#btnSaveSettings').on('click', saveSettings);
+// ─── Settings Auto-Save Bindings ──────────────
+// Username & wallet: simpan + validasi saat focus hilang
+$('#setUsername, #setWallet').on('blur', _saveUserInfo);
+
+// Speed chips: pilih & simpan langsung
+$('#speedChips').on('click', '.sort-btn', function () {
+    $('#speedChips .sort-btn').removeClass('active');
+    $(this).addClass('active');
+    CFG.interval = parseInt($(this).data('speed'));
+    _persistCFG();
+    showToast('✓ Kecepatan: ' + $(this).text());
+});
+
+// Semua field lain: auto-save + toast saat berubah
+$('#setSoundMuted').on('change', function () {
+    _autoSaveFields();
+    showToast(this.checked ? '🔕 Notifikasi dimatikan' : '🔔 Notifikasi diaktifkan');
+});
+$('#setAutoLevel').on('change', function () {
+    _autoSaveFields();
+    showToast(this.checked ? '✅ Auto Level CEX aktif' : '○ Auto Level CEX nonaktif');
+});
+$('#setQuoteMetax').on('change', function () {
+    _autoSaveFields();
+    showToast('✓ Quote MT tersimpan: ' + $(this).val());
+});
+$('#setQuoteJumpx').on('change', function () {
+    _autoSaveFields();
+    showToast('✓ Quote JM tersimpan: ' + $(this).val());
+});
+$('#setLevelCount').on('change', function () {
+    const clamped = Math.min(4, Math.max(1, parseInt($(this).val()) || 2));
+    $(this).val(clamped);
+    _autoSaveFields();
+    showToast('✓ Level CEX: ' + clamped);
+});
 
 // ─── Reload with Toast ───────────────────────
 function reloadWithToast() {
@@ -1841,7 +1952,7 @@ $('#btnBulkApply').on('click', function () {
     let filtered = allTokens.filter(t => {
         const cexOk = CFG.activeCex.length === 0 || CFG.activeCex.includes(t.cex);
         const chainOk = CFG.activeChains.length === 0 || CFG.activeChains.includes(t.chain);
-        return cexOk && chainOk;
+        return cexOk && chainOk && !t.favorite; // koin favorit dikecualikan
     });
     if (!filtered.length) {
         showAlert('Tidak ada koin yang cocok dengan filter aktif.', 'Bulk Modal', 'warn');
@@ -1851,8 +1962,10 @@ $('#btnBulkApply').on('click', function () {
     if (ctdValid) parts.push(`CEX→DEX: $${ctd}`);
     if (dtcValid) parts.push(`DEX→CEX: $${dtc}`);
     if (pnlValid) parts.push(`Min PNL: $${pnl}`);
+    const favSkipped = allTokens.filter(t => t.favorite).length;
+    const favNote = favSkipped > 0 ? `\n(⭐ ${favSkipped} koin favorit dilewati)` : '';
     showConfirm(
-        `Update ${filtered.length} koin dengan:\n${parts.join(', ')}?`,
+        `Update ${filtered.length} koin dengan:\n${parts.join(', ')}?${favNote}`,
         'Bulk Modal',
         '✅ Terapkan',
         () => {
