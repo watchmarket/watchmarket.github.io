@@ -226,7 +226,7 @@ function toggleFilterChip(el, type) {
     if (arr.length === 0) {
         showToast(`✅ Semua ${type === 'cex' ? 'CEX' : 'Chain'} aktif`);
     } else {
-        showToast(`${isNowOn ? '✅' : '○'} ${label} ${isNowOn ? 'diaktifkan' : 'dinonaktifkan'}`);
+        showToast(`${isNowOn ? '✅ ' : '❌ '} ${label.toUpperCase()} ${isNowOn ? 'di OFF-kan' : 'di ON-kan'}`);
     }
 }
 
