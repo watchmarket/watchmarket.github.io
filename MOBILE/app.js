@@ -59,11 +59,12 @@ let CFG = {
     soundMuted: false,
     activeCex: [],    // [] = semua aktif
     activeChains: [], // [] = semua aktif
-    autoLevel: false, // Auto Level: hitung berdasarkan kedalaman orderbook
-    levelCount: 2,    // Jumlah level orderbook (1–4)
+    autoLevel: APP_DEV_CONFIG.defaultAutoLevel,  // Auto Level CEX default dari config.js
+    levelCount: APP_DEV_CONFIG.defaultLevelCount, // Level orderbook default dari config.js
 };
 function totalQuoteCount() { return CFG.quoteCountMetax + CFG.quoteCountJumpx; }
 function isJumpxEnabled() { return APP_DEV_CONFIG.defaultQuoteCountJumpx > 0; }
+function isAutoLevelEnabled() { return APP_DEV_CONFIG.defaultAutoLevel !== false; }
 
 // Kembalikan token yang lolos filter CEX+chain, diurutkan sesuai monitorSort
 let monitorSort = 'az'; // 'az' | 'za' | 'rand'
@@ -245,9 +246,15 @@ function loadSettings() {
     if (!isJumpxEnabled()) {
         $('#setQuoteJumpx').closest('.settings-row-col').hide();
     }
-    $('#setSoundMuted').prop('checked', !!CFG.soundMuted);
-    $('#setAutoLevel').prop('checked', !!CFG.autoLevel);
-    $('#setLevelCount').val(CFG.levelCount ?? 2);
+    $('#setSoundMuted').prop('checked', !CFG.soundMuted); // centang = suara ON
+    // Hide Auto Level settings jika dimatikan dari config.js
+    if (!isAutoLevelEnabled()) {
+        CFG.autoLevel = false;
+        $('#setAutoLevel').closest('.settings-field').hide();
+    } else {
+        $('#setAutoLevel').prop('checked', !!CFG.autoLevel);
+        $('#setLevelCount').val(CFG.levelCount ?? APP_DEV_CONFIG.defaultLevelCount);
+    }
     // Speed chips — tandai yang aktif berdasarkan CFG.interval
     const speeds = [800, 600, 400];
     const nearest = speeds.reduce((a, b) => Math.abs(b - CFG.interval) < Math.abs(a - CFG.interval) ? b : a);
@@ -278,7 +285,7 @@ function _autoSaveFields() {
         CFG.quoteCountMetax = qMetax;
     if (isJumpxEnabled() && !isNaN(qJumpx) && qJumpx >= 1 && qJumpx <= 5)
         CFG.quoteCountJumpx = qJumpx;
-    CFG.soundMuted = $('#setSoundMuted').prop('checked');
+    CFG.soundMuted = !$('#setSoundMuted').prop('checked'); // centang = suara ON = NOT muted
     CFG.autoLevel  = $('#setAutoLevel').prop('checked');
     CFG.levelCount = Math.min(4, Math.max(1, parseInt($('#setLevelCount').val()) || 2));
     _persistCFG();
@@ -841,7 +848,6 @@ $('#importFile').on('change', e => {
                 showAlert('Tidak ada baris data koin yang valid di dalam file CSV.', 'Import Gagal', 'error');
                 return;
             }
-            const invalidCount = tokens.filter(t => !isValidToken(t)).length;
             saveTokens(tokens); renderTokenList();
             showToast(`✅ ${tokens.length} koin berhasil diimpor`);
         } catch (err) { showAlert('Terjadi kesalahan saat membaca file:<br>' + err.message, 'Error Import', 'error'); }
@@ -1333,7 +1339,6 @@ function buildMonitorRows(tokenList) {
     $('#monitorList').html(tokens.map((t, idx) => {
         const cc = CONFIG_CEX[t.cex] || {};
         const ch = CONFIG_CHAINS[t.chain] || {};
-        const cexColor = cc.WARNA || '#555';
         const cexLabel = cc.label || t.cex;
         const chainLabel = ch.label || t.chain;
         const tri = t.tickerPair && t.tickerPair !== t.ticker;
@@ -1439,9 +1444,7 @@ function updateSignalChip(tok, pnl, dir) {
             document.getElementById('signalBar').appendChild(chip);
         }
         const cexCfg = CONFIG_CEX[tok.cex] || {};
-        const chainCfg = CONFIG_CHAINS[tok.chain] || {};
         const cexLabel = (cexCfg.label || tok.cex || '').toUpperCase();
-        const chainLabel = (chainCfg.label || tok.chain || '').toUpperCase();
         const dirLabel = dir === 'CTD' ? 'CEX→DEX' : 'DEX→CEX';
         const dirClass = dir === 'CTD' ? 'dir-ctd' : 'dir-dtc';
         const pnlClass = pnl >= 0 ? 'chip-pnl-pos' : 'chip-pnl-neg';
@@ -1665,7 +1668,7 @@ $('#speedChips').on('click', '.sort-btn', function () {
 // Semua field lain: auto-save + toast saat berubah
 $('#setSoundMuted').on('change', function () {
     _autoSaveFields();
-    showToast(this.checked ? '🔕 Notifikasi dimatikan' : '🔔 Notifikasi diaktifkan');
+    showToast(this.checked ? '🔔 Notifikasi suara aktif' : '🔕 Notifikasi suara dimatikan');
 });
 $('#setAutoLevel').on('change', function () {
     _autoSaveFields();
