@@ -654,6 +654,7 @@ function isValidToken(t) {
 
 let tokenSort = 'az'; // 'az' | 'za'
 let tokenSearchQuery = '';
+let tokenFavFilter = false;
 
 function renderTokenList() {
     let tokens = getTokens();
@@ -677,6 +678,8 @@ function renderTokenList() {
             return ticker.includes(q) || pair.includes(q) || cex.includes(q) || chain.includes(q);
         });
     }
+    // Favorite filter
+    if (tokenFavFilter) tokens = tokens.filter(t => t.favorite);
     const favCount = tokens.filter(t => t.favorite).length;
     $('#tokenCount').text('TOTAL ' + tokens.length + ' KOIN');
     $('#favCount').text(favCount > 0 ? `⭐ ${favCount}/${tokens.length}` : '');
@@ -705,6 +708,7 @@ function renderTokenList() {
         <div class="token-list-sub">$${t.modalCtD}/$${t.modalDtC} &nbsp;|&nbsp; ${pnlTxt}</div>
       </div>
       <div style="display:flex;align-items:center;gap:6px">
+        <button class="tok-fav ${t.favorite ? 'fav-active' : ''}" onclick="toggleFavorite('${t.id}')" title="Favorit">⭐</button>
         <div class="token-list-actions">
           <button class="btn-icon" onclick="openSheet('${t.id}')">✏️</button>
           <button class="btn-icon danger" onclick="deleteToken('${t.id}')">🗑️</button>
@@ -1282,6 +1286,8 @@ function toggleFavorite(id) {
     if (idx < 0) return;
     tokens[idx].favorite = !tokens[idx].favorite;
     saveTokens(tokens);
+    // Jika filter fav aktif di tab koin, re-render agar item hilang/muncul sesuai filter
+    if (tokenFavFilter) { renderTokenList(); return; }
     // Update visual without full rebuild
     const monBtn = document.querySelector(`#card-${id} .mon-fav`);
     if (monBtn) monBtn.classList.toggle('fav-active', tokens[idx].favorite);
@@ -1667,6 +1673,13 @@ $('#tokSortAZ, #tokSortZA').on('click', function () {
     tokenSort = $(this).data('sort');
     $('#tokSortAZ, #tokSortZA').removeClass('active');
     $(this).addClass('active');
+    renderTokenList();
+});
+
+// Koin fav filter
+$('#tokFavFilter').on('click', function () {
+    tokenFavFilter = !tokenFavFilter;
+    $(this).toggleClass('active', tokenFavFilter);
     renderTokenList();
 });
 
