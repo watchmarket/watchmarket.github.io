@@ -978,6 +978,74 @@ const _lifiKeys = [
 ];
 function _lifiApiKey() { return _lifiKeys[Math.floor(Math.random() * _lifiKeys.length)]; }
 
+// ─── KYBER: KyberSwap Aggregator REST API ────
+// Docs: https://docs.kyberswap.com/kyberswap-solutions/kyberswap-aggregator/developer-guides/execute-a-swap-with-the-aggregator-api
+const KYBER_CHAIN_MAP = {
+    bsc: 'bsc', ethereum: 'ethereum', polygon: 'polygon',
+    arbitrum: 'arbitrum', base: 'base',
+};
+
+function isKyberEnabled() { return APP_DEV_CONFIG.defaultEnableKyber === true; }
+
+async function fetchDexQuotesKyber(chainKey, srcToken, destToken, amountWei, decOut) {
+    if (!isKyberEnabled()) return [];
+    try {
+        const chainName = KYBER_CHAIN_MAP[chainKey];
+        if (!chainName || !amountWei || String(amountWei) === '0') return [];
+        const url = `https://aggregator-api.kyberswap.com/${chainName}/api/v1/routes` +
+            `?tokenIn=${srcToken}&tokenOut=${destToken}&amountIn=${amountWei}&gasInclude=true`;
+        const resp = await fetch(url, { headers: { 'x-client-id': 'hybridapp' } });
+        if (!resp.ok) return [];
+        const data = await resp.json();
+        const amountOut = data?.data?.routeSummary?.amountOut;
+        if (!amountOut) return [];
+        return [{ amount: parseFloat(amountOut), dec: decOut, name: 'KYBER', src: 'KB' }];
+    } catch { return []; }
+}
+
+// ─── OKX DEX: OKX Aggregator REST API ────────
+// Docs: https://web3.okx.com/priapi/v6/dex/aggregator/quote
+function isOkxEnabled() { return APP_DEV_CONFIG.defaultEnableOkx === true; }
+function _okxApiKey() { return apiKeysOKXDEX[Math.floor(Math.random() * apiKeysOKXDEX.length)]; }
+
+async function _signOkxHmac(secret, message) {
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+        'raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+    );
+    const sig = await crypto.subtle.sign('HMAC', key, enc.encode(message));
+    return btoa(String.fromCharCode(...new Uint8Array(sig)));
+}
+
+async function fetchDexQuotesOkx(chainId, srcToken, destToken, amountWei, decOut) {
+    if (!isOkxEnabled()) return [];
+    try {
+        if (!amountWei || String(amountWei) === '0') return [];
+        const key = _okxApiKey();
+        const timestamp = new Date().toISOString();
+        const path = '/api/v6/dex/aggregator/quote';
+        const query = `amount=${amountWei}&chainIndex=${chainId}&fromTokenAddress=${srcToken}&toTokenAddress=${destToken}`;
+        const toSign = timestamp + 'GET' + path + '?' + query;
+        const signature = await _signOkxHmac(key.secretKeyOKX, toSign);
+        const targetUrl = `https://web3.okx.com${path}?${query}`;
+        const proxyUrl = APP_DEV_CONFIG.corsProxy + encodeURIComponent(targetUrl);
+        const resp = await fetch(proxyUrl, {
+            headers: {
+                'OK-ACCESS-KEY': key.ApiKeyOKX,
+                'OK-ACCESS-SIGN': signature,
+                'OK-ACCESS-PASSPHRASE': key.PassphraseOKX,
+                'OK-ACCESS-TIMESTAMP': timestamp,
+                'Content-Type': 'application/json',
+            },
+        });
+        if (!resp.ok) return [];
+        const data = await resp.json();
+        const toAmt = data?.data?.[0]?.toTokenAmount;
+        if (!toAmt) return [];
+        return [{ amount: parseFloat(toAmt), dec: decOut, name: 'OKX', src: 'OX' }];
+    } catch { return []; }
+}
+
 function fetchDexQuotesJumpx(chainId, srcToken, destToken, amountWei) {
     if (!isJumpxEnabled()) return Promise.resolve([]);
     return new Promise(async resolve => {
@@ -1148,18 +1216,24 @@ async function scanToken(tok) {
     const diagCtD = diagnoseWei(weiCtD);
     const diagDtC = diagnoseWei(weiDtC);
     const chainId = chainCfg.Kode_Chain;
-    const [mxCtD, mxDtC, jxCtD, jxDtC] = await Promise.all([
+    const [mxCtD, mxDtC, jxCtD, jxDtC, kbCtD, kbDtC, okCtD, okDtC] = await Promise.all([
         fetchDexQuotesMetax(chainId, tok.scToken, pairSc, weiCtD),
         fetchDexQuotesMetax(chainId, pairSc, tok.scToken, weiDtC),
         fetchDexQuotesJumpx(chainId, tok.scToken, pairSc, weiCtD),
         fetchDexQuotesJumpx(chainId, pairSc, tok.scToken, weiDtC),
+        fetchDexQuotesKyber(tok.chain, tok.scToken, pairSc, weiCtD, pairDec),
+        fetchDexQuotesKyber(tok.chain, pairSc, tok.scToken, weiDtC, tok.decToken),
+        fetchDexQuotesOkx(chainId, tok.scToken, pairSc, weiCtD, pairDec),
+        fetchDexQuotesOkx(chainId, pairSc, tok.scToken, weiDtC, tok.decToken),
     ]);
 
-    // 5. Combine & sort CTD quotes (METAX + JUMPX) by PnL descending
+    // 5. Combine & sort CTD quotes (METAX + JUMPX + KYBER + OKX) by PnL descending
     const tokMinPnl = (isFinite(tok.minPnl) && tok.minPnl !== null) ? tok.minPnl : 1;
     const allCtD = [];
     mxCtD.forEach(q => { const p = parseDexQuoteMetax(q); if (p) allCtD.push(computeQuotePnl(p, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd')); });
     jxCtD.forEach(q => { const p = parseDexQuoteJumpx(q); if (p) allCtD.push(computeQuotePnl(p, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd')); });
+    kbCtD.forEach(q => { if (q) allCtD.push(computeQuotePnl(q, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd')); });
+    okCtD.forEach(q => { if (q) allCtD.push(computeQuotePnl(q, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd')); });
     allCtD.sort((a, b) => b.pnl - a.pnl); // best first
     const ctdData = allCtD.slice(0, n);
 
@@ -1167,7 +1241,9 @@ async function scanToken(tok) {
     const allDtC = [];
     mxDtC.forEach(q => { const p = parseDexQuoteMetax(q); if (p) allDtC.push(computeQuotePnl(p, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc')); });
     jxDtC.forEach(q => { const p = parseDexQuoteJumpx(q); if (p) allDtC.push(computeQuotePnl(p, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc')); });
-    allDtC.sort((a, b) => a.pnl - b.pnl); // best last
+    kbDtC.forEach(q => { if (q) allDtC.push(computeQuotePnl(q, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc')); });
+    okDtC.forEach(q => { if (q) allDtC.push(computeQuotePnl(q, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc')); });
+    allDtC.sort((a, b) => b.pnl - a.pnl); // best first
     const dtcData = allDtC.slice(0, n);
 
     // 6. Fill CTD table
@@ -1195,7 +1271,7 @@ async function scanToken(tok) {
             const pnlEl = els?.ctdPnl[i];
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
-            const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : '<span class="src-tag jx">JM</span>';
+            const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'KB' || r.src === 'OX' ? '' : '<span class="src-tag jx">JM</span>';
             if (hdrEl) { hdrEl.innerHTML = srcTag + ' ' + r.name; hdrEl.className = 'mon-dex-hdr'; }
             if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(obToken.askPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
@@ -1242,7 +1318,7 @@ async function scanToken(tok) {
             const pnlEl = els?.dtcPnl[i];
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
-            const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : '<span class="src-tag jx">JM</span>';
+            const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'KB' || r.src === 'OX' ? '' : '<span class="src-tag jx">JM</span>';
             if (hdrEl) { hdrEl.innerHTML = srcTag + ' ' + r.name; hdrEl.className = 'mon-dex-hdr'; }
             if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(r.effPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(obToken.bidPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }

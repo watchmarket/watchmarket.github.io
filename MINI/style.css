@@ -706,6 +706,16 @@ body {
   color: #fff;
 }
 
+.src-tag.kb {
+  background: #0b7e18;
+  color: #fff;
+}
+
+.src-tag.ox {
+  background: #1a1a1a;
+  color: #fff;
+}
+
 .mon-sub-table tbody tr {
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
