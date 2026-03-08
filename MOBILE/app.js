@@ -737,7 +737,7 @@ $('#btnExport').on('click', () => {
 
     // Android WebView: blob URL download tidak didukung — pakai native bridge
     if (window.AndroidBridge) {
-        window.AndroidBridge.saveFile('cexdex-tokens.csv', csvContent);
+        window.AndroidBridge.saveFile('monitoring-crypto-tokens.csv', csvContent);
         return;
     }
 
@@ -745,7 +745,7 @@ $('#btnExport').on('click', () => {
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'cexdex-tokens.csv'; a.click();
+    a.download = 'monitoring-crypto-tokens.csv'; a.click();
 });
 $('#btnImportTrigger').on('click', () => $('#importFile').click());
 // Parser CSV yang benar: menangani cell kosong, quoted value, dan CRLF
