@@ -124,10 +124,16 @@ let signalCache = [];
 const tgCooldown = new Map(); // tokenId → timestamp
 const wmCache = {};           // chain → data array
 const _obCache = {};          // tokenId → { bids, asks, bidPrice, askPrice }
+const _cardEls = new Map();  // tokenId → cached DOM element references
 
 // ─── Utility ─────────────────────────────────
-const getTokens = () => { try { return JSON.parse(localStorage.getItem(LS_TOKENS)) || []; } catch { return []; } };
-const saveTokens = (a) => localStorage.setItem(LS_TOKENS, JSON.stringify(a));
+let _tokenCache = null;
+const getTokens = () => {
+    if (_tokenCache) return _tokenCache;
+    try { _tokenCache = JSON.parse(localStorage.getItem(LS_TOKENS)) || []; } catch { _tokenCache = []; }
+    return _tokenCache;
+};
+const saveTokens = (a) => { _tokenCache = a; localStorage.setItem(LS_TOKENS, JSON.stringify(a)); };
 const genId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const toWei = (amt, dec) => {
     const n = Math.round(amt * 10 ** dec);
@@ -655,19 +661,18 @@ function isValidToken(t) {
 let tokenSort = 'az'; // 'az' | 'za'
 let tokenSearchQuery = '';
 let tokenFavFilter = false;
+let tokenRenderLimit = 50;
+let _renderDebounce = null;
 
 function renderTokenList() {
     let tokens = getTokens();
-    // Settings-based filter (sinkron dengan scanner)
     tokens = tokens.filter(t => {
         const cexOk = CFG.activeCex.length === 0 || CFG.activeCex.includes(t.cex);
         const chainOk = CFG.activeChains.length === 0 || CFG.activeChains.includes(t.chain);
         return cexOk && chainOk;
     });
-    // Sorting
     if (tokenSort === 'za') tokens = tokens.sort((a, b) => (b.ticker || '').localeCompare(a.ticker || ''));
     else tokens = tokens.sort((a, b) => (a.ticker || '').localeCompare(b.ticker || ''));
-    // Search filter
     if (tokenSearchQuery) {
         const q = tokenSearchQuery.toLowerCase();
         tokens = tokens.filter(t => {
@@ -678,15 +683,15 @@ function renderTokenList() {
             return ticker.includes(q) || pair.includes(q) || cex.includes(q) || chain.includes(q);
         });
     }
-    // Favorite filter
     if (tokenFavFilter) tokens = tokens.filter(t => t.favorite);
     const favCount = tokens.filter(t => t.favorite).length;
     $('#tokenCount').text('TOTAL ' + tokens.length + ' KOIN');
     $('#favCount').text(favCount > 0 ? `⭐ ${favCount}/${tokens.length}` : '');
-    if (!tokens.length) {
+    const displayTokens = tokens.slice(0, tokenRenderLimit);
+    if (!displayTokens.length) {
         $('#tokenList').html('<div class="token-list-empty">Belum ada token. Ketuk + untuk menambah.</div>');
     } else {
-        $('#tokenList').html(tokens.map(t => {
+        let html = displayTokens.map(t => {
             const cexCfg = CONFIG_CEX[t.cex] || {};
             const chainCfg = CONFIG_CHAINS[t.chain] || {};
             const tri = t.tickerPair && t.tickerPair !== t.ticker ? '↔️' : '→';
@@ -715,9 +720,13 @@ function renderTokenList() {
         </div>
       </div>
     </div>`;
-        }).join(''));
+        }).join('');
+        if (tokens.length > tokenRenderLimit) {
+            const remaining = tokens.length - tokenRenderLimit;
+            html += `<div class="load-more-wrap"><button class="btn-load-more" id="btnLoadMore">Tampilkan ${Math.min(remaining, 50)} lagi (${remaining} tersisa)</button></div>`;
+        }
+        $('#tokenList').html(html);
     }
-    // Rebuild monitor skeleton — skip during active scan agar tidak ganggu proses
     if (!scanning) buildMonitorRows();
     updateScanCount();
 }
@@ -1061,7 +1070,8 @@ function calculateAutoVolume(orderbook, maxModal, levels, side) {
 async function scanToken(tok) {
     const chainCfg = CONFIG_CHAINS[tok.chain];
     if (!chainCfg) return;
-    const card = document.getElementById('card-' + tok.id);
+    const els = _cardEls.get(tok.id);
+    const card = els?.card || document.getElementById('card-' + tok.id);
     if (!card) return;
     const n = totalQuoteCount();
 
@@ -1111,8 +1121,8 @@ async function scanToken(tok) {
     const weiDtC = toWei(isTriangular ? (askPair > 0 ? modalDtC / askPair : 0) : modalDtC, pairDec);
 
     // Update header modal: tampilkan actualModal + status jika Auto Level aktif
-    const ctdHdr = card.querySelector('[data-modal-hdr="ctd"]');
-    const dtcHdr = card.querySelector('[data-modal-hdr="dtc"]');
+    const ctdHdr = els?.modalCtdHdr;
+    const dtcHdr = els?.modalDtcHdr;
     if (CFG.autoLevel) {
         if (ctdHdr) {
             const full = !alCtD || alCtD.actualModal >= tok.modalCtD * 0.99;
@@ -1155,28 +1165,28 @@ async function scanToken(tok) {
     const dtcData = allDtC.slice(0, n);
 
     // 6. Fill CTD table
-    const ctdStatus = card.querySelector('.ctd-table .tbl-status');
+    const ctdStatus = els?.ctdStatus;
     if (ctdStatus) ctdStatus.textContent = '';
     for (let i = 0; i < n; i++) {
-        const cexEl = card.querySelector(`[data-ctd-cex="${i}"]`);
+        const cexEl = els?.ctdCex[i];
         if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(dispAskCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
     }
     if (!ctdData.length) {
         const reason = diagCtD || 'TIDAK ADA LP / DEX';
-        const hdrEl0 = card.querySelector('[data-ctd-hdr="0"]');
+        const hdrEl0 = els?.ctdHdr[0];
         if (hdrEl0) { hdrEl0.textContent = reason; hdrEl0.className = 'mon-dex-hdr mon-dex-hdr-err'; }
-        for (let i = 1; i < n; i++) { const h = card.querySelector(`[data-ctd-hdr="${i}"]`); if (h) { h.textContent = '—'; h.className = 'mon-dex-hdr'; } }
+        for (let i = 1; i < n; i++) { const h = els?.ctdHdr[i]; if (h) { h.textContent = '—'; h.className = 'mon-dex-hdr'; } }
         const hint = diagCtD === 'MODAL BESAR' ? '↓ Kecilkan Modal' : diagCtD === 'AMOUNT NOL' ? '↓ Cek Harga CEX' : '↓ KOIN TIDAK ADA DI DEX / LP';
-        const dexEl0 = card.querySelector('[data-ctd-dex="0"]');
+        const dexEl0 = els?.ctdDex[0];
         if (dexEl0) { dexEl0.textContent = hint; dexEl0.className = 'mon-dex-cell mc-err'; }
-        for (let i = 1; i < n; i++) { const d = card.querySelector(`[data-ctd-dex="${i}"]`); if (d) { d.textContent = '—'; d.className = 'mon-dex-cell mc-muted'; } }
+        for (let i = 1; i < n; i++) { const d = els?.ctdDex[i]; if (d) { d.textContent = '—'; d.className = 'mon-dex-cell mc-muted'; } }
     } else {
         ctdData.forEach((r, i) => {
-            const hdrEl = card.querySelector(`[data-ctd-hdr="${i}"]`);
-            const cexEl = card.querySelector(`[data-ctd-cex="${i}"]`);
-            const dexEl = card.querySelector(`[data-ctd-dex="${i}"]`);
-            const feeEl = card.querySelector(`[data-ctd-fee="${i}"]`);
-            const pnlEl = card.querySelector(`[data-ctd-pnl="${i}"]`);
+            const hdrEl = els?.ctdHdr[i];
+            const cexEl = els?.ctdCex[i];
+            const dexEl = els?.ctdDex[i];
+            const feeEl = els?.ctdFee[i];
+            const pnlEl = els?.ctdPnl[i];
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
             const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : '<span class="src-tag jx">JM</span>';
@@ -1188,11 +1198,11 @@ async function scanToken(tok) {
         });
         // Fill remaining empty columns with explanation
         for (let i = ctdData.length; i < n; i++) {
-            const h = card.querySelector(`[data-ctd-hdr="${i}"]`);
-            const c = card.querySelector(`[data-ctd-cex="${i}"]`);
-            const d = card.querySelector(`[data-ctd-dex="${i}"]`);
-            const f = card.querySelector(`[data-ctd-fee="${i}"]`);
-            const p = card.querySelector(`[data-ctd-pnl="${i}"]`);
+            const h = els?.ctdHdr[i];
+            const c = els?.ctdCex[i];
+            const d = els?.ctdDex[i];
+            const f = els?.ctdFee[i];
+            const p = els?.ctdPnl[i];
             if (h) { h.textContent = 'NO DATA'; h.className = 'mon-dex-hdr mon-dex-hdr-err'; }
             if (c) { c.textContent = '-'; c.className = 'mon-dex-cell mc-muted'; }
             if (d) { d.textContent = '-'; d.className = 'mon-dex-cell mc-muted'; }
@@ -1202,28 +1212,28 @@ async function scanToken(tok) {
     }
 
     // 7. Fill DTC table
-    const dtcStatus = card.querySelector('.dtc-table .tbl-status');
+    const dtcStatus = els?.dtcStatus;
     if (dtcStatus) dtcStatus.textContent = '';
     for (let i = 0; i < n; i++) {
-        const cexEl = card.querySelector(`[data-dtc-cex="${i}"]`);
+        const cexEl = els?.dtcCex[i];
         if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(dispBidDtC)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
     }
     if (!dtcData.length) {
         const reason = diagDtC || '';
-        const hdrEl0 = card.querySelector('[data-dtc-hdr="0"]');
+        const hdrEl0 = els?.dtcHdr[0];
         if (hdrEl0) { hdrEl0.textContent = reason; hdrEl0.className = 'mon-dex-hdr mon-dex-hdr-err'; }
-        for (let i = 1; i < n; i++) { const h = card.querySelector(`[data-dtc-hdr="${i}"]`); if (h) { h.textContent = '—'; h.className = 'mon-dex-hdr'; } }
+        for (let i = 1; i < n; i++) { const h = els?.dtcHdr[i]; if (h) { h.textContent = '—'; h.className = 'mon-dex-hdr'; } }
         const hint = diagDtC === 'MODAL BESAR' ? '↓ Kecilkan Modal' : diagDtC === 'AMOUNT NOL' ? '↓ Cek Harga CEX' : '↓ KOIN TIDAK ADA DI DEX / LP';
-        const dexEl0 = card.querySelector('[data-dtc-dex="0"]');
+        const dexEl0 = els?.dtcDex[0];
         if (dexEl0) { dexEl0.textContent = hint; dexEl0.className = 'mon-dex-cell mc-err'; }
-        for (let i = 1; i < n; i++) { const d = card.querySelector(`[data-dtc-dex="${i}"]`); if (d) { d.textContent = '—'; d.className = 'mon-dex-cell mc-muted'; } }
+        for (let i = 1; i < n; i++) { const d = els?.dtcDex[i]; if (d) { d.textContent = '—'; d.className = 'mon-dex-cell mc-muted'; } }
     } else {
         dtcData.forEach((r, i) => {
-            const hdrEl = card.querySelector(`[data-dtc-hdr="${i}"]`);
-            const cexEl = card.querySelector(`[data-dtc-cex="${i}"]`);
-            const dexEl = card.querySelector(`[data-dtc-dex="${i}"]`);
-            const feeEl = card.querySelector(`[data-dtc-fee="${i}"]`);
-            const pnlEl = card.querySelector(`[data-dtc-pnl="${i}"]`);
+            const hdrEl = els?.dtcHdr[i];
+            const cexEl = els?.dtcCex[i];
+            const dexEl = els?.dtcDex[i];
+            const feeEl = els?.dtcFee[i];
+            const pnlEl = els?.dtcPnl[i];
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
             const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : '<span class="src-tag jx">JM</span>';
@@ -1235,11 +1245,11 @@ async function scanToken(tok) {
         });
         // Fill remaining empty columns with explanation
         for (let i = dtcData.length; i < n; i++) {
-            const h = card.querySelector(`[data-dtc-hdr="${i}"]`);
-            const c = card.querySelector(`[data-dtc-cex="${i}"]`);
-            const d = card.querySelector(`[data-dtc-dex="${i}"]`);
-            const f = card.querySelector(`[data-dtc-fee="${i}"]`);
-            const p = card.querySelector(`[data-dtc-pnl="${i}"]`);
+            const h = els?.dtcHdr[i];
+            const c = els?.dtcCex[i];
+            const d = els?.dtcDex[i];
+            const f = els?.dtcFee[i];
+            const p = els?.dtcPnl[i];
             if (h) { h.textContent = 'NO DATA'; h.className = 'mon-dex-hdr mon-dex-hdr-err'; }
             if (c) { c.textContent = '-'; c.className = 'mon-dex-cell mc-muted'; }
             if (d) { d.textContent = '-'; d.className = 'mon-dex-cell mc-muted'; }
@@ -1273,7 +1283,11 @@ async function scanToken(tok) {
 
 // Show error/status in both sub-table headers; clear when msg is empty
 function setCardStatus(card, msg) {
-    card.querySelectorAll('.tbl-status').forEach(el => {
+    const id = card.id.replace('card-', '');
+    const els = _cardEls.get(id);
+    const statEls = els ? [els.ctdStatus, els.dtcStatus].filter(Boolean)
+                        : Array.from(card.querySelectorAll('.tbl-status'));
+    statEls.forEach(el => {
         el.textContent = msg ? ` ⚠ ${msg}` : '';
         el.className = msg ? 'tbl-status tbl-status-err' : 'tbl-status';
     });
@@ -1333,7 +1347,7 @@ function buildMonitorRows(tokenList) {
     <img src="icons/chains/${t.chain}.png" class="mon-hdr-icon" onerror="this.style.display='none'">
     <span class="mon-cex-chain">${cexLabel.toUpperCase()}-${chainLabel.toUpperCase()}</span>
     <span class="mon-sym"><span class="mon-num">[${idx + 1}]</span> ${sym}</span>
-    
+
     <span class="mon-card-actions">
       <button class="btn-icon mon-act mon-fav ${t.favorite ? 'fav-active' : ''}" onclick="toggleFavorite('${t.id}')" title="Favorit">⭐</button>
       <button class="btn-icon mon-act" onclick="openSheet('${t.id}')" title="Edit Koin">✏️</button>
@@ -1372,6 +1386,36 @@ function buildMonitorRows(tokenList) {
   </div>
 </div>`;
     }).join(''));
+
+    // Build DOM element cache for fast access in scanToken
+    _cardEls.clear();
+    const _n = totalQuoteCount();
+    tokens.forEach(t => {
+        const card = document.getElementById('card-' + t.id);
+        if (!card) return;
+        const els = {
+            card,
+            modalCtdHdr: card.querySelector('[data-modal-hdr="ctd"]'),
+            modalDtcHdr: card.querySelector('[data-modal-hdr="dtc"]'),
+            ctdStatus: card.querySelector('.ctd-table .tbl-status'),
+            dtcStatus: card.querySelector('.dtc-table .tbl-status'),
+            ctdHdr: [], ctdCex: [], ctdDex: [], ctdFee: [], ctdPnl: [],
+            dtcHdr: [], dtcCex: [], dtcDex: [], dtcFee: [], dtcPnl: [],
+        };
+        for (let i = 0; i < _n; i++) {
+            els.ctdHdr.push(card.querySelector(`[data-ctd-hdr="${i}"]`));
+            els.ctdCex.push(card.querySelector(`[data-ctd-cex="${i}"]`));
+            els.ctdDex.push(card.querySelector(`[data-ctd-dex="${i}"]`));
+            els.ctdFee.push(card.querySelector(`[data-ctd-fee="${i}"]`));
+            els.ctdPnl.push(card.querySelector(`[data-ctd-pnl="${i}"]`));
+            els.dtcHdr.push(card.querySelector(`[data-dtc-hdr="${i}"]`));
+            els.dtcCex.push(card.querySelector(`[data-dtc-cex="${i}"]`));
+            els.dtcDex.push(card.querySelector(`[data-dtc-dex="${i}"]`));
+            els.dtcFee.push(card.querySelector(`[data-dtc-fee="${i}"]`));
+            els.dtcPnl.push(card.querySelector(`[data-dtc-pnl="${i}"]`));
+        }
+        _cardEls.set(t.id, els);
+    });
 }
 
 // ─── Signal Chips ─────────────────────────────
@@ -1391,10 +1435,7 @@ function updateSignalChip(tok, pnl, dir) {
             chip = document.createElement('div');
             chip.className = 'signal-chip';
             chip.id = chipId;
-            chip.onclick = () => {
-                const card = document.getElementById('card-' + tok.id);
-                if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            };
+            chip.dataset.tokId = tok.id;
             document.getElementById('signalBar').appendChild(chip);
         }
         const cexCfg = CONFIG_CEX[tok.cex] || {};
@@ -1489,25 +1530,24 @@ function showToast(msg, duration = 2200) {
 // Kosongkan semua sel tabel dan sinyal setelah setiap ronde selesai
 function resetMonitorCells() {
     const n = totalQuoteCount();
-    document.querySelectorAll('.mon-card').forEach(card => {
+    _cardEls.forEach(els => {
+        const card = els.card;
+        if (!card) return;
         card.classList.remove('has-signal');
         card.querySelectorAll('.card-status').forEach(el => el.textContent = '');
-        card.querySelectorAll('.tbl-status').forEach(el => {
-            el.textContent = ''; el.className = 'tbl-status';
-        });
+        if (els.ctdStatus) { els.ctdStatus.textContent = ''; els.ctdStatus.className = 'tbl-status'; }
+        if (els.dtcStatus) { els.dtcStatus.textContent = ''; els.dtcStatus.className = 'tbl-status'; }
         for (let i = 0; i < n; i++) {
-            ['ctd', 'dtc'].forEach(pfx => {
-                const hdr = card.querySelector(`[data-${pfx}-hdr="${i}"]`);
-                const cex = card.querySelector(`[data-${pfx}-cex="${i}"]`);
-                const dex = card.querySelector(`[data-${pfx}-dex="${i}"]`);
-                const fee = card.querySelector(`[data-${pfx}-fee="${i}"]`);
-                const pnl = card.querySelector(`[data-${pfx}-pnl="${i}"]`);
-                if (hdr) { hdr.textContent = '-'; hdr.className = 'mon-dex-hdr'; }
-                if (cex) { cex.textContent = '-'; cex.className = 'mon-dex-cell'; }
-                if (dex) { dex.textContent = '-'; dex.className = 'mon-dex-cell'; }
-                if (fee) { fee.textContent = '-'; fee.className = 'mon-dex-cell'; }
-                if (pnl) { pnl.textContent = '-'; pnl.className = 'mon-dex-cell'; }
-            });
+            const ctdH = els.ctdHdr[i]; if (ctdH) { ctdH.textContent = '-'; ctdH.className = 'mon-dex-hdr'; }
+            const ctdC = els.ctdCex[i]; if (ctdC) { ctdC.textContent = '-'; ctdC.className = 'mon-dex-cell'; }
+            const ctdD = els.ctdDex[i]; if (ctdD) { ctdD.textContent = '-'; ctdD.className = 'mon-dex-cell'; }
+            const ctdF = els.ctdFee[i]; if (ctdF) { ctdF.textContent = '-'; ctdF.className = 'mon-dex-cell'; }
+            const ctdP = els.ctdPnl[i]; if (ctdP) { ctdP.textContent = '-'; ctdP.className = 'mon-dex-cell'; }
+            const dtcH = els.dtcHdr[i]; if (dtcH) { dtcH.textContent = '-'; dtcH.className = 'mon-dex-hdr'; }
+            const dtcC = els.dtcCex[i]; if (dtcC) { dtcC.textContent = '-'; dtcC.className = 'mon-dex-cell'; }
+            const dtcD = els.dtcDex[i]; if (dtcD) { dtcD.textContent = '-'; dtcD.className = 'mon-dex-cell'; }
+            const dtcF = els.dtcFee[i]; if (dtcF) { dtcF.textContent = '-'; dtcF.className = 'mon-dex-cell'; }
+            const dtcP = els.dtcPnl[i]; if (dtcP) { dtcP.textContent = '-'; dtcP.className = 'mon-dex-cell'; }
         }
     });
     document.querySelectorAll('.signal-chip').forEach(c => c.remove());
@@ -1531,9 +1571,12 @@ async function runScan() {
     try { if (window.AndroidBridge && AndroidBridge.startBackgroundService) AndroidBridge.startBackgroundService(); } catch (e) { }
     await fetchUsdtRate();
 
-    const BATCH_SIZE = 4; // scan 4 koin paralel sekaligus
+    const BATCH_SIZE = 8; // scan 8 koin paralel sekaligus
     while (!scanAbort) {
         _scanRound++;
+        // Clear orderbook cache to free memory each round
+        for (const k in _obCache) delete _obCache[k];
+        await fetchUsdtRate();
         // Re-fetch tokens setiap ronde: update hapus/tambah & acak ulang jika random
         if (monitorSort === 'rand') _shuffledTokens = null;
         const tokens = getFilteredTokens();
@@ -1545,7 +1588,6 @@ async function runScan() {
             const pct = Math.round(Math.min(i + BATCH_SIZE, tokens.length) / tokens.length * 100);
             $('#scanBar').css('width', pct + '%');
             $('#btnScanCount').text(`[ ${Math.min(i + BATCH_SIZE, tokens.length)}/${tokens.length}] KOIN`);
-            await fetchUsdtRate();
             await Promise.all(batch.map(tok => scanToken(tok)));
             if (!scanAbort) await new Promise(r => setTimeout(r, CFG.interval));
         }
@@ -1673,6 +1715,7 @@ $('#tokSortAZ, #tokSortZA').on('click', function () {
     tokenSort = $(this).data('sort');
     $('#tokSortAZ, #tokSortZA').removeClass('active');
     $(this).addClass('active');
+    tokenRenderLimit = 50;
     renderTokenList();
 });
 
@@ -1680,18 +1723,21 @@ $('#tokSortAZ, #tokSortZA').on('click', function () {
 $('#tokFavFilter').on('click', function () {
     tokenFavFilter = !tokenFavFilter;
     $(this).toggleClass('active', tokenFavFilter);
+    tokenRenderLimit = 50;
     renderTokenList();
 });
 
 // Koin search
 $('#tokenSearch').on('input', function () {
     tokenSearchQuery = $(this).val().trim();
-    renderTokenList();
+    tokenRenderLimit = 50;
+    clearTimeout(_renderDebounce);
+    _renderDebounce = setTimeout(renderTokenList, 150);
 });
 
 // ─── Orderbook Tooltip ────────────────────────
 let _tooltipHideTimer = null;
-function showObTooltip(el, event) {
+function showObTooltip(el) {
     clearTimeout(_tooltipHideTimer);
     const tokId = el.dataset.tok;
     const dir = el.dataset.dir; // 'ctd' or 'dtc'
@@ -1921,7 +1967,7 @@ function calcCustomConv() {
 
     if (!amt) { if (resultEl) resultEl.style.display = 'none'; return; }
 
-    let usdt = 0, idr = 0, token = null;
+    let usdt = 0, idr = 0;
     if (mode === 'usdt') {
         usdt = amt;
         idr = amt * usdtRate;
@@ -1937,7 +1983,6 @@ function calcCustomConv() {
 
     const uEl = document.getElementById('ccResUsdt');
     const iEl = document.getElementById('ccResIdr');
-    const tEl = document.getElementById('ccResToken');
     if (uEl) uEl.textContent = '$' + usdt.toFixed(usdt < 0.01 ? 6 : 4);
     if (iEl) iEl.textContent = _fmtIdr(idr);
     if (tokenRow) tokenRow.style.display = 'none';
@@ -2069,6 +2114,18 @@ async function calcCekToken() {
         showToast('🗑️ Error: ' + e.message);
     }
 }
+
+// ─── Load More: event delegation on #tokenList ───
+$('#tokenList').on('click', '#btnLoadMore', function () {
+    tokenRenderLimit += 50;
+    renderTokenList();
+});
+
+// ─── Signal chip: event delegation ───────────
+$('#signalBar').on('click', '.signal-chip', function () {
+    const card = document.getElementById('card-' + this.dataset.tokId);
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
 
 // ─── Init ────────────────────────────────────
 $(function () {
