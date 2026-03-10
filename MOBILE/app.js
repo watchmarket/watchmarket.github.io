@@ -169,9 +169,19 @@ function fmtCompact(v, sigfigs = 4) {
 }
 
 // ─── Settings ────────────────────────────────
+function getAllFilteredTokens() {
+    // Hitung semua token yg lolos filter CEX+chain, termasuk favorit (ignore monitorFavOnly)
+    return getTokens().filter(t => {
+        const cexOk = CFG.activeCex.length === 0 || CFG.activeCex.includes(t.cex);
+        const chainOk = CFG.activeChains.length === 0 || CFG.activeChains.includes(t.chain);
+        return cexOk && chainOk;
+    });
+}
+
 function updateScanCount() {
-    const n = getFilteredTokens().length;
-    $('#filterCoinCount').text(n);
+    const allN = getAllFilteredTokens().length;  // semua koin (termasuk fav) untuk settings
+    const n = getFilteredTokens().length;         // koin aktif untuk scan (bisa filtered by fav)
+    $('#filterCoinCount').text(allN);
     if (!scanning) {
         $('#btnScanCount').text('[' + n + ' KOIN ]');
         $('#btnScan').prop('disabled', n === 0).toggleClass('disabled', n === 0);
@@ -1446,7 +1456,7 @@ function buildMonitorRows(tokenList) {
     <tbody>
       <tr class="mon-row-cex"><td class="mon-lbl-side"><span style='color:green;'>BELI CEX ↑</span></td>${dexRow('ctd', 'cex')}</tr>
       <tr class="mon-row-dex"><td class="mon-lbl-side">${t.ticker}→${pairTk}</td>${dexRow('ctd', 'dex')}</tr>
-      <tr class="mon-row-recv"><td class="mon-lbl-side">ALL FEE</td>${dexRow('ctd', 'fee')}$</tr>
+      <tr class="mon-row-recv"><td class="mon-lbl-side">ALL FEE</td>${dexRow('ctd', 'fee')}</tr>
       <tr class="mon-row-pnl"><td class="mon-lbl-side">💰 PNL <span class="lbl-minpnl">($${minPnlLbl})</span></td>${dexRow('ctd', 'pnl')}</tr>
     </tbody>
   </table>
@@ -1460,7 +1470,7 @@ function buildMonitorRows(tokenList) {
     <tbody>
       <tr class="mon-row-cex"><td class="mon-lbl-side">${pairTk}→${t.ticker}</td>${dexRow('dtc', 'cex')}</tr>
       <tr class="mon-row-dex"><td class="mon-lbl-side lbl-pair"><span style='color:red;'>JUAL CEX ↓</span></td>${dexRow('dtc', 'dex')}</tr>
-      <tr class="mon-row-recv"><td class="mon-lbl-side">ALL FEE</td>${dexRow('dtc', 'fee')}$</tr>
+      <tr class="mon-row-recv"><td class="mon-lbl-side">ALL FEE</td>${dexRow('dtc', 'fee')}</tr>
       <tr class="mon-row-pnl"><td class="mon-lbl-side">💰 PNL <span class="lbl-minpnl">($${minPnlLbl})</span></td>${dexRow('dtc', 'pnl')}</tr>
     </tbody>
   </table>
