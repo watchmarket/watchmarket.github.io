@@ -62,7 +62,12 @@ let CFG = {
     autoLevel: APP_DEV_CONFIG.defaultAutoLevel,  // Auto Level CEX default dari config.js
     levelCount: APP_DEV_CONFIG.defaultLevelCount, // Level orderbook default dari config.js
 };
-function totalQuoteCount() { return CFG.quoteCountMetax + CFG.quoteCountJumpx; }
+function totalQuoteCount() {
+    const raw = CFG.quoteCountMetax + CFG.quoteCountJumpx
+        + (isKyberEnabled() ? 1 : 0)
+        + (isOkxEnabled() ? 1 : 0);
+    return Math.min(raw, 4); // maks 4 kolom, tampilkan yg terbaik
+}
 function isJumpxEnabled() { return APP_DEV_CONFIG.defaultQuoteCountJumpx > 0; }
 function isAutoLevelEnabled() { return APP_DEV_CONFIG.defaultAutoLevel !== false; }
 
@@ -1238,6 +1243,24 @@ async function scanToken(tok) {
         fetchDexQuotesOkx(chainId, pairSc, tok.scToken, weiDtC, tok.decToken),
     ]);
 
+    // helper: build list of source labels for empty columns
+    function buildMissingLabels(allData, mxRaw, jxRaw, kbRaw, okRaw) {
+        const labels = [];
+        const mtIn = allData.filter(r => r.src === 'MX').length;
+        const jxIn = allData.filter(r => r.src === 'JX').length;
+        const kbIn = allData.some(r => r.src === 'KB');
+        const okIn = allData.some(r => r.src === 'OX');
+        for (let i = mtIn; i < CFG.quoteCountMetax; i++)
+            labels.push(mxRaw.length === 0 ? 'METAX TIMEOUT' : 'META —');
+        for (let i = jxIn; i < CFG.quoteCountJumpx; i++)
+            labels.push(jxRaw.length === 0 ? 'JUMPERX TIMEOUT' : 'JUMPER —');
+        if (isKyberEnabled() && !kbIn)
+            labels.push(kbRaw.length === 0 ? 'KYBER —' : 'ERROR');
+        if (isOkxEnabled() && !okIn)
+            labels.push(okRaw.length === 0 ? 'OKX —' : 'ERROR');
+        return labels;
+    }
+
     // 5. Combine & sort CTD quotes (METAX + JUMPX + KYBER + OKX) by PnL descending
     const tokMinPnl = (isFinite(tok.minPnl) && tok.minPnl !== null) ? tok.minPnl : 1;
     const allCtD = [];
@@ -1247,6 +1270,7 @@ async function scanToken(tok) {
     okCtD.forEach(q => { if (q) allCtD.push(computeQuotePnl(q, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd')); });
     allCtD.sort((a, b) => b.pnl - a.pnl); // best first
     const ctdData = allCtD.slice(0, n);
+    const missingCtdLabels = buildMissingLabels(allCtD, mxCtD, jxCtD, kbCtD, okCtD);
 
     // 6. Combine & sort DTC quotes by PnL ascending (best rightmost)
     const allDtC = [];
@@ -1256,6 +1280,7 @@ async function scanToken(tok) {
     okDtC.forEach(q => { if (q) allDtC.push(computeQuotePnl(q, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc')); });
     allDtC.sort((a, b) => b.pnl - a.pnl); // best first
     const dtcData = allDtC.slice(0, n);
+    const missingDtcLabels = buildMissingLabels(allDtC, mxDtC, jxDtC, kbDtC, okDtC);
 
     // 6. Fill CTD table
     const ctdStatus = els?.ctdStatus;
@@ -1289,14 +1314,15 @@ async function scanToken(tok) {
             if (feeEl) { feeEl.textContent = `-${r.totalFee.toFixed(2)}$`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
         });
-        // Fill remaining empty columns with explanation
+        // Fill remaining empty columns with source name info
         for (let i = ctdData.length; i < n; i++) {
+            const label = missingCtdLabels[i - ctdData.length] || '—';
             const h = els?.ctdHdr[i];
             const c = els?.ctdCex[i];
             const d = els?.ctdDex[i];
             const f = els?.ctdFee[i];
             const p = els?.ctdPnl[i];
-            if (h) { h.textContent = 'NO DATA'; h.className = 'mon-dex-hdr mon-dex-hdr-err'; }
+            if (h) { h.textContent = label; h.className = 'mon-dex-hdr mon-dex-hdr-muted'; }
             if (c) { c.textContent = '-'; c.className = 'mon-dex-cell mc-muted'; }
             if (d) { d.textContent = '-'; d.className = 'mon-dex-cell mc-muted'; }
             if (f) { f.textContent = '-'; f.className = 'mon-dex-cell mc-muted'; }
@@ -1336,14 +1362,15 @@ async function scanToken(tok) {
             if (feeEl) { feeEl.textContent = `-${r.totalFee.toFixed(2)}$`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
         });
-        // Fill remaining empty columns with explanation
+        // Fill remaining empty columns with source name info
         for (let i = dtcData.length; i < n; i++) {
+            const label = missingDtcLabels[i - dtcData.length] || '—';
             const h = els?.dtcHdr[i];
             const c = els?.dtcCex[i];
             const d = els?.dtcDex[i];
             const f = els?.dtcFee[i];
             const p = els?.dtcPnl[i];
-            if (h) { h.textContent = 'NO DATA'; h.className = 'mon-dex-hdr mon-dex-hdr-err'; }
+            if (h) { h.textContent = label; h.className = 'mon-dex-hdr mon-dex-hdr-muted'; }
             if (c) { c.textContent = '-'; c.className = 'mon-dex-cell mc-muted'; }
             if (d) { d.textContent = '-'; d.className = 'mon-dex-cell mc-muted'; }
             if (f) { f.textContent = '-'; f.className = 'mon-dex-cell mc-muted'; }

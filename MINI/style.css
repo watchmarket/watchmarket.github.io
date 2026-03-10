@@ -651,6 +651,14 @@ body {
   text-shadow: 0 0 6px rgba(255, 200, 0, 0.5);
 }
 
+/* DEX header cell showing missing source info (timeout / no response) */
+.mon-dex-hdr-muted {
+  color: rgba(255,255,255,0.35) !important;
+  font-size: 9px !important;
+  letter-spacing: 0 !important;
+  font-style: italic;
+}
+
 /* Cell content showing an actionable hint */
 .mc-err {
   color: #a6051a !important;
