@@ -17,12 +17,12 @@ const APP_DEV_CONFIG = {
   defaultMinPnl: 1,
   defaultInterval: 300,
   defaultSseTimeout: 6000,
-  defaultQuoteCountMetax: 2,   // jumlah quote MetaMask SSE (0 = matikan)
+  defaultQuoteCountMetax: 3,   // jumlah quote MetaMask SSE (0 = matikan)
   defaultQuoteCountJumpx: 0,   // jumlah quote Jumper/LiFi  (0 = matikan)
   defaultAutoLevel: false,     // Auto Level CEX (false = nonaktif, true = aktif)
   defaultLevelCount: 2,        // jumlah level orderbook (1–4)
   telegramCooldown: 5,   // menit
-  defaultEnableKyber: true,    // KyberSwap DEX (false = nonaktif, true = aktif)
+  defaultEnableKyber: false,    // KyberSwap DEX (false = nonaktif, true = aktif)
   defaultEnableOkx: false,      // OKX DEX Aggregator (false = nonaktif, true = aktif)
 };
 
