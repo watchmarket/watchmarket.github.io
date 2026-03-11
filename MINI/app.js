@@ -1316,7 +1316,7 @@ async function scanToken(tok) {
     if (ctdStatus) ctdStatus.textContent = '';
     for (let i = 0; i < n; i++) {
         const cexEl = els?.ctdCex[i];
-        if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(dispAskCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
+        if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(askCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
     }
     if (!ctdData.length) {
         const reason = diagCtD || 'TIDAK ADA LP / DEX';
@@ -1338,7 +1338,7 @@ async function scanToken(tok) {
             const sigCls = isSignal ? ' col-signal' : '';
             const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : '';
             if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; }
-            if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(obToken.askPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
+            if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(askCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
             if (feeEl) { feeEl.textContent = `-${r.totalFee.toFixed(2)}$`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
@@ -1364,7 +1364,7 @@ async function scanToken(tok) {
     if (dtcStatus) dtcStatus.textContent = '';
     for (let i = 0; i < n; i++) {
         const cexEl = els?.dtcCex[i];
-        if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(dispBidDtC)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
+        if (cexEl) { cexEl.textContent = `↓ ${fmtCompact(bidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid'; }
     }
     if (!dtcData.length) {
         const reason = diagDtC || '';
@@ -1386,8 +1386,8 @@ async function scanToken(tok) {
             const sigCls = isSignal ? ' col-signal' : '';
             const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : '';
             if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; }
-            if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(r.effPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
-            if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(obToken.bidPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
+            if (cexEl) { cexEl.textContent = `↓ ${fmtCompact(bidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
+            if (dexEl) { dexEl.textContent = `↑ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (feeEl) { feeEl.textContent = `-${r.totalFee.toFixed(2)}$`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
         });
