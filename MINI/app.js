@@ -376,8 +376,11 @@ function switchTab(tabId) {
     $(`.nav-item[data-tab="${tabId}"]`).addClass('active');
     $('.top-tab-btn').removeClass('active');
     $(`.top-tab-btn[data-tab="${tabId}"]`).addClass('active');
-    // Show scan footer (sort + start) only on monitor tab
-    $('#scanFooter').css('display', tabId === 'tabMonitor' ? 'flex' : 'none');
+    // Show scan footer & signal bar only on monitor tab
+    const isMonitor = tabId === 'tabMonitor';
+    $('#scanFooter').css('display', isMonitor ? 'flex' : 'none');
+    $('#signalBar').css('display', isMonitor ? 'flex' : 'none');
+    document.body.classList.toggle('no-signal-bar', !isMonitor);
     $('.tab-pane').removeClass('active');
     $('#' + tabId).addClass('active');
     if (tabId === 'tabToken') renderTokenList();
@@ -1717,6 +1720,7 @@ async function runScan() {
     $('#scanBadge').addClass('active');
     // Clear previous signal chips and reset table
     document.querySelectorAll('.signal-chip').forEach(c => c.remove());
+    $('#notStartedNotice').hide();
     updateNoSignalNotice();
     lockTabs();
     if (!getFilteredTokens().length) { showToast('Tidak ada token aktif! Periksa filter di Pengaturan.'); stopScan(); return; }
@@ -1770,7 +1774,8 @@ function stopScan() {
     scanning = false; scanAbort = true;  // keep true so orphaned loop exits
     $('#btnScanIcon').text('▶'); $('#btnScanLbl').text('START'); $('#btnScan').removeClass('stop');
     updateScanCount();
-    updateNoSignalNotice();
+    $('#notStartedNotice').show();
+    $('#noSignalNotice').hide();
     $('#scanBadge').removeClass('active');
     $('#scanBar').css('width', '0%');
     unlockTabs();
@@ -2295,9 +2300,12 @@ $(function () {
     renderChainChips('bsc');
     renderTokenList();   // also builds monitor skeleton via buildMonitorRows()
     checkOnboarding();
-    // Sync scanFooter visibility dengan tab yang aktif di HTML saat load
+    // Sync scanFooter & signalBar visibility dengan tab yang aktif di HTML saat load
     const initTab = $('.nav-item.active[data-tab]').data('tab') || 'tabMonitor';
-    $('#scanFooter').css('display', initTab === 'tabMonitor' ? 'flex' : 'none');
+    const initMonitor = initTab === 'tabMonitor';
+    $('#scanFooter').css('display', initMonitor ? 'flex' : 'none');
+    $('#signalBar').css('display', initMonitor ? 'flex' : 'none');
+    document.body.classList.toggle('no-signal-bar', !initMonitor);
     // Init USDT rate
     fetchUsdtRate().then(() => _updateCalcRateDisplay());
     // Toast after reload

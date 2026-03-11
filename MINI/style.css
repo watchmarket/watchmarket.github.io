@@ -48,6 +48,11 @@
   /* 54 topbar + 34 signal */
 }
 
+/* Saat signal bar disembunyikan (tab non-scanner), kurangi margin */
+body.no-signal-bar {
+  --topbar-h: 54px;
+}
+
 * {
   margin: 0;
   padding: 0;
