@@ -1654,10 +1654,10 @@ async function sendTelegram(tok, pnl, info) {
 `🟢 <b>INFO SIGNAL {PRIVATE}</b>
 👤 @${esc(CFG.username || 'user')}  •  🔗 <b>${esc(chain)}</b>
 ━━━━━━━━━━━━━━━
-🪙 <b>${esc(tok.ticker)} ⇄ ${esc(pairLbl)}</b> [${dirArrow} <i>${esc(dir)}</i>]
-🏦 ${esc(cexLbl)} ➜ <b>${esc(dexName)}</b>${dexBadge}
+🪙 <b>${esc(tok.ticker)} ⇄ ${esc(pairLbl)}</b> [ ${dirArrow} <i>${esc(dir)}</i> ]
+🏦 ${esc(cexLbl).toUpperCase()} ➜ <b>${esc(dexName).toUpperCase()}</b>${dexBadge}
 💵 Modal : $${esc(modal)}
-💰 PnL   : <b>${pnlSign}${pnl.toFixed(2)}$</b> | 💸 Fee  :  -$${esc(fee)}
+💰 PnL : <b>${pnlSign}${pnl.toFixed(2)}$</b> | 💸 Fee  :  -$${esc(fee)}
 ━━━━━━━━━━━━━━━
 👛 <code>${esc(wallet)}</code>`;
 
