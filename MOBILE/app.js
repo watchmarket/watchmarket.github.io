@@ -263,12 +263,11 @@ function loadSettings() {
         $('#setQuoteJumpx').closest('.settings-field').hide();
     }
     $('#setSoundMuted').prop('checked', !CFG.soundMuted); // centang = suara ON
-    // Hide Auto Level settings jika dimatikan dari config.js
+    // Auto Level CEX — selalu aktif, on/off via config.js defaultAutoLevel
+    CFG.autoLevel = isAutoLevelEnabled();
     if (!isAutoLevelEnabled()) {
-        CFG.autoLevel = false;
-        $('#setAutoLevel').closest('.settings-field').hide();
+        $('#setLevelCount').closest('.settings-field').hide();
     } else {
-        $('#setAutoLevel').prop('checked', !!CFG.autoLevel);
         $('#setLevelCount').val(CFG.levelCount ?? APP_DEV_CONFIG.defaultLevelCount);
     }
     // Speed chips — tandai yang aktif berdasarkan CFG.interval
@@ -302,7 +301,6 @@ function _autoSaveFields() {
     if (isJumpxEnabled() && !isNaN(qJumpx) && qJumpx >= 1 && qJumpx <= 5)
         CFG.quoteCountJumpx = qJumpx;
     CFG.soundMuted = !$('#setSoundMuted').prop('checked'); // centang = suara ON = NOT muted
-    CFG.autoLevel  = $('#setAutoLevel').prop('checked');
     CFG.levelCount = Math.min(4, Math.max(1, parseInt($('#setLevelCount').val()) || 2));
     _persistCFG();
     if (!scanning) buildMonitorRows();
@@ -378,8 +376,11 @@ function switchTab(tabId) {
     $(`.nav-item[data-tab="${tabId}"]`).addClass('active');
     $('.top-tab-btn').removeClass('active');
     $(`.top-tab-btn[data-tab="${tabId}"]`).addClass('active');
-    // Show scan footer (sort + start) only on monitor tab
-    $('#scanFooter').css('display', tabId === 'tabMonitor' ? 'flex' : 'none');
+    // Show scan footer & signal bar only on monitor tab
+    const isMonitor = tabId === 'tabMonitor';
+    $('#scanFooter').css('display', isMonitor ? 'flex' : 'none');
+    $('#signalBar').css('display', isMonitor ? 'flex' : 'none');
+    document.body.classList.toggle('no-signal-bar', !isMonitor);
     $('.tab-pane').removeClass('active');
     $('#' + tabId).addClass('active');
     if (tabId === 'tabToken') renderTokenList();
@@ -670,7 +671,7 @@ $('#btnSheetSave').on('click', () => {
     if (scanning) {
         showToast((idx >= 0 ? '✅ Koin diperbarui' : '✅ Koin ditambahkan') + ' — berlaku pada putaran berikutnya');
     } else {
-        showToast(idx >= 0 ? '✅ Koin berhasil diperbarui' : '✅ Koin berhasil ditambahkan');
+        showToast(idx >= 0 ? '✅ Data koin berhasil diperbarui' : '✅ Data koin berhasil ditambahkan');
     }
     closeSheet();
 });
@@ -865,7 +866,7 @@ $('#importFile').on('change', e => {
                 return;
             }
             saveTokens(tokens); renderTokenList();
-            showToast(`✅ ${tokens.length} koin berhasil diimpor`);
+            showToast(`✅ ${tokens.length} Data koin berhasil diimpor`);
         } catch (err) { showAlert('Terjadi kesalahan saat membaca file:<br>' + err.message, 'Error Import', 'error'); }
     };
     r.readAsText(f);
@@ -1003,19 +1004,47 @@ const KYBER_CHAIN_MAP = {
 
 function isKyberEnabled() { return APP_DEV_CONFIG.defaultEnableKyber === true; }
 
-async function fetchDexQuotesKyber(chainKey, srcToken, destToken, amountWei, decOut) {
+async function fetchDexQuotesKyber(chainKey, srcToken, destToken, amountWei, decOut, decIn = 18, dir = 'ctd') {
     if (!isKyberEnabled()) return [];
+    if (!amountWei || String(amountWei) === '0') return [];
     try {
-        const chainName = KYBER_CHAIN_MAP[chainKey];
-        if (!chainName || !amountWei || String(amountWei) === '0') return [];
-        const url = `https://aggregator-api.kyberswap.com/${chainName}/api/v1/routes` +
-            `?tokenIn=${srcToken}&tokenOut=${destToken}&amountIn=${amountWei}&gasInclude=true`;
-        const resp = await fetch(url, { headers: { 'x-client-id': 'hybridapp' } });
-        if (!resp.ok) return [];
-        const data = await resp.json();
-        const amountOut = data?.data?.routeSummary?.amountOut;
-        if (!amountOut) return [];
-        return [{ amount: parseFloat(amountOut), dec: decOut, name: 'KYBER', src: 'KB' }];
+        if (dir === 'dtc') {
+            // DTC: gunakan Railway API untuk hindari 429
+            const chainId = CONFIG_CHAINS[chainKey]?.Kode_Chain;
+            if (!chainId) return [];
+            const sender = CFG.wallet || '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045';
+            const resp = await fetch('https://bzvwrjfhuefn.up.railway.app/swap', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chainId,
+                    aggregatorSlug: 'kyberswap',
+                    sender,
+                    inToken:  { chainId, type: 'TOKEN', address: srcToken,  decimals: decIn  },
+                    outToken: { chainId, type: 'TOKEN', address: destToken, decimals: decOut },
+                    amountInWei: String(amountWei),
+                    slippageBps: '100',
+                    gasPriceGwei: 0,
+                }),
+            });
+            if (!resp.ok) return [];
+            const data = await resp.json();
+            const amountOut = data?.amountOutWei ?? data?.amountOutNoFeeWei;
+            if (!amountOut) return [];
+            return [{ amount: parseFloat(amountOut), dec: decOut, name: 'KYBER', src: 'KB' }];
+        } else {
+            // CTD: gunakan Kyber Aggregator API langsung
+            const chainName = KYBER_CHAIN_MAP[chainKey];
+            if (!chainName) return [];
+            const url = `https://aggregator-api.kyberswap.com/${chainName}/api/v1/routes` +
+                `?tokenIn=${srcToken}&tokenOut=${destToken}&amountIn=${amountWei}&gasInclude=true`;
+            const resp = await fetch(url, { headers: { 'x-client-id': 'hybridapp' } });
+            if (!resp.ok) return [];
+            const data = await resp.json();
+            const amountOut = data?.data?.routeSummary?.amountOut;
+            if (!amountOut) return [];
+            return [{ amount: parseFloat(amountOut), dec: decOut, name: 'KYBER', src: 'KB' }];
+        }
     } catch { return []; }
 }
 
@@ -1238,12 +1267,12 @@ async function scanToken(tok) {
         fetchDexQuotesJumpx(chainId, tok.scToken, pairSc, weiCtD),
         fetchDexQuotesJumpx(chainId, pairSc, tok.scToken, weiDtC),
         fetchDexQuotesKyber(tok.chain, tok.scToken, pairSc, weiCtD, pairDec),
-        fetchDexQuotesKyber(tok.chain, pairSc, tok.scToken, weiDtC, tok.decToken),
+        fetchDexQuotesKyber(tok.chain, pairSc, tok.scToken, weiDtC, tok.decToken, pairDec, 'dtc'),
         fetchDexQuotesOkx(chainId, tok.scToken, pairSc, weiCtD, pairDec),
         fetchDexQuotesOkx(chainId, pairSc, tok.scToken, weiDtC, tok.decToken),
     ]);
 
-    // helper: build list of source labels for empty columns
+    // helper: build list of {name, error} for empty columns
     function buildMissingLabels(allData, mxRaw, jxRaw, kbRaw, okRaw) {
         const labels = [];
         const mtIn = allData.filter(r => r.src === 'MX').length;
@@ -1251,13 +1280,13 @@ async function scanToken(tok) {
         const kbIn = allData.some(r => r.src === 'KB');
         const okIn = allData.some(r => r.src === 'OX');
         for (let i = mtIn; i < CFG.quoteCountMetax; i++)
-            labels.push(mxRaw.length === 0 ? 'METAX TIMEOUT' : 'META —');
+            labels.push({ name: 'METAX', error: mxRaw.length === 0 ? 'TIMEOUT' : 'NO ROUTE' });
         for (let i = jxIn; i < CFG.quoteCountJumpx; i++)
-            labels.push(jxRaw.length === 0 ? 'JUMPERX TIMEOUT' : 'JUMPER —');
+            labels.push({ name: 'JUMPER', error: jxRaw.length === 0 ? 'TIMEOUT' : 'NO ROUTE' });
         if (isKyberEnabled() && !kbIn)
-            labels.push(kbRaw.length === 0 ? 'KYBER —' : 'ERROR');
+            labels.push({ name: 'KYBER', error: kbRaw.length === 0 ? 'NO QUOTE' : 'NO ROUTE' });
         if (isOkxEnabled() && !okIn)
-            labels.push(okRaw.length === 0 ? 'OKX —' : 'ERROR');
+            labels.push({ name: 'OKX', error: okRaw.length === 0 ? 'NO QUOTE' : 'NO ROUTE' });
         return labels;
     }
 
@@ -1287,7 +1316,7 @@ async function scanToken(tok) {
     if (ctdStatus) ctdStatus.textContent = '';
     for (let i = 0; i < n; i++) {
         const cexEl = els?.ctdCex[i];
-        if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(dispAskCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
+        if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(askCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
     }
     if (!ctdData.length) {
         const reason = diagCtD || 'TIDAK ADA LP / DEX';
@@ -1307,24 +1336,24 @@ async function scanToken(tok) {
             const pnlEl = els?.ctdPnl[i];
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
-            const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'KB' || r.src === 'OX' ? '' : '<span class="src-tag jx">JM</span>';
-            if (hdrEl) { hdrEl.innerHTML = srcTag + ' ' + r.name; hdrEl.className = 'mon-dex-hdr'; }
-            if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(obToken.askPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
+            const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : '';
+            if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; }
+            if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(askCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
             if (feeEl) { feeEl.textContent = `-${r.totalFee.toFixed(2)}$`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
         });
-        // Fill remaining empty columns with source name info
+        // Fill remaining empty columns with DEX name + error info
         for (let i = ctdData.length; i < n; i++) {
-            const label = missingCtdLabels[i - ctdData.length] || '—';
+            const lbl = missingCtdLabels[i - ctdData.length];
             const h = els?.ctdHdr[i];
             const c = els?.ctdCex[i];
             const d = els?.ctdDex[i];
             const f = els?.ctdFee[i];
             const p = els?.ctdPnl[i];
-            if (h) { h.textContent = label; h.className = 'mon-dex-hdr mon-dex-hdr-muted'; }
+            if (h) { h.textContent = lbl ? lbl.name : '—'; h.className = lbl ? 'mon-dex-hdr mon-dex-hdr-muted' : 'mon-dex-hdr'; }
             if (c) { c.textContent = '-'; c.className = 'mon-dex-cell mc-muted'; }
-            if (d) { d.textContent = '-'; d.className = 'mon-dex-cell mc-muted'; }
+            if (d) { d.textContent = lbl ? lbl.error : '-'; d.className = lbl ? 'mon-dex-cell mc-err-sm' : 'mon-dex-cell mc-muted'; }
             if (f) { f.textContent = '-'; f.className = 'mon-dex-cell mc-muted'; }
             if (p) { p.textContent = '-'; p.className = 'mon-dex-cell mc-muted'; }
         }
@@ -1335,7 +1364,7 @@ async function scanToken(tok) {
     if (dtcStatus) dtcStatus.textContent = '';
     for (let i = 0; i < n; i++) {
         const cexEl = els?.dtcCex[i];
-        if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(dispBidDtC)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
+        if (cexEl) { cexEl.textContent = `↓ ${fmtCompact(bidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid'; }
     }
     if (!dtcData.length) {
         const reason = diagDtC || '';
@@ -1355,24 +1384,24 @@ async function scanToken(tok) {
             const pnlEl = els?.dtcPnl[i];
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
-            const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'KB' || r.src === 'OX' ? '' : '<span class="src-tag jx">JM</span>';
-            if (hdrEl) { hdrEl.innerHTML = srcTag + ' ' + r.name; hdrEl.className = 'mon-dex-hdr'; }
-            if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(r.effPrice)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
-            if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(obToken.bidPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
+            const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : '';
+            if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; }
+            if (cexEl) { cexEl.textContent = `↓ ${fmtCompact(bidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
+            if (dexEl) { dexEl.textContent = `↑ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (feeEl) { feeEl.textContent = `-${r.totalFee.toFixed(2)}$`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
         });
-        // Fill remaining empty columns with source name info
+        // Fill remaining empty columns with DEX name + error info
         for (let i = dtcData.length; i < n; i++) {
-            const label = missingDtcLabels[i - dtcData.length] || '—';
+            const lbl = missingDtcLabels[i - dtcData.length];
             const h = els?.dtcHdr[i];
             const c = els?.dtcCex[i];
             const d = els?.dtcDex[i];
             const f = els?.dtcFee[i];
             const p = els?.dtcPnl[i];
-            if (h) { h.textContent = label; h.className = 'mon-dex-hdr mon-dex-hdr-muted'; }
+            if (h) { h.textContent = lbl ? lbl.name : '—'; h.className = lbl ? 'mon-dex-hdr mon-dex-hdr-muted' : 'mon-dex-hdr'; }
             if (c) { c.textContent = '-'; c.className = 'mon-dex-cell mc-muted'; }
-            if (d) { d.textContent = '-'; d.className = 'mon-dex-cell mc-muted'; }
+            if (d) { d.textContent = lbl ? lbl.error : '-'; d.className = lbl ? 'mon-dex-cell mc-err-sm' : 'mon-dex-cell mc-muted'; }
             if (f) { f.textContent = '-'; f.className = 'mon-dex-cell mc-muted'; }
             if (p) { p.textContent = '-'; p.className = 'mon-dex-cell mc-muted'; }
         }
@@ -1389,7 +1418,8 @@ async function scanToken(tok) {
         card.classList.add('has-signal');
         const bestRow = isCtd ? ctdData[0] : dtcData[dtcData.length - 1];
         const tgInfo = bestRow ? {
-            dexName: bestRow.name + (bestRow.src === 'MX' ? ' [MT]' : ' [JM]'),
+            dexName: bestRow.name,
+            dexSrc: bestRow.src,
             totalFee: bestRow.totalFee,
             modal: isCtd ? tok.modalCtD : tok.modalDtC,
             dir: isCtd ? 'CEX→DEX' : 'DEX→CEX',
@@ -1594,21 +1624,26 @@ async function sendTelegram(tok, pnl, info) {
     tgCooldown.set(tok.id, now);
     playSignalSound();
 
-    const chain = CONFIG_CHAINS[tok.chain]?.label || tok.chain;
+    const chain  = CONFIG_CHAINS[tok.chain]?.label || tok.chain.toUpperCase();
     const cexLbl = CONFIG_CEX[tok.cex]?.label || tok.cex;
-    const dexLbl = info?.dexName || 'DEX';
-    const dir = info?.dir || 'CEX↔DEX';
-    const fee = info?.totalFee != null ? info.totalFee.toFixed(2) : '-';
+    const dexName = info?.dexName || 'DEX';
+    const dexSrc  = info?.dexSrc  || '';
+    const dexBadge = dexSrc === 'MX' ? ' <code>[MT]</code>' : dexSrc === 'JX' ? ' <code>[JM]</code>' : '';
+    const dir   = info?.dir || 'CEX↔DEX';
+    const fee   = info?.totalFee != null ? info.totalFee.toFixed(2) : '-';
     const modal = info?.modal ?? tok.modalCtD;
     const pairLbl = tok.tickerPair && tok.tickerPair !== tok.ticker ? tok.tickerPair : tok.ticker;
     const wallet = CFG.wallet
         ? CFG.wallet.slice(0, 10) + '.....' + CFG.wallet.slice(-10)
         : '-';
+    const pnlSign = pnl >= 0 ? '+' : '';
+    const dirArrow = dir === 'CEX→DEX' ? '⬆️' : '⬇️';
+    const esc = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
     // ── Android native notification (via WebView JS Bridge) ──────────────
     if (window.AndroidBridge) {
         const title = `🟢 SIGNAL: ${tok.ticker}↔${pairLbl}`;
-        const body = `${cexLbl}↔${dexLbl} [${chain}] [${dir}]\nPnL: ${fmtPnl(pnl)}$  |  Modal: $${modal}`;
+        const body = `${cexLbl} ➜ ${dexName} [${chain}] [${dir}]\nPnL: ${pnlSign}${pnl.toFixed(2)}$  |  Modal: $${modal}`;
         window.AndroidBridge.showNotification(title, body);
     }
 
@@ -1616,18 +1651,20 @@ async function sendTelegram(tok, pnl, info) {
     if (!APP_DEV_CONFIG.telegramBotToken || APP_DEV_CONFIG.telegramBotToken.length < 20) return;
 
     const msg =
-        `🟢 SIGNAL SCANNER | @${CFG.username || 'user'}
-Token: ${tok.ticker}↔${pairLbl}
-Proses: ${cexLbl} ↔ ${dexLbl}
-PnL & Fee: ${fmtPnl(pnl)}$ | $${fee}
-Modal: $${modal} [${dir}]
-Wallet: ${wallet}
---------------------------------------------------------------`;
+`🟢 <b>INFO SIGNAL {PRIVATE}</b>
+👤 @${esc(CFG.username || 'user')}  •  🔗 <b>${esc(chain)}</b>
+━━━━━━━━━━━━━━━
+🪙 <b>${esc(tok.ticker)} ⇄ ${esc(pairLbl)}</b> [${dirArrow} <i>${esc(dir)}</i>]
+🏦 ${esc(cexLbl)} ➜ <b>${esc(dexName)}</b>${dexBadge}
+💵 Modal : $${esc(modal)}
+💰 PnL   : <b>${pnlSign}${pnl.toFixed(2)}$</b> | 💸 Fee  :  -$${esc(fee)}
+━━━━━━━━━━━━━━━
+👛 <code>${esc(wallet)}</code>`;
 
     try {
         await fetch(`https://api.telegram.org/bot${APP_DEV_CONFIG.telegramBotToken}/sendMessage`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: APP_DEV_CONFIG.telegramGroupId, text: msg })
+            body: JSON.stringify({ chat_id: APP_DEV_CONFIG.telegramGroupId, text: msg, parse_mode: 'HTML' })
         });
     } catch { }
 }
@@ -1680,6 +1717,7 @@ async function runScan() {
     $('#scanBadge').addClass('active');
     // Clear previous signal chips and reset table
     document.querySelectorAll('.signal-chip').forEach(c => c.remove());
+    $('#notStartedNotice').hide();
     updateNoSignalNotice();
     lockTabs();
     if (!getFilteredTokens().length) { showToast('Tidak ada token aktif! Periksa filter di Pengaturan.'); stopScan(); return; }
@@ -1733,7 +1771,8 @@ function stopScan() {
     scanning = false; scanAbort = true;  // keep true so orphaned loop exits
     $('#btnScanIcon').text('▶'); $('#btnScanLbl').text('START'); $('#btnScan').removeClass('stop');
     updateScanCount();
-    updateNoSignalNotice();
+    $('#notStartedNotice').show();
+    $('#noSignalNotice').hide();
     $('#scanBadge').removeClass('active');
     $('#scanBar').css('width', '0%');
     unlockTabs();
@@ -1785,10 +1824,6 @@ $('#speedChips').on('click', '.sort-btn', function () {
 $('#setSoundMuted').on('change', function () {
     _autoSaveFields();
     showToast(this.checked ? '🔔 Notifikasi suara aktif' : '🔕 Notifikasi suara dimatikan');
-});
-$('#setAutoLevel').on('change', function () {
-    _autoSaveFields();
-    showToast(this.checked ? '✅ Auto Level CEX aktif' : '○ Auto Level CEX nonaktif');
 });
 $('#setQuoteMetax').on('change', function () {
     _autoSaveFields();
@@ -1907,9 +1942,12 @@ function showObTooltip(el) {
         const dirLabel = dir === 'ctd' ? 'BELI (CEX→DEX)' : 'JUAL (DEX→CEX)';
         const titleCls = dir === 'ctd' ? 'ob-tip-buy' : 'ob-tip-sell';
 
-        const rows = obList.slice(0, 5).map(([price, vol]) => {
+        const levelCount = CFG.levelCount ?? APP_DEV_CONFIG.defaultLevelCount;
+        const rows = obList.slice(0, levelCount).map(([price, vol], i) => {
             const total = price * vol;
-            return `<div class="ob-tip-ob-row">
+            const sep = i > 0 ? '<div class="ob-tip-level-sep"></div>' : '';
+            return `${sep}<div class="ob-tip-ob-row">
+              <span class="ob-tip-ob-lvl">L${i + 1}</span>
               <span class="ob-tip-ob-price">${fmtPr(price)}</span>
               <span class="ob-sep">:</span>
               <span class="ob-tip-ob-vol">${total.toFixed(2)}$ [Rp.${fmtIDR(total)}]</span>
@@ -2161,7 +2199,7 @@ $('#btnBulkApply').on('click', function () {
             saveTokens(allTokens);
             renderTokenList();
             closeBulkModal();
-            showToast(`✅ ${filtered.length} koin berhasil diupdate!`);
+            showToast(`✅ ${filtered.length} Data koin berhasil diupdate!`);
         }
     );
 });
@@ -2259,9 +2297,12 @@ $(function () {
     renderChainChips('bsc');
     renderTokenList();   // also builds monitor skeleton via buildMonitorRows()
     checkOnboarding();
-    // Sync scanFooter visibility dengan tab yang aktif di HTML saat load
+    // Sync scanFooter & signalBar visibility dengan tab yang aktif di HTML saat load
     const initTab = $('.nav-item.active[data-tab]').data('tab') || 'tabMonitor';
-    $('#scanFooter').css('display', initTab === 'tabMonitor' ? 'flex' : 'none');
+    const initMonitor = initTab === 'tabMonitor';
+    $('#scanFooter').css('display', initMonitor ? 'flex' : 'none');
+    $('#signalBar').css('display', initMonitor ? 'flex' : 'none');
+    document.body.classList.toggle('no-signal-bar', !initMonitor);
     // Init USDT rate
     fetchUsdtRate().then(() => _updateCalcRateDisplay());
     // Toast after reload

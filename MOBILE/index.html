@@ -48,24 +48,21 @@
         <div class="top-right">
  <!-- Tab pills — visible in landscape only -->
         <div class="top-tabs" id="topTabs">
-            <button class="top-tab-btn " data-tab="tabMonitor">
-                    <img src="icons/monitoring.png" class="top-tab-icon" alt="SCANNER HARGA CRYPTO"> 
-                </button>
-                 <button class="top-tab-btn tab-reload" onclick="reloadWithToast()">
-                    <img src="icons/reload.png" class="top-tab-icon" alt="REFRESH HALAMAN"> 
+             <button class="top-tab-btn" onclick="openCalcModal()">
+                <img src="icons/kalkulator.png" class="top-tab-icon" alt="KALKULATOR CRYPTO">
             </button>
-                <button class="top-tab-btn active" data-tab="tabToken">
-                    <img src="icons/token.png" class="top-tab-icon" alt="DAFTAR KOIN CRYPTO"> 
+            <button class="top-tab-btn" data-tab="tabToken">
+                <img src="icons/token.png" class="top-tab-icon" alt="DAFTAR KOIN CRYPTO">
             </button>
-            
-            
-
+           
+            <button class="top-tab-btn active" data-tab="tabMonitor">
+                <img src="icons/monitoring.png" class="top-tab-icon" alt="SCANNER HARGA CRYPTO">
+            </button>
             <button class="top-tab-btn" data-tab="tabSettings">
-                    <img src="icons/setting.png" class="top-tab-icon" alt="PENGATURAN APLIKASI"> 
-                </button>
-               <button class="top-tab-btn" onclick="openCalcModal()">
-                <!--<i class="bi bi-calculator top-tab-icon" style="font-size:12px;margin-right:3px"></i> -->
-                  <img src="icons/kalkulator.png" class="top-tab-icon" alt="KALKULATOR CRYPTO"> 
+                <img src="icons/setting.png" class="top-tab-icon" alt="PENGATURAN APLIKASI">
+            </button>
+            <button class="top-tab-btn" data-tab="tabRe`load" onclick="reloadWithToast()">
+                <img src="icons/reload.png" class="top-tab-icon" alt="REFRESH HALAMAN">
             </button>
         </div>
             <!-- <span class="username-chip" id="topUsername">@-</span> -->
@@ -78,6 +75,7 @@
 
     <!-- Signal Chips -->
     <div class="signal-bar" id="signalBar">
+        <span id="notStartedNotice" class="no-signal-notice">■ SCANNER BELUM BERJALAN</span>
         <span id="noSignalNotice" class="no-signal-notice" style="display:none">● Belum Ada Info Selisih Harga</span>
     </div>
 
@@ -86,7 +84,7 @@
 ═══════════════════════════════════════ -->
 
     <!-- TAB MONITOR -->
-    <div id="tabMonitor" class="tab-pane ">
+    <div id="tabMonitor" class="tab-pane active">
         <div class="monitor-cards" id="monitorList">
             <div class="token-list-empty">Jika belum ada koin, masuk menu KOIN lalu tekan + untuk menambah.<br>Jika
                 sudah ada koin, tekan START.</div>
@@ -94,7 +92,7 @@
     </div>
 
     <!-- TAB TOKEN -->
-    <div id="tabToken" class="tab-pane active">
+    <div id="tabToken" class="tab-pane">
         <div class="token-list-header">
             <h2>DAFTAR KOIN :</h2>
             <div class="token-count-group">
@@ -139,8 +137,8 @@
                         <label class="settings-label">Kecepatan Scan</label>
                         <div class="speed-chips" id="speedChips">
                             <button class="sort-btn" data-speed="800">SLOW</button>
-                            <button class="sort-btn" data-speed="600">MEDIUM</button>
-                            <button class="sort-btn" data-speed="400">FAST</button>
+                            <button class="sort-btn" data-speed="700">MEDIUM</button>
+                            <button class="sort-btn" data-speed="500">FAST</button>
                         </div>
                     </div>
                 </div>
@@ -174,10 +172,7 @@
                         <input class="settings-input" id="setQuoteJumpx" type="number" min="1" max="5" value="2">
                     </div>
                     <div class="settings-field">
-                        <div class="al-toggle-row">
-                            <input type="checkbox" id="setAutoLevel" class="settings-checkbox">
-                            <label class="settings-label" for="setAutoLevel">Auto Level CEX</label>
-                        </div>
+                        <label class="settings-label">Auto Level CEX</label>
                         <input class="settings-input" id="setLevelCount" type="number" min="1" max="4" value="2">
                     </div>
                 </div>
@@ -203,31 +198,27 @@
      BOTTOM NAV
 ═══════════════════════════════════════ -->
     <nav class="bottom-nav">
-        <button class="nav-item " data-tab="tabMonitor" id="navMonitor">
-            <span class="nav-icon"><img src="icons/monitoring.png" class="nav-icon-img" alt="scanner price"></span>
-            <span>SCANNER</span>
+         <button class="nav-item" id="navCalc" onclick="openCalcModal()">
+            <span class="nav-icon"><img src="icons/kalkulator.png" class="nav-icon-img" alt="kalkulator crypto"></span>
+            <span>KALKULATOR</span>
         </button>
-         <button class="nav-item" id="navReload" onclick="reloadWithToast()">
-            <span class="nav-icon"><img src="icons/reload.png" class="nav-icon-img" alt="reload"></span>
-            <span>RELOAD</span>
-        </button>
-        <button class="nav-item active" data-tab="tabToken" id="navToken">
+        <button class="nav-item" data-tab="tabToken" id="navToken">
             <span class="nav-icon"><img src="icons/token.png" class="nav-icon-img" alt="daftar koin"></span>
             <span>DATA KOIN</span>
         </button>
-        
+       
+        <button class="nav-item active" data-tab="tabMonitor" id="navMonitor">
+            <span class="nav-icon"><img src="icons/monitoring.png" class="nav-icon-img" alt="scanner price"></span>
+            <span>SCANNER</span>
+        </button>
+        <button class="nav-item" id="navReload" onclick="reloadWithToast()">
+            <span class="nav-icon"><img src="icons/reload.png" class="nav-icon-img" alt="reload"></span>
+            <span>RELOAD</span>
+        </button>
         <button class="nav-item" data-tab="tabSettings" id="navSettings">
             <span class="nav-icon"><img src="icons/setting.png" class="nav-icon-img" alt="pengaturan aplikasi"></span>
             <span>PENGATURAN</span>
         </button>
-         <button class="nav-item" id="navCalc" onclick="openCalcModal()">
-            <!-- <span class="nav-icon"><i class="bi bi-calculator" style="font-size:22px"></i></span> -->
-            <span class="nav-icon"><img src="icons/kalkulator.png" class="nav-icon-img" alt="kalkulator crypto"></span>
-            <span>KALKULATOR</span>
-        </button>
-        
-       
-       
     </nav>
 
     <!-- FAB Scan + Sort (Monitor only) -->
