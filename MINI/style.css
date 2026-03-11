@@ -672,6 +672,15 @@ body {
   color: var(--muted);
 }
 
+/* Error info inside DEX cell (timeout / no route) */
+.mc-err-sm {
+  color: rgba(220, 80, 80, 0.75) !important;
+  font-size: 9px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
 .mon-lbl-hdr {
   text-align: left;
   min-width: 76px;
@@ -1627,6 +1636,7 @@ body {
 .fab:active {
   transform: scale(.91);
 }
+
 
 /* ══════════════════════════════════════════
    SETTINGS
@@ -2609,6 +2619,20 @@ body {
 .ob-tip-ob-vol {
   color: rgba(200, 220, 255, 0.80);
   white-space: nowrap;
+}
+
+.ob-tip-ob-lvl {
+  font-size: 8px;
+  font-weight: 700;
+  color: rgba(255, 200, 80, 0.75);
+  min-width: 14px;
+  text-align: center;
+}
+
+.ob-tip-level-sep {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 2px 0;
 }
 
 /* ══════════════════════════════════════════
