@@ -1525,8 +1525,8 @@ function buildMonitorRows(tokenList) {
       ${dexHdr('dtc', MON_DTC_COLOR, t.id)}
     </tr></thead>
     <tbody>
-      <tr class="mon-row-cex"><td class="mon-lbl-side">${pairTk}→${t.ticker}</td>${dexRow('dtc', 'cex')}</tr>
-      <tr class="mon-row-dex"><td class="mon-lbl-side lbl-pair"><span style='color:red;'>JUAL CEX ↓</span></td>${dexRow('dtc', 'dex')}</tr>
+      <tr class="mon-row-dex"><td class="mon-lbl-side">${pairTk}→${t.ticker}</td>${dexRow('dtc', 'dex')}</tr>
+      <tr class="mon-row-cex"><td class="mon-lbl-side lbl-pair"><span style='color:red;'>JUAL CEX ↓</span></td>${dexRow('dtc', 'cex')}</tr>
       <tr class="mon-row-recv"><td class="mon-lbl-side">ALL FEE</td>${dexRow('dtc', 'fee')}</tr>
       <tr class="mon-row-pnl"><td class="mon-lbl-side">💰 PNL <span class="lbl-minpnl">($${minPnlLbl})</span></td>${dexRow('dtc', 'pnl')}</tr>
     </tbody>
@@ -1920,7 +1920,10 @@ function showObTooltip(el) {
         const sellPrice = ob.bidPrice || 0;
         const fmtIDR = (v) => {
             const idr = v * usdtRate;
-            return idr > 0 && idr < 1 ? idr.toFixed(2) : Math.round(idr).toLocaleString('id-ID');
+            if (idr <= 0) return '0';
+            if (idr < 1) return idr.toFixed(4);
+            if (idr < 1000) return idr.toFixed(2);
+            return Math.round(idr).toLocaleString('id-ID');
         };
         const fmtPr = (p) => `${fmtCompact(p)}$ [Rp.${fmtIDR(p)}]`;
 
