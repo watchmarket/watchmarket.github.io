@@ -242,7 +242,7 @@ function toggleFilterChip(el, type) {
     if (arr.length === 0) {
         showToast(`✅ Semua ${type === 'cex' ? 'CEX' : 'Chain'} aktif`);
     } else {
-        showToast(`${isNowOn ? '✅ ' : '❌ '} ${label.toUpperCase()} ${isNowOn ? 'di OFF-kan' : 'di ON-kan'}`);
+        showToast(`${isNowOn ? '✅ ' : '❌ '} ${label.toUpperCase()} ${isNowOn ? 'di ON-kan' : 'di OFF-kan'}`);
     }
 }
 
@@ -1342,7 +1342,7 @@ async function scanToken(tok) {
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
             const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : '';
-            if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; }
+            if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; }
             if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(dispAskCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
             if (feeEl) { feeEl.textContent = `-${r.totalFee.toFixed(2)}$`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
@@ -1390,7 +1390,7 @@ async function scanToken(tok) {
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
             const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : '';
-            if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; }
+            if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; }
             if (cexEl) { cexEl.textContent = `↓ ${fmtCompact(dispBidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
             if (dexEl) { dexEl.textContent = `↑ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (feeEl) { feeEl.textContent = `-${r.totalFee.toFixed(2)}$`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
@@ -1921,9 +1921,17 @@ function showObTooltip(el) {
     if (!ob || (!ob.asks.length && !ob.bids.length)) {
         tooltip.innerHTML = infoHeader + '<div class="ob-tip-empty">Data orderbook belum tersedia.<br>Tunggu hasil scanning.</div>';
     } else {
-        // auto level ON → LX sesuai kecukupan modal; auto level OFF → L1
-        const buyPrice  = ob.dispAsk || ob.askPrice || 0;
-        const sellPrice = ob.dispBid || ob.bidPrice || 0;
+        // Harga CEX (LX auto level atau L1) dan DEX (effPrice kolom ini)
+        const cexAsk   = ob.dispAsk || ob.askPrice || 0;
+        const cexBid   = ob.dispBid || ob.bidPrice || 0;
+        const dexPrice = parseFloat(el.dataset.effprice) || 0;
+        // CtD: beli di CEX (ask), jual di DEX (effPrice)
+        // DtC: beli di DEX (effPrice), jual di CEX (bid)
+        const buyPrice  = dir === 'ctd' ? cexAsk  : dexPrice;
+        const sellPrice = dir === 'ctd' ? dexPrice : cexBid;
+        const buyLabel  = dir === 'ctd' ? 'HARGA BUY CEX'  : 'HARGA BUY DEX';
+        const sellLabel = dir === 'ctd' ? 'HARGA SELL DEX' : 'HARGA SELL CEX';
+
         const fmtIDR = (v) => {
             const idr = v * usdtRate;
             if (idr <= 0) return '0';
@@ -1936,12 +1944,12 @@ function showObTooltip(el) {
         const priceHeader = `
           <div class="ob-tip-prices">
             <div class="ob-tip-price-row">
-              <span class="ob-tip-buy">HARGA BUY</span>
+              <span class="ob-tip-buy">${buyLabel}</span>
               <span class="ob-sep"> : </span>
               <span>${fmtPr(buyPrice)}</span>
             </div>
             <div class="ob-tip-price-row">
-              <span class="ob-tip-sell">HARGA SELL</span>
+              <span class="ob-tip-sell">${sellLabel}</span>
               <span class="ob-sep"> : </span>
               <span>${fmtPr(sellPrice)}</span>
             </div>
