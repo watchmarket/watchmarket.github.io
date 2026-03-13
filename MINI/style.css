@@ -2501,6 +2501,12 @@ body {
   color: #f87171;
 }
 
+.ob-tip-modal {
+  font-size: 0.78em;
+  opacity: 0.65;
+  font-weight: normal;
+}
+
 .ob-tip-empty {
   font-size: 10px;
   color: var(--muted);

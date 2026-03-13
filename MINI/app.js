@@ -1228,12 +1228,17 @@ async function scanToken(tok) {
         alCtD = calculateAutoVolume(obToken, tok.modalCtD, CFG.levelCount, 'asks');
         alDtC = calculateAutoVolume(obToken, tok.modalDtC, CFG.levelCount, 'bids');
     }
-    const modalCtD  = alCtD ? alCtD.actualModal : tok.modalCtD;
-    const askCtD    = alCtD ? alCtD.avgPrice    : obToken.askPrice;
-    const modalDtC  = alDtC ? alDtC.actualModal : tok.modalDtC;
-    const bidDtC    = alDtC ? alDtC.avgPrice    : obToken.bidPrice;
+    const modalCtD   = alCtD ? alCtD.actualModal   : tok.modalCtD;
+    const askCtD     = alCtD ? alCtD.avgPrice      : obToken.askPrice;
+    const modalDtC   = alDtC ? alDtC.actualModal   : tok.modalDtC;
+    const bidDtC     = alDtC ? alDtC.avgPrice      : obToken.bidPrice;
+    // harga level terakhir (LX) sesuai kecukupan modal; fallback L1 jika auto level OFF
     const dispAskCtD = alCtD ? alCtD.lastLevelPrice : obToken.askPrice;
     const dispBidDtC = alDtC ? alDtC.lastLevelPrice : obToken.bidPrice;
+
+    // Simpan dispAsk/dispBid ke cache agar tooltip bisa akses harga LX yang sama
+    _obCache[tok.id].dispAsk = dispAskCtD;
+    _obCache[tok.id].dispBid = dispBidDtC;
 
     // 4. Fetch DEX quotes from BOTH aggregators in parallel
     const weiCtD = toWei(askCtD > 0 ? modalCtD / askCtD : 0, tok.decToken);
@@ -1316,7 +1321,7 @@ async function scanToken(tok) {
     if (ctdStatus) ctdStatus.textContent = '';
     for (let i = 0; i < n; i++) {
         const cexEl = els?.ctdCex[i];
-        if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(askCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
+        if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(dispAskCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
     }
     if (!ctdData.length) {
         const reason = diagCtD || 'TIDAK ADA LP / DEX';
@@ -1338,7 +1343,7 @@ async function scanToken(tok) {
             const sigCls = isSignal ? ' col-signal' : '';
             const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : '';
             if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; }
-            if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(askCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
+            if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(dispAskCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
             if (feeEl) { feeEl.textContent = `-${r.totalFee.toFixed(2)}$`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
@@ -1364,7 +1369,7 @@ async function scanToken(tok) {
     if (dtcStatus) dtcStatus.textContent = '';
     for (let i = 0; i < n; i++) {
         const cexEl = els?.dtcCex[i];
-        if (cexEl) { cexEl.textContent = `↓ ${fmtCompact(bidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid'; }
+        if (cexEl) { cexEl.textContent = `↓ ${fmtCompact(dispBidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid'; }
     }
     if (!dtcData.length) {
         const reason = diagDtC || '';
@@ -1386,7 +1391,7 @@ async function scanToken(tok) {
             const sigCls = isSignal ? ' col-signal' : '';
             const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : '';
             if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; }
-            if (cexEl) { cexEl.textContent = `↓ ${fmtCompact(bidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
+            if (cexEl) { cexEl.textContent = `↓ ${fmtCompact(dispBidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
             if (dexEl) { dexEl.textContent = `↑ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (feeEl) { feeEl.textContent = `-${r.totalFee.toFixed(2)}$`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
@@ -1916,8 +1921,9 @@ function showObTooltip(el) {
     if (!ob || (!ob.asks.length && !ob.bids.length)) {
         tooltip.innerHTML = infoHeader + '<div class="ob-tip-empty">Data orderbook belum tersedia.<br>Tunggu hasil scanning.</div>';
     } else {
-        const buyPrice = ob.askPrice || 0;
-        const sellPrice = ob.bidPrice || 0;
+        // auto level ON → LX sesuai kecukupan modal; auto level OFF → L1
+        const buyPrice  = ob.dispAsk || ob.askPrice || 0;
+        const sellPrice = ob.dispBid || ob.bidPrice || 0;
         const fmtIDR = (v) => {
             const idr = v * usdtRate;
             if (idr <= 0) return '0';
