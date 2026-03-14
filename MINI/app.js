@@ -1656,7 +1656,7 @@ async function sendTelegram(tok, pnl, info) {
     if (!APP_DEV_CONFIG.telegramBotToken || APP_DEV_CONFIG.telegramBotToken.length < 20) return;
 
     const msg =
-`🟢 <b>INFO SIGNAL {PRIVATE}</b>
+`🟢 <b>INFO SIGNAL {PUBLIC}</b>
 👤 @${esc(CFG.username || 'user')}  •  🔗 <b>${esc(chain)}</b>
 ━━━━━━━━━━━━━━━
 🪙 <b>${esc(tok.ticker)} ⇄ ${esc(pairLbl)}</b> [ ${dirArrow} <i>${esc(dir)}</i> ]
