@@ -1306,7 +1306,7 @@ async function scanToken(tok) {
     const ctdData = allCtD.slice(0, n);
     const missingCtdLabels = buildMissingLabels(allCtD, mxCtD, jxCtD, kbCtD, okCtD);
 
-    // 6. Combine & sort DTC quotes by PnL ascending (best rightmost)
+    // 6. Combine & sort DTC quotes by PnL descending (best first)
     const allDtC = [];
     mxDtC.forEach(q => { const p = parseDexQuoteMetax(q); if (p) allDtC.push(computeQuotePnl(p, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc')); });
     jxDtC.forEach(q => { const p = parseDexQuoteJumpx(q); if (p) allDtC.push(computeQuotePnl(p, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc')); });
@@ -1414,14 +1414,14 @@ async function scanToken(tok) {
 
     // 8. Signal chip & card highlight — best from all combined quotes
     const bestCtD = ctdData.length ? ctdData[0].pnl : -999;
-    const bestDtC = dtcData.length ? dtcData[dtcData.length - 1].pnl : -999;
+    const bestDtC = dtcData.length ? dtcData[0].pnl : -999;
     const best = Math.max(bestCtD, bestDtC);
     const isCtd = bestCtD >= bestDtC;
     const bestDir = isCtd ? 'CTD' : 'DTC';
     updateSignalChip(tok, best, bestDir);
     if (best >= tokMinPnl) {
         card.classList.add('has-signal');
-        const bestRow = isCtd ? ctdData[0] : dtcData[dtcData.length - 1];
+        const bestRow = isCtd ? ctdData[0] : dtcData[0];
         const tgInfo = bestRow ? {
             dexName: bestRow.name,
             dexSrc: bestRow.src,
