@@ -41,8 +41,11 @@
     <div class="top-bar">
         <div class="app-name">
             <img src="icons/favicon.png" class="app-logo" alt="">
-            <span id="appNameDisplay"></span> <span class="app-version" id="appVersion"></span> <span class="scanning-badge"
-                id="scanBadge">▶ SCANNING...</span>
+            <span id="appNameDisplay"></span> <span class="app-version" id="appVersion"></span>
+            <span class="scanning-badge" id="scanBadge">▶ SCANNING...</span>
+            <span id="notStartedNotice" class="scan-status-badge">■ BELUM SCANNING</span>
+            <span id="scanDoneNotice"   class="scan-status-badge scan-status-done"  style="display:none">✅ SCANNER SELESAI</span>
+            <span id="scanStopNotice"   class="scan-status-badge scan-status-stop"  style="display:none">■ STOP SCANNING</span>
         </div>
        
         <div class="top-right">
@@ -75,10 +78,7 @@
 
     <!-- Signal Chips -->
     <div class="signal-bar" id="signalBar">
-        <span id="notStartedNotice" class="no-signal-notice">■ SCANNER BELUM BERJALAN</span>
-        <span id="scanDoneNotice"   class="no-signal-notice" style="display:none">✅ SCANNING SELESAI</span>
-        <span id="scanStopNotice"   class="no-signal-notice" style="display:none">■ SCANNING DIHENTIKAN</span>
-        <span id="noSignalNotice"   class="no-signal-notice" style="display:none">● Belum Ada Info Selisih Harga</span>
+        <span id="noSignalNotice" class="no-signal-notice" style="display:none">● Belum Ada Info Selisih Harga</span>
     </div>
 
     <!-- ═══════════════════════════════════════
