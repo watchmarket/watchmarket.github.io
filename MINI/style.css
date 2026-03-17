@@ -465,6 +465,20 @@ body {
   animation: scan-pulse 1.4s ease-in-out infinite;
 }
 
+/* Scanning selesai natural — hijau */
+#scanDoneNotice {
+  background: rgba(74, 222, 128, 0.12);
+  border-color: rgba(74, 222, 128, 0.40);
+  color: #4ade80;
+}
+
+/* Scanning dihentikan manual — abu/kuning */
+#scanStopNotice {
+  background: rgba(250, 204, 21, 0.10);
+  border-color: rgba(250, 204, 21, 0.35);
+  color: #facc15;
+}
+
 /* ══════════════════════════════════════════
    TAB CONTENT
 ══════════════════════════════════════════ */

@@ -276,12 +276,20 @@ function loadSettings() {
     $('#speedChips .sort-btn').removeClass('active');
     $(`#speedChips [data-speed="${nearest}"]`).addClass('active');
     $('#topUsername').text('@' + (CFG.username || '-'));
-    // Display version
+    // Display app name & version dari config
+    const appName = APP_DEV_CONFIG.appName || 'MONITORING PRICE';
     const ver = APP_DEV_CONFIG.appVersion || '';
+    const verStr = 'v' + ver;
     const verEl = document.getElementById('appVersion');
-    if (verEl) verEl.textContent = 'v' + ver;
+    if (verEl) verEl.textContent = verStr;
     const obVer = document.getElementById('onboardVersion');
-    if (obVer) obVer.textContent = 'v' + ver;
+    if (obVer) obVer.textContent = verStr;
+    const nameEl = document.getElementById('appNameDisplay');
+    if (nameEl) nameEl.textContent = appName;
+    const onboardNameEl = document.getElementById('onboardAppName');
+    if (onboardNameEl) onboardNameEl.textContent = appName;
+    const titleEl = document.getElementById('appTitle');
+    if (titleEl) titleEl.textContent = appName;
     renderFilterChips();
     updateScanCount();
 }
@@ -1629,6 +1637,8 @@ async function sendTelegram(tok, pnl, info) {
     tgCooldown.set(tok.id, now);
     playSignalSound();
 
+    const appName = APP_DEV_CONFIG.appName || 'MONITORING PRICE';
+    const appVer  = APP_DEV_CONFIG.appVersion ? ' v' + APP_DEV_CONFIG.appVersion : '';
     const chain  = CONFIG_CHAINS[tok.chain]?.label || tok.chain.toUpperCase();
     const cexLbl = CONFIG_CEX[tok.cex]?.label || tok.cex;
     const dexName = info?.dexName || 'DEX';
@@ -1647,7 +1657,7 @@ async function sendTelegram(tok, pnl, info) {
 
     // ── Android native notification (via WebView JS Bridge) ──────────────
     if (window.AndroidBridge) {
-        const title = `🟢 SIGNAL: ${tok.ticker}↔${pairLbl}`;
+        const title = `🟢 ${appName} — SIGNAL: ${tok.ticker}↔${pairLbl}`;
         const body = `${cexLbl} ➜ ${dexName} [${chain}] [${dir}]\nPnL: ${pnlSign}${pnl.toFixed(2)}$  |  Modal: $${modal}`;
         window.AndroidBridge.showNotification(title, body);
     }
@@ -1656,7 +1666,7 @@ async function sendTelegram(tok, pnl, info) {
     if (!APP_DEV_CONFIG.telegramBotToken || APP_DEV_CONFIG.telegramBotToken.length < 20) return;
 
     const msg =
-`🟢 <b>INFO SIGNAL {PRIVATE}</b>
+`🟢 <b>${esc(appName)}${appVer} — INFO SIGNAL</b>
 👤 @${esc(CFG.username || 'user')}  •  🔗 <b>${esc(chain)}</b>
 ━━━━━━━━━━━━━━━
 🪙 <b>${esc(tok.ticker)} ⇄ ${esc(pairLbl)}</b> [ ${dirArrow} <i>${esc(dir)}</i> ]
@@ -1723,6 +1733,8 @@ async function runScan() {
     // Clear previous signal chips and reset table
     document.querySelectorAll('.signal-chip').forEach(c => c.remove());
     $('#notStartedNotice').hide();
+    $('#scanDoneNotice').hide();
+    $('#scanStopNotice').hide();
     updateNoSignalNotice();
     lockTabs();
     if (!getFilteredTokens().length) { showToast('Tidak ada token aktif! Periksa filter di Pengaturan.'); stopScan(); return; }
@@ -1770,23 +1782,38 @@ async function runScan() {
             }
         }
     }
-    stopScan();
+    // Jika loop keluar karena selesai natural (bukan scanAbort dari user), tandai 'done'
+    stopScan(scanAbort ? 'manual' : 'done');
 }
-function stopScan() {
+function stopScan(reason = 'manual') {
     scanning = false; scanAbort = true;  // keep true so orphaned loop exits
     $('#btnScanIcon').text('▶'); $('#btnScanLbl').text('START'); $('#btnScan').removeClass('stop');
     updateScanCount();
-    $('#notStartedNotice').show();
-    $('#noSignalNotice').hide();
     $('#scanBadge').removeClass('active');
     $('#scanBar').css('width', '0%');
+    // Tampilkan notice sesuai kondisi
+    $('#notStartedNotice').hide();
+    $('#scanDoneNotice').hide();
+    $('#scanStopNotice').hide();
+    $('#noSignalNotice').hide();
+    if (_scanRound === 0) {
+        // Belum pernah scan sama sekali
+        $('#notStartedNotice').show();
+    } else if (reason === 'done') {
+        // Scan selesai natural (semua koin sudah discan)
+        $('#scanDoneNotice').show();
+        showToast('✅ Scanning selesai');
+    } else {
+        // Dihentikan manual oleh user
+        $('#scanStopNotice').show();
+        showToast('■ Scanning dihentikan');
+    }
     unlockTabs();
-    showToast('■ Scanning dihentikan');
     // Stop Android Foreground Service
     try { if (window.AndroidBridge && AndroidBridge.stopBackgroundService) AndroidBridge.stopBackgroundService(); } catch (e) { }
 }
 $('#btnScan').on('click', () => {
-    if (scanning) { scanAbort = true; stopScan(); }
+    if (scanning) { scanAbort = true; stopScan('manual'); }
     else { runScan(); }
 });
 

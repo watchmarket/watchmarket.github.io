@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>MONITORING PRICE</title>
+    <title id="appTitle">MONITORING PRICE</title>
     <link rel="icon" href="icons/favicon.png">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -19,7 +19,7 @@
 ═══════════════════════════════════════ -->
     <div class="onboard-overlay" id="onboardOverlay">
         <div class="onboard-card">
-            <div class="onboard-logo"><img src="icons/favicon.png" class="app-logo" alt=""> MONITORING PRICE</div>
+            <div class="onboard-logo"><img src="icons/favicon.png" class="app-logo" alt=""> <span id="onboardAppName"></span></div>
 
             <div class="onboard-sub">Aplikasi Pencari Selisih Harga Cryptocurrency CEX VS DEX</div>
             <div class="onboard-form-group">
@@ -41,7 +41,7 @@
     <div class="top-bar">
         <div class="app-name">
             <img src="icons/favicon.png" class="app-logo" alt="">
-            MONITORING PRICE <span class="app-version" id="appVersion"></span> <span class="scanning-badge"
+            <span id="appNameDisplay"></span> <span class="app-version" id="appVersion"></span> <span class="scanning-badge"
                 id="scanBadge">▶ SCANNING...</span>
         </div>
        
@@ -76,7 +76,9 @@
     <!-- Signal Chips -->
     <div class="signal-bar" id="signalBar">
         <span id="notStartedNotice" class="no-signal-notice">■ SCANNER BELUM BERJALAN</span>
-        <span id="noSignalNotice" class="no-signal-notice" style="display:none">● Belum Ada Info Selisih Harga</span>
+        <span id="scanDoneNotice"   class="no-signal-notice" style="display:none">✅ SCANNING SELESAI</span>
+        <span id="scanStopNotice"   class="no-signal-notice" style="display:none">■ SCANNING DIHENTIKAN</span>
+        <span id="noSignalNotice"   class="no-signal-notice" style="display:none">● Belum Ada Info Selisih Harga</span>
     </div>
 
     <!-- ═══════════════════════════════════════
