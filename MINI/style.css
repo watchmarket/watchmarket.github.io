@@ -2,7 +2,7 @@
    SCANNER PRICE CRYPTO — style.css
    Light Glassmorphism Theme  •  METAX + JUMPX
 ═══════════════════════════════════════════════ */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
 
 :root {
   /* ─── Background (light) ─── */
@@ -62,7 +62,7 @@ body.no-signal-bar {
 
 html,
 body {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   background: var(--bg);
   color: var(--text);
   font-size: 14px;
@@ -184,7 +184,7 @@ body {
   color: var(--text2);
   font-size: 11px;
   font-weight: 600;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   cursor: pointer;
   transition: all .2s;
 }
@@ -458,7 +458,7 @@ body {
 .chip-pnl {
   font-size: 11px;
   font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Montserrat', sans-serif;
   margin-left: auto;
 }
 
@@ -695,7 +695,7 @@ body {
   color: #a6051a !important;
   font-size: 11px !important;
   font-weight: 600 !important;
-  font-family: 'Outfit', sans-serif !important;
+  font-family: 'Montserrat', sans-serif !important;
 }
 
 /* Dimmed placeholder cell when no data */
@@ -801,14 +801,14 @@ body {
 
 .mon-dex-cell {
   text-align: center;
-  font-size: 11px;
+  font-size: 10px;
   white-space: nowrap;
   padding: 3px 6px !important;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .mon-row-pnl .mon-lbl-side {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--text2);
 }
@@ -817,11 +817,6 @@ body {
   font-size: 11px;
   font-weight: 500;
   color: #062a5e;
-}
-
-.mon-row-pnl .mon-dex-cell {
-  font-weight: 700;
-  font-size: 12px !important;
 }
 
 .pnl-pos {
@@ -849,29 +844,12 @@ body {
 
 .mc-ask {
   color: var(--profit);
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .mc-bid {
   color: var(--loss);
-  font-weight: 700;
-}
-
-.mc-recv {
-  color: #7a4f00;
-  font-size: 11px !important;
-  font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.mon-row-recv .mon-lbl-side {
-  color: #7a4f00;
-  font-weight: 700;
-}
-
-.mc-pnl {
-  font-weight: 700;
-  font-size: 12px !important;
+  font-weight: 400;
 }
 
 /* ══════════════════════════════════════════
@@ -958,7 +936,7 @@ body {
   font-weight: 800;
   letter-spacing: 1.2px;
   line-height: 1;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .fab-scan #btnScanCount {
@@ -1016,7 +994,7 @@ body {
   color: #2631e2;
   font-size: 10px;
   font-weight: 600;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   border: none;
   background: transparent;
   padding: 0;
@@ -1144,7 +1122,7 @@ body {
 .dex-pnl {
   font-size: 13px;
   font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .dex-pnl.pos {
@@ -1233,7 +1211,7 @@ body {
   color: var(--text2);
   font-size: 11px;
   font-weight: 700;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   cursor: pointer;
   transition: all .15s;
 }
@@ -1260,7 +1238,7 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.10);
   background: rgba(255, 255, 255, 0.65);
   color: var(--text);
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   font-size: 12px;
   outline: none;
   transition: border-color .2s;
@@ -1286,7 +1264,7 @@ body {
   color: var(--text2);
   font-size: 12px;
   font-weight: 600;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1315,7 +1293,7 @@ body {
   color: var(--accent-dk);
   font-size: 12px;
   font-weight: 700;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   cursor: pointer;
   letter-spacing: 0.3px;
   transition: background .15s, border-color .15s, color .15s;
@@ -1439,7 +1417,7 @@ body {
   font-size: 12px;
   color: blue;
   margin-top: 2px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .token-list-actions {
@@ -1607,7 +1585,7 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: rgba(245, 248, 252, 1);
   color: var(--text);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Montserrat', sans-serif;
   font-size: 13px;
   width: 100%;
   outline: none;
@@ -1627,7 +1605,7 @@ body {
   border: none;
   font-size: 13px;
   font-weight: 800;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   cursor: pointer;
   transition: opacity .15s;
   letter-spacing: .5px;
@@ -1645,7 +1623,7 @@ body {
   color: #fff;
   font-size: 12px;
   font-weight: 700;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   cursor: pointer;
   flex: 1;
   display: flex;
@@ -1947,7 +1925,7 @@ body {
   border-radius: var(--radius-xs);
   padding: 10px 12px;
   color: var(--text);
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   font-size: 13px;
   width: 100%;
   outline: none;
@@ -1977,7 +1955,7 @@ body {
   border: none;
   font-size: 14px;
   font-weight: 700;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   cursor: pointer;
   box-shadow: var(--accent-glow);
   transition: opacity .15s;
@@ -2081,7 +2059,7 @@ body {
   border-radius: var(--radius-xs);
   padding: 8px 10px;
   color: var(--text);
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   font-size: 13px;
   width: 100%;
   outline: none;
@@ -2141,7 +2119,7 @@ body {
   background: rgba(255, 255, 255, 0.65);
   font-size: 11px;
   font-weight: 600;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   color: var(--text2);
   cursor: pointer;
   white-space: nowrap;
@@ -2207,7 +2185,7 @@ body {
   color: var(--muted);
   display: block;
   margin-top: 1px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .ac-loading {
@@ -2232,7 +2210,7 @@ body {
   border: none;
   font-size: 14px;
   font-weight: 700;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   cursor: pointer;
   box-shadow: var(--accent-glow);
   transition: opacity .15s;
@@ -2250,7 +2228,7 @@ body {
   border: 1px solid rgba(230, 57, 80, 0.22);
   font-size: 14px;
   font-weight: 600;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   cursor: pointer;
   transition: background .15s;
 }
@@ -2331,7 +2309,7 @@ body {
   border: none;
   font-size: 15px;
   font-weight: 700;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   cursor: pointer;
   box-shadow: var(--accent-glow);
   margin-top: 8px;
@@ -2416,7 +2394,7 @@ body {
   border: none;
   font-size: 13px;
   font-weight: 700;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   cursor: pointer;
   transition: opacity .15s;
 }
@@ -2522,14 +2500,14 @@ body {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
   pointer-events: none;
   color: #fff;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Montserrat', sans-serif;
   font-size: 10px;
 }
 
 .ob-tip-title {
   font-size: 10px;
   font-weight: 700;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   padding: 2px 0 6px;
   letter-spacing: .3px;
 }
@@ -2551,7 +2529,7 @@ body {
 .ob-tip-empty {
   font-size: 10px;
   color: var(--muted);
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   padding: 4px 0;
   text-align: center;
 }
@@ -2569,7 +2547,7 @@ body {
   padding: 2px 4px;
   text-align: right;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .ob-tip-table th:first-child {
@@ -2627,7 +2605,7 @@ body {
   gap: 2px;
   padding: 2px 0;
   font-size: 10.5px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Montserrat', sans-serif;
   color: rgba(255, 255, 255, 0.90);
 }
 
@@ -2654,7 +2632,7 @@ body {
   gap: 4px;
   padding: 2px 0;
   font-size: 9.5px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Montserrat', sans-serif;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
@@ -2821,7 +2799,7 @@ body {
 .calc-rate-val {
   color: var(--accent-dk);
   font-weight: 800;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .calc-rate-btn {
@@ -2834,7 +2812,7 @@ body {
   font-size: 10px;
   font-weight: 700;
   cursor: pointer;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   transition: background .15s;
 }
 
@@ -2890,7 +2868,7 @@ body {
   font-size: 9px;
   font-weight: 600;
   color: var(--muted);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .calc-field-inp {
@@ -2902,7 +2880,7 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: rgba(255, 255, 255, 0.65);
   color: var(--text);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Montserrat', sans-serif;
   font-size: 12px;
   outline: none;
   transition: border-color .2s, background .2s;
@@ -2959,7 +2937,7 @@ body {
   border: none;
   font-size: 11px;
   font-weight: 800;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   cursor: pointer;
   transition: opacity .15s;
   letter-spacing: .3px;
@@ -2979,7 +2957,7 @@ body {
   border: none;
   font-size: 11px;
   font-weight: 800;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   cursor: pointer;
   transition: opacity .15s;
   letter-spacing: .3px;
@@ -3055,7 +3033,7 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.10);
   border-radius: 5px;
   padding: 5px 5px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Montserrat', sans-serif;
   font-size: 11px;
   background: rgba(255, 255, 255, 0.7);
   color: var(--text);
@@ -3090,7 +3068,7 @@ body {
 }
 
 .cc-result {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Montserrat', sans-serif;
   font-size: 10px;
   font-weight: 600;
   color: var(--accent-dk);
@@ -3139,7 +3117,7 @@ body {
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   transition: background .15s;
 }
 
@@ -3156,7 +3134,7 @@ body {
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   transition: background .15s;
 }
 
@@ -3188,7 +3166,7 @@ body {
   font-size: 14px;
   font-weight: 800;
   color: var(--accent-dk);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .calc-total-sep {
@@ -3200,7 +3178,7 @@ body {
   font-size: 12px;
   font-weight: 700;
   color: var(--text2);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Montserrat', sans-serif;
 }
 
 /* ── Custom konversi ── */
@@ -3236,7 +3214,7 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: rgba(255, 255, 255, 0.75);
   color: var(--text);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Montserrat', sans-serif;
   font-size: 12px;
   outline: none;
   transition: border-color .2s;
@@ -3255,7 +3233,7 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: rgba(255, 255, 255, 0.75);
   color: var(--text);
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   font-size: 12px;
   font-weight: 600;
   outline: none;
@@ -3290,7 +3268,7 @@ body {
 .cc-res-val {
   font-size: 13px;
   font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Montserrat', sans-serif;
   color: var(--accent-dk);
 }
 
