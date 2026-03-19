@@ -808,8 +808,8 @@ function toggleFavorite(id) {
 }
 
 // ─── Monitor Cards Build ──────────────────────
-const MON_CTD_COLOR = '#579a69'; // hijau CEXtoDEX
-const MON_DTC_COLOR = '#d56666'; // merah DEXtoCEX
+const MON_CTD_COLOR = '#c0504d'; // merah CEXtoDEX (beli CEX, jual DEX)
+const MON_DTC_COLOR = '#4a9a6a'; // hijau DEXtoCEX (beli DEX, jual CEX)
 
 // ─── WD/DP Badge HTML (build-time, dari cache) ────────────
 // Dipanggil saat buildMonitorRows & renderTokenList
@@ -908,7 +908,7 @@ function buildMonitorRows(tokenList) {
     </tr></thead>
     <tbody>
       <tr class="mon-row-cex"><td class="mon-lbl-side"><span style='color:green;'>BELI CEX ↑</span></td>${dexRow('ctd', 'cex')}</tr>
-      <tr class="mon-row-dex"><td class="mon-lbl-side">${t.ticker}→${pairTk}</td>${dexRow('ctd', 'dex')}</tr>
+      <tr class="mon-row-dex"><td class="mon-lbl-side"><span style='color:red;'>${t.ticker}→${pairTk}</span></td>${dexRow('ctd', 'dex')}</tr>
       <tr class="mon-row-recv"><td class="mon-lbl-side">ALL FEE</td>${dexRow('ctd', 'fee')}</tr>
       <tr class="mon-row-pnl"><td class="mon-lbl-side">💰 PNL <span class="lbl-minpnl">($${minPnlLbl})</span></td>${dexRow('ctd', 'pnl')}</tr>
     </tbody>
@@ -921,7 +921,7 @@ function buildMonitorRows(tokenList) {
       ${dexHdr('dtc', MON_DTC_COLOR, t.id)}
     </tr></thead>
     <tbody>
-      <tr class="mon-row-dex"><td class="mon-lbl-side">${pairTk}→${t.ticker}</td>${dexRow('dtc', 'dex')}</tr>
+      <tr class="mon-row-dex"><td class="mon-lbl-side"><span style='color:green;'>${pairTk}→${t.ticker}</span></td>${dexRow('dtc', 'dex')}</tr>
       <tr class="mon-row-cex"><td class="mon-lbl-side lbl-pair"><span style='color:red;'>JUAL CEX ↓</span></td>${dexRow('dtc', 'cex')}</tr>
       <tr class="mon-row-recv"><td class="mon-lbl-side">ALL FEE</td>${dexRow('dtc', 'fee')}</tr>
       <tr class="mon-row-pnl"><td class="mon-lbl-side">💰 PNL <span class="lbl-minpnl">($${minPnlLbl})</span></td>${dexRow('dtc', 'pnl')}</tr>

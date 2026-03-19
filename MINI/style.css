@@ -65,7 +65,7 @@ body {
   font-family: 'Montserrat', sans-serif;
   background: var(--bg);
   color: var(--text);
-  font-size: 14px;
+  font-size: 15px;
   min-height: 100dvh;
   overflow-x: hidden;
   background-image:
@@ -95,7 +95,7 @@ body {
   display: inline-block;
   background: var(--metax-color);
   color: #fff;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   padding: 1px 6px;
   border-radius: 4px;
@@ -107,7 +107,7 @@ body {
   display: inline-block;
   background: var(--jumpx-color);
   color: #fff;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   padding: 1px 6px;
   border-radius: 4px;
@@ -138,7 +138,7 @@ body {
 }
 
 .top-bar .app-name {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
   color: var(--accent-dk);
   letter-spacing: .6px;
@@ -149,7 +149,7 @@ body {
 }
 
 .app-version {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: #000;
   background: rgba(0, 0, 0, 0.06);
@@ -182,7 +182,7 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.10);
   background: rgba(255, 255, 255, 0.6);
   color: var(--text2);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   font-family: 'Montserrat', sans-serif;
   cursor: pointer;
@@ -246,7 +246,7 @@ body {
 /* Scanning badge */
 .scanning-badge {
   text-transform: uppercase;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: #fff;
   background: var(--accent);
@@ -267,7 +267,7 @@ body {
 .scan-status-badge {
   display: inline-flex;
   align-items: center;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 20px;
@@ -308,7 +308,7 @@ body {
   background: rgba(26, 35, 50, 0.92);
   backdrop-filter: blur(12px);
   color: #fff;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   padding: 9px 22px;
   border-radius: 20px;
@@ -325,7 +325,7 @@ body {
 }
 
 .username-chip {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--accent-dk);
   background: var(--accent-dim);
   padding: 3px 10px;
@@ -398,13 +398,13 @@ body {
 }
 
 .chip-cex {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--text2);
 }
 
 .chip-chain {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--muted);
   margin-left: auto;
@@ -417,7 +417,7 @@ body {
 }
 
 .chip-dir {
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 700;
   padding: 1px 5px;
   border-radius: 4px;
@@ -435,13 +435,13 @@ body {
 }
 
 .chip-ticker {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--text);
 }
 
 .chip-modal {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text2);
   background: rgba(0, 0, 0, 0.06);
@@ -450,13 +450,13 @@ body {
 }
 
 .chip-sep {
-  font-size: 10px;
+  font-size: 11px;
   color: rgba(0, 0, 0, 0.20);
   font-weight: 400;
 }
 
 .chip-pnl {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
   margin-left: auto;
@@ -483,7 +483,7 @@ body {
   border: 1px solid rgba(230, 57, 80, 0.32);
   border-radius: 20px;
   padding: 2px 10px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--loss);
   flex-shrink: 0;
@@ -561,7 +561,7 @@ body {
 }
 
 .mon-card-sym {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
   flex: 1;
@@ -580,7 +580,7 @@ body {
 }
 
 .mon-cex-chain {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text2);
   white-space: nowrap;
@@ -588,14 +588,14 @@ body {
 }
 
 .mon-sym {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
   margin-left: auto;
 }
 
 .mon-num {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: #0b10a8;
 }
@@ -610,7 +610,7 @@ body {
 .mon-act {
   width: 24px;
   height: 24px;
-  font-size: 13px;
+  font-size: 14px;
   border-radius: 6px;
   padding: 0;
 }
@@ -640,7 +640,7 @@ body {
   width: 100%;
   min-width: 320px;
   border-collapse: collapse;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .mon-sub-table+.mon-sub-table {
@@ -651,19 +651,19 @@ body {
   background: rgba(0, 0, 0, 0.055);
   color: #fff;
   padding: 5px 8px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .4px;
 }
 
 .tbl-status {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
 }
 
 .al-badge {
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1;
 }
 .al-ok  { opacity: 0.9; }
@@ -671,13 +671,13 @@ body {
 
 .tbl-status-err {
   color: white;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 /* DEX header cell showing an error/diagnostic reason */
 .mon-dex-hdr-err {
   color: #ffdd57 !important;
-  font-size: 8px !important;
+  font-size: 11px !important;
   letter-spacing: 0 !important;
   text-shadow: 0 0 6px rgba(255, 200, 0, 0.5);
 }
@@ -685,7 +685,7 @@ body {
 /* DEX header cell showing missing source info (timeout / no response) */
 .mon-dex-hdr-muted {
   color: rgba(255,255,255,0.35) !important;
-  font-size: 9px !important;
+  font-size: 11px !important;
   letter-spacing: 0 !important;
   font-style: italic;
 }
@@ -693,7 +693,7 @@ body {
 /* Cell content showing an actionable hint */
 .mc-err {
   color: #a6051a !important;
-  font-size: 11px !important;
+  font-size: 12px !important;
   font-weight: 600 !important;
   font-family: 'Montserrat', sans-serif !important;
 }
@@ -706,7 +706,7 @@ body {
 /* Error info inside DEX cell (timeout / no route) */
 .mc-err-sm {
   color: rgba(220, 80, 80, 0.75) !important;
-  font-size: 9px !important;
+  font-size: 11px !important;
   font-weight: 600 !important;
   letter-spacing: 0.3px;
   text-transform: uppercase;
@@ -716,7 +716,7 @@ body {
   text-align: left;
   min-width: 76px;
   vertical-align: middle;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: .2px;
   color: #fff;
@@ -724,7 +724,7 @@ body {
 
 .mon-dex-hdr {
   text-align: center;
-  font-size: 9px !important;
+  font-size: 11px !important;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -735,7 +735,7 @@ body {
 /* Source tag in DEX header — small superscript badge */
 .src-tag {
   display: inline-block;
-  font-size: 7px;
+  font-size: 11px;
   font-weight: 800;
   padding: 0px 3px;
   border-radius: 3px;
@@ -778,7 +778,7 @@ body {
 }
 
 .mon-lbl-side {
-  font-size: 10px;
+  font-size: 11px;
   color: #0e6aec;
   font-weight: 600;
   white-space: nowrap;
@@ -795,26 +795,26 @@ body {
 }
 
 .lbl-pair {
-  font-size: 9px;
+  font-size: 11px;
   color: var(--text2);
 }
 
 .mon-dex-cell {
   text-align: center;
-  font-size: 10px;
+  font-size: 12px;
   white-space: nowrap;
   padding: 3px 6px !important;
   font-family: 'Montserrat', sans-serif;
 }
 
 .mon-row-pnl .mon-lbl-side {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text2);
 }
 
 .lbl-minpnl {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   color: #062a5e;
 }
@@ -844,12 +844,21 @@ body {
 
 .mc-ask {
   color: var(--profit);
-  font-weight: 400;
+  font-weight: 500;
 }
 
 .mc-bid {
   color: var(--loss);
-  font-weight: 400;
+  font-weight: 500;
+}
+.mc-recv
+{
+  color: blue;
+  font-weight: 500;
+}
+mc-pnl {
+  color: var(--text);
+  font-weight: 500;
 }
 
 /* ══════════════════════════════════════════
@@ -882,7 +891,7 @@ body {
   height: 30px;
   min-width: 34px;
   padding: 0 10px;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1;
   border-radius: 14px;
   background: #d6d9f7;
@@ -899,7 +908,7 @@ body {
 #btnAutoReload {
   width: 34px;
   padding: 0;
-  font-size: 18px;
+  font-size: 19px;
 }
 
 .scan-sort-group .sort-btn.active {
@@ -927,12 +936,12 @@ body {
 }
 
 .fab-scan #btnScanIcon {
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1;
 }
 
 .fab-scan #btnScanLbl {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: 1.2px;
   line-height: 1;
@@ -940,7 +949,7 @@ body {
 }
 
 .fab-scan #btnScanCount {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   opacity: 0.88;
   line-height: 1;
@@ -992,7 +1001,7 @@ body {
   gap: 3px;
   cursor: pointer;
   color: #2631e2;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   font-family: 'Montserrat', sans-serif;
   border: none;
@@ -1003,7 +1012,7 @@ body {
 }
 
 .nav-item .nav-icon {
-  font-size: 20px;
+  font-size: 21px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1049,7 +1058,7 @@ body {
 
 .badge-cex,
 .badge-chain {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   padding: 2px 7px;
   border-radius: 20px;
@@ -1077,7 +1086,7 @@ body {
 }
 
 .dex-dir-label {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--accent-dk);
   padding: 4px 0 2px;
@@ -1112,7 +1121,7 @@ body {
 }
 
 .dex-quote-name {
-  font-size: 9px;
+  font-size: 11px;
   color: var(--muted);
   font-weight: 700;
   margin-bottom: 3px;
@@ -1120,7 +1129,7 @@ body {
 }
 
 .dex-pnl {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
 }
@@ -1134,13 +1143,13 @@ body {
 }
 
 .dex-detail {
-  font-size: 9px;
+  font-size: 11px;
   color: var(--muted);
   margin-top: 2px;
 }
 
 .card-status {
-  font-size: 9px;
+  font-size: 11px;
   color: var(--muted);
   margin-right: 4px;
 }
@@ -1156,7 +1165,7 @@ body {
 }
 
 .token-list-header h2 {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--accent-dk);
   letter-spacing: .3px;
@@ -1169,7 +1178,7 @@ body {
 }
 
 .token-count {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--accent-dk);
   background: var(--glass);
   padding: 2px 10px;
@@ -1178,7 +1187,7 @@ body {
 }
 
 .fav-count {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: #c9870a;
   background: rgba(255, 200, 50, 0.15);
@@ -1197,7 +1206,7 @@ body {
 }
 
 .sort-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--muted);
   margin-right: 2px;
@@ -1209,7 +1218,7 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.10);
   background: var(--glass);
   color: var(--text2);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
   cursor: pointer;
@@ -1239,7 +1248,7 @@ body {
   background: rgba(255, 255, 255, 0.65);
   color: var(--text);
   font-family: 'Montserrat', sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   outline: none;
   transition: border-color .2s;
 }
@@ -1262,7 +1271,7 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.10);
   background: var(--glass);
   color: var(--text2);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   font-family: 'Montserrat', sans-serif;
   cursor: pointer;
@@ -1291,7 +1300,7 @@ body {
   border: 1.5px solid var(--accent-dim);
   background: var(--glass);
   color: var(--accent-dk);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
   cursor: pointer;
@@ -1375,7 +1384,7 @@ body {
 }
 
 .token-invalid-badge {
-  font-size: 9px;
+  font-size: 11px;
   background: rgba(220, 50, 50, 0.18);
   color: #ff6b6b;
   border: 1px solid rgba(220, 50, 50, 0.35);
@@ -1392,7 +1401,7 @@ body {
 }
 
 .token-list-sym {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text);
   display: flex;
@@ -1408,13 +1417,13 @@ body {
   gap: 2px;
 }
 .tl-sep {
-  font-size: 13px;
+  font-size: 14px;
   color: rgba(128,128,128,0.7);
   margin: 0 2px;
 }
 
 .token-list-sub {
-  font-size: 12px;
+  font-size: 13px;
   color: blue;
   margin-top: 2px;
   font-family: 'Montserrat', sans-serif;
@@ -1430,7 +1439,7 @@ body {
   text-align: center;
   padding: 30px 20px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.7;
 }
 
@@ -1441,7 +1450,7 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.10);
   background: rgba(220, 220, 222, 0.7);
   color: var(--text2);
-  font-size: 15px;
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1533,7 +1542,7 @@ body {
 }
 
 .bulk-modal-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--text);
 }
@@ -1545,7 +1554,7 @@ body {
   border: none;
   background: rgba(0, 0, 0, 0.08);
   color: var(--text2);
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1572,7 +1581,7 @@ body {
 }
 
 .bulk-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--accent-dk);
   text-transform: uppercase;
@@ -1586,7 +1595,7 @@ body {
   background: rgba(245, 248, 252, 1);
   color: var(--text);
   font-family: 'Montserrat', sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   width: 100%;
   outline: none;
   transition: border-color .2s;
@@ -1603,7 +1612,7 @@ body {
   background: #18a55e;
   color: #fff;
   border: none;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   font-family: 'Montserrat', sans-serif;
   cursor: pointer;
@@ -1621,7 +1630,7 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.10);
   background: #f39c12;
   color: #fff;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
   cursor: pointer;
@@ -1646,7 +1655,7 @@ body {
   border-radius: 50%;
   background: var(--accent);
   color: #fff;
-  font-size: 28px;
+  font-size: 29px;
   font-weight: 700;
   border: none;
   box-shadow: var(--accent-glow), var(--shadow);
@@ -1684,7 +1693,7 @@ body {
 }
 
 .settings-card h3 {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--accent-dk);
   text-transform: uppercase;
@@ -1730,7 +1739,7 @@ body {
 
 /* ── New settings layout classes ── */
 .set-section {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--muted);
   text-transform: uppercase;
@@ -1789,18 +1798,18 @@ body {
 }
 
 .settings-toggle-icon {
-  font-size: 18px;
+  font-size: 19px;
   line-height: 1;
 }
 
 .settings-toggle-title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text);
 }
 
 .settings-toggle-desc {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
   margin-top: 2px;
 }
@@ -1858,13 +1867,13 @@ body {
 }
 
 .settings-label {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text2);
   font-weight: 500;
 }
 
 .settings-hint {
-  font-size: 12px;
+  font-size: 13px;
   color: blue;
 }
 
@@ -1881,7 +1890,7 @@ body {
   background: var(--accent-dim);
   border: 1px solid rgba(10, 191, 122, 0.25);
   border-radius: var(--radius-xs);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--accent-dk);
   text-align: center;
@@ -1893,7 +1902,7 @@ body {
   gap: 4px;
   padding: 4px 10px;
   border-radius: 20px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   border: 1.5px solid var(--glass-border);
@@ -1926,7 +1935,7 @@ body {
   padding: 10px 12px;
   color: var(--text);
   font-family: 'Montserrat', sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   width: 100%;
   outline: none;
   transition: border-color .2s, background .2s;
@@ -1953,7 +1962,7 @@ body {
   background: var(--accent);
   color: #fff;
   border: none;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
   cursor: pointer;
@@ -2013,7 +2022,7 @@ body {
 }
 
 .sheet-title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--accent-dk);
   padding: 0 16px 12px;
@@ -2030,7 +2039,7 @@ body {
 }
 
 .sheet-section-title {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--accent-dk);
   text-transform: uppercase;
@@ -2046,7 +2055,7 @@ body {
 }
 
 .form-label {
-  font-size: 9px;
+  font-size: 11px;
   color: var(--text2);
   font-weight: 600;
   text-transform: uppercase;
@@ -2060,7 +2069,7 @@ body {
   padding: 8px 10px;
   color: var(--text);
   font-family: 'Montserrat', sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   width: 100%;
   outline: none;
   transition: border-color .2s, background .2s;
@@ -2117,7 +2126,7 @@ body {
   border-radius: 20px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: rgba(255, 255, 255, 0.65);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   font-family: 'Montserrat', sans-serif;
   color: var(--text2);
@@ -2175,13 +2184,13 @@ body {
 }
 
 .ac-ticker {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--accent-dk);
 }
 
 .ac-name {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
   display: block;
   margin-top: 1px;
@@ -2190,7 +2199,7 @@ body {
 
 .ac-loading {
   padding: 10px 12px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
 }
 
@@ -2208,7 +2217,7 @@ body {
   background: var(--accent);
   color: #fff;
   border: none;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
   cursor: pointer;
@@ -2226,7 +2235,7 @@ body {
   background: rgba(230, 57, 80, 0.08);
   color: var(--loss);
   border: 1px solid rgba(230, 57, 80, 0.22);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   font-family: 'Montserrat', sans-serif;
   cursor: pointer;
@@ -2269,7 +2278,7 @@ body {
 }
 
 .onboard-logo {
-  font-size: 26px;
+  font-size: 27px;
   font-weight: 800;
   color: var(--accent-dk);
   text-align: center;
@@ -2278,7 +2287,7 @@ body {
 }
 
 .onboard-version {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--accent);
   text-align: center;
@@ -2287,7 +2296,7 @@ body {
 }
 
 .onboard-sub {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
   text-align: center;
   margin-bottom: 22px;
@@ -2307,7 +2316,7 @@ body {
   background: var(--accent);
   color: #fff;
   border: none;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
   cursor: pointer;
@@ -2351,19 +2360,19 @@ body {
 }
 
 .app-modal-icon-wrap {
-  font-size: 36px;
+  font-size: 37px;
   margin-bottom: 10px;
 }
 
 .app-modal-title {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--text);
   margin-bottom: 8px;
 }
 
 .app-modal-body {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text2);
   line-height: 1.6;
   margin-bottom: 18px;
@@ -2392,7 +2401,7 @@ body {
   padding: 10px 20px;
   border-radius: var(--radius-xs);
   border: none;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
   cursor: pointer;
@@ -2501,11 +2510,11 @@ body {
   pointer-events: none;
   color: #fff;
   font-family: 'Montserrat', sans-serif;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .ob-tip-title {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
   padding: 2px 0 6px;
@@ -2527,7 +2536,7 @@ body {
 }
 
 .ob-tip-empty {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
   font-family: 'Montserrat', sans-serif;
   padding: 4px 0;
@@ -2542,7 +2551,7 @@ body {
 
 .ob-tip-table th {
   color: rgba(255, 255, 255, 0.5);
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 600;
   padding: 2px 4px;
   text-align: right;
@@ -2652,7 +2661,7 @@ body {
 }
 
 .ob-tip-ob-lvl {
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 700;
   color: rgba(255, 200, 80, 0.75);
   min-width: 14px;
@@ -2671,7 +2680,7 @@ body {
   background: rgba(255, 200, 0, 0.1);
   border-left: 2px solid rgba(255, 200, 0, 0.5);
   border-radius: 3px;
-  font-size: 11px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.8);
 }
 
@@ -2743,7 +2752,7 @@ body {
 }
 
 .calc-modal-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   color: #1a237e;
   letter-spacing: .3px;
@@ -2756,7 +2765,7 @@ body {
   border: none;
   background: rgba(0, 0, 0, 0.08);
   color: var(--text2);
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -2770,7 +2779,7 @@ body {
 
 .calc-subtitle {
   text-align: center;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--accent);
   letter-spacing: .3px;
@@ -2787,7 +2796,7 @@ body {
   background: var(--accent-dim);
   border-bottom: 1px solid rgba(10, 191, 122, 0.15);
   flex-shrink: 0;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text2);
 }
@@ -2809,7 +2818,7 @@ body {
   border: none;
   border-radius: 8px;
   padding: 3px 10px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
   font-family: 'Montserrat', sans-serif;
@@ -2853,7 +2862,7 @@ body {
 }
 
 .calc-field-lbl {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--text);
   letter-spacing: .2px;
@@ -2865,7 +2874,7 @@ body {
 }
 
 .calc-price-badge {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--muted);
   font-family: 'Montserrat', sans-serif;
@@ -2881,7 +2890,7 @@ body {
   background: rgba(255, 255, 255, 0.65);
   color: var(--text);
   font-family: 'Montserrat', sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   outline: none;
   transition: border-color .2s, background .2s;
   box-sizing: border-box;
@@ -2894,7 +2903,7 @@ body {
 
 .calc-field-inp::placeholder {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .calc-divider {
@@ -2903,7 +2912,7 @@ body {
 }
 
 .calc-custom-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   color: #d32f2f;
   letter-spacing: .8px;
@@ -2918,7 +2927,7 @@ body {
 
 .calc-custom-inputs .calc-field-inp {
   flex: 1;
-  font-size: 11px;
+  font-size: 12px;
   padding: 6px 8px;
 }
 
@@ -2935,7 +2944,7 @@ body {
   background: #d32f2f;
   color: #fff;
   border: none;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   font-family: 'Montserrat', sans-serif;
   cursor: pointer;
@@ -2955,7 +2964,7 @@ body {
   background: #1a3fc4;
   color: #fff;
   border: none;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   font-family: 'Montserrat', sans-serif;
   cursor: pointer;
@@ -2969,7 +2978,7 @@ body {
 }
 
 .calc-section-title {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--accent-dk);
   letter-spacing: .5px;
@@ -3003,7 +3012,7 @@ body {
 }
 
 .calc-col-hdr>div {
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 800;
   color: var(--muted);
   text-transform: uppercase;
@@ -3034,7 +3043,7 @@ body {
   border-radius: 5px;
   padding: 5px 5px;
   font-family: 'Montserrat', sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   background: rgba(255, 255, 255, 0.7);
   color: var(--text);
   outline: none;
@@ -3069,7 +3078,7 @@ body {
 
 .cc-result {
   font-family: 'Montserrat', sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--accent-dk);
   white-space: nowrap;
@@ -3087,7 +3096,7 @@ body {
   border: none;
   background: rgba(230, 57, 80, 0.12);
   color: var(--loss);
-  font-size: 10px;
+  font-size: 11px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -3114,7 +3123,7 @@ body {
   background: var(--accent);
   color: #fff;
   border: none;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   font-family: 'Montserrat', sans-serif;
@@ -3131,7 +3140,7 @@ body {
   background: rgba(230, 57, 80, 0.10);
   color: var(--loss);
   border: 1px solid rgba(230, 57, 80, 0.25);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   font-family: 'Montserrat', sans-serif;
@@ -3155,7 +3164,7 @@ body {
 }
 
 .calc-total-lbl {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   color: var(--accent-dk);
   text-transform: uppercase;
@@ -3163,7 +3172,7 @@ body {
 }
 
 .calc-total-usdt {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--accent-dk);
   font-family: 'Montserrat', sans-serif;
@@ -3171,11 +3180,11 @@ body {
 
 .calc-total-sep {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .calc-total-idr {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text2);
   font-family: 'Montserrat', sans-serif;
@@ -3201,7 +3210,7 @@ body {
 }
 
 .calc-mini-lbl {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text2);
   white-space: nowrap;
@@ -3215,7 +3224,7 @@ body {
   background: rgba(255, 255, 255, 0.75);
   color: var(--text);
   font-family: 'Montserrat', sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   outline: none;
   transition: border-color .2s;
   min-width: 0;
@@ -3234,7 +3243,7 @@ body {
   background: rgba(255, 255, 255, 0.75);
   color: var(--text);
   font-family: 'Montserrat', sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   outline: none;
   cursor: pointer;
@@ -3256,7 +3265,7 @@ body {
 }
 
 .cc-res-lbl {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 800;
   color: var(--muted);
   text-transform: uppercase;
@@ -3266,7 +3275,7 @@ body {
 }
 
 .cc-res-val {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
   color: var(--accent-dk);
@@ -3288,14 +3297,14 @@ body {
 }
 
 .calc-conv-unit {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--muted);
   white-space: nowrap;
 }
 
 .calc-conv-arrow {
-  font-size: 18px;
+  font-size: 19px;
   color: var(--accent);
   flex-shrink: 0;
 }
@@ -3307,7 +3316,7 @@ body {
 
 /* Settings card: biaya WD */
 .cex-wallet-status {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
   line-height: 1.8;
   padding: 6px 0 2px;
@@ -3321,7 +3330,7 @@ body {
   color: #fff;
   border: none;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: opacity .2s;
@@ -3350,7 +3359,7 @@ body {
   align-items: center;
   padding: 1px 7px;
   border-radius: 3px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.02em;
   line-height: 1.7;
@@ -3364,7 +3373,7 @@ body {
 /* Fee WD badge di sebelah modal di header tabel */
 .fwd-badge {
   display: inline-block;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: #ffe082;
   margin-left: 2px;
@@ -3374,7 +3383,7 @@ body {
 /* Fee WD label di bawah teks "ALL FEE" (kolom kiri tabel) */
 .fee-wd-lbl {
   display: block;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   color: #ffd54f;
   margin-top: 1px;
@@ -3397,13 +3406,13 @@ body {
   align-items: center;
   gap: 2px;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 14px;
   letter-spacing: 0.01em;
 }
 
 /* Separator "VS" antar token dan pair */
 .mon-vs {
-  font-size: 13px;
+  font-size: 14px;
   color: blue;
   margin: 0 4px;
 }
@@ -3422,16 +3431,16 @@ body {
 }
 
 /* Icon individual */
-.wdp-ok   { font-size: 11px; line-height: 1; }
-.wdp-fail { font-size: 11px; line-height: 1; }
+.wdp-ok   { font-size: 12px; line-height: 1; }
+.wdp-fail { font-size: 12px; line-height: 1; }
 .wdp-na   {
-  font-size: 13px;
+  font-size: 14px;
   color: gray;
   font-style: italic;
   letter-spacing: 0.5px;
 }
 .wdp-unsupported {
-  font-size: 12px;
+  font-size: 13px;
   color: #e05252;
   font-weight: bold;
 }
@@ -3482,13 +3491,13 @@ body {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 .wallet-update-title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: #e8f5e9;
   margin-bottom: 8px;
 }
 .wallet-update-progress {
-  font-size: 12px;
+  font-size: 13px;
   color: rgba(255,255,255,0.55);
   min-height: 18px;
 }
