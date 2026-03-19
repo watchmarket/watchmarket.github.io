@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>MONITORING PRICE</title>
+    <title id="appTitle">MONITORING PRICE</title>
     <link rel="icon" href="icons/favicon.png">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="htdtps://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 
 <body>
@@ -19,7 +19,7 @@
 ═══════════════════════════════════════ -->
     <div class="onboard-overlay" id="onboardOverlay">
         <div class="onboard-card">
-            <div class="onboard-logo"><img src="icons/favicon.png" class="app-logo" alt=""> MONITORING PRICE</div>
+            <div class="onboard-logo"><img src="icons/favicon.png" class="app-logo" alt=""> <span id="onboardAppName"></span></div>
 
             <div class="onboard-sub">Aplikasi Pencari Selisih Harga Cryptocurrency CEX VS DEX</div>
             <div class="onboard-form-group">
@@ -41,8 +41,11 @@
     <div class="top-bar">
         <div class="app-name">
             <img src="icons/favicon.png" class="app-logo" alt="">
-            MONITORING PRICE <span class="app-version" id="appVersion"></span> <span class="scanning-badge"
-                id="scanBadge">▶ SCANNING...</span>
+            <span id="appNameDisplay"></span> <span class="app-version" id="appVersion"></span>
+            <span class="scanning-badge" id="scanBadge">▶ SCANNING...</span>
+            <span id="notStartedNotice" class="scan-status-badge">■ BELUM SCANNING</span>
+            <span id="scanDoneNotice"   class="scan-status-badge scan-status-done"  style="display:none">✅ SCANNER SELESAI</span>
+            <span id="scanStopNotice"   class="scan-status-badge scan-status-stop"  style="display:none">■ STOP SCANNING</span>
         </div>
        
         <div class="top-right">
@@ -75,7 +78,6 @@
 
     <!-- Signal Chips -->
     <div class="signal-bar" id="signalBar">
-        <span id="notStartedNotice" class="no-signal-notice">■ SCANNER BELUM BERJALAN</span>
         <span id="noSignalNotice" class="no-signal-notice" style="display:none">● Belum Ada Info Selisih Harga</span>
     </div>
 
@@ -175,6 +177,28 @@
                         <label class="settings-label">Auto Level CEX</label>
                         <input class="settings-input" id="setLevelCount" type="number" min="1" max="4" value="2">
                     </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS CARD: CEX Wallet Fee WD -->
+            <div class="settings-card" id="cexWalletCard">
+                <h3>CEK BIAYA WD & STATUS DEPOSIT/WITHDRAW</h3>
+                <div class="settings-row">
+                    <label class="settings-label">Status per CEX
+                        <span class="settings-hint">(terakhir diperbarui: <span id="walletLastUpdate">—</span>)</span>
+                    </label>
+                    <div class="cex-wallet-status" id="cexWalletStatus">
+                        Belum Ada Info Fee WD & Status Deposit/Withdraw. Tekan "Check Wallet Exchanger" untuk mengambil Info dari Exchanger.
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <button class="btn-update-wallet" id="btnUpdateCexWallet" onclick="runUpdateCexWallet()">
+                        🔄 Check Wallet Exchanger
+                    </button>
+                </div>
+                <div class="settings-row">
+                    <span class="settings-hint">Fee WD otomatis dimasukkan ke kalkulasi PNL saat scanning. Badge
+                        <b>WD ✓/✗</b> tampil di card tiap token.</span>
                 </div>
             </div>
 
@@ -438,6 +462,15 @@
         </div><!-- /calc-modal -->
     </div><!-- /calc-overlay -->
 
+    <!-- Wallet Update Loading Overlay -->
+    <div class="wallet-update-overlay" id="walletUpdateOverlay">
+        <div class="wallet-update-box">
+            <div class="wallet-update-spinner"></div>
+            <div class="wallet-update-title">Mengambil Info Exchanger</div>
+            <div class="wallet-update-progress" id="walletUpdateProgress">Menghubungi server...</div>
+        </div>
+    </div>
+
     <!-- App Dialog Modal -->
     <div class="app-modal-overlay" id="appModal">
         <div class="app-modal-card">
@@ -451,7 +484,19 @@
     <script src="config.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <audio id="audioComplete" src="complete.mp3" preload="auto"></audio>
-    <script src="app.js"></script>
+    <script src="core/base.js"></script>
+    <script src="collectors/cex.js"></script>
+    <script src="collectors/dex-metax.js"></script>
+    <script src="collectors/dex-jumpx.js"></script>
+    <script src="collectors/dex-kyber.js"></script>
+    <script src="collectors/dex-okx.js"></script>
+    <script src="services/cex-wallet.js"></script>
+    <script src="services/scan.js"></script>
+    <script src="ui/ui.js"></script>
+    <script>
+        // Init CEX wallet UI setelah halaman siap
+        $(document).ready(function () { if (typeof initCexWalletUI === 'function') initCexWalletUI(); });
+    </script>
 </body>
 
 </html>

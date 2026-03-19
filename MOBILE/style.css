@@ -125,9 +125,10 @@ body {
   right: 0;
   overflow: hidden;
   z-index: 100;
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid #0e0b0bf2;
+  background: #deecf7;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: 1px solid #0e0b0b;
   box-shadow: 0 2px 12px rgba(100, 130, 180, 0.10);
   padding: 0 14px;
   display: flex;
@@ -260,6 +261,30 @@ body {
 
 .scanning-badge.active {
   display: inline-flex;
+}
+
+/* Status badge di top bar (sebelah versi) */
+.scan-status-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  background: rgba(230, 57, 80, 0.15);
+  border: 1px solid rgba(230, 57, 80, 0.35);
+  color: #e63950;
+}
+.scan-status-badge.scan-status-done {
+  background: rgba(74, 222, 128, 0.15);
+  border-color: rgba(74, 222, 128, 0.40);
+  color: #160fe9;
+}
+.scan-status-badge.scan-status-stop {
+  background: rgba(250, 204, 21, 0.12);
+  border-color: rgba(250, 204, 21, 0.35);
+  color: #facc15;
 }
 
 @keyframes scan-pulse {
@@ -464,6 +489,7 @@ body {
   flex-shrink: 0;
   animation: scan-pulse 1.4s ease-in-out infinite;
 }
+
 
 /* ══════════════════════════════════════════
    TAB CONTENT
@@ -1391,6 +1417,22 @@ body {
   font-size: 14px;
   font-weight: 700;
   color: var(--text);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+/* Token name container in token list (inline with wdp icons) */
+.tl-tok-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.tl-sep {
+  font-size: 13px;
+  color: rgba(128,128,128,0.7);
+  margin: 0 2px;
 }
 
 .token-list-sub {
@@ -2646,6 +2688,20 @@ body {
   margin: 2px 0;
 }
 
+.ob-tip-feewd {
+  margin-top: 6px;
+  padding: 4px 6px;
+  background: rgba(255, 200, 0, 0.1);
+  border-left: 2px solid rgba(255, 200, 0, 0.5);
+  border-radius: 3px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.ob-tip-feewd-val {
+  color: #ffd700;
+}
+
 /* ══════════════════════════════════════════
    KALKULATOR MODAL
 ══════════════════════════════════════════ */
@@ -3265,4 +3321,193 @@ body {
   font-size: 18px;
   color: var(--accent);
   flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   CEX Wallet Fee WD — Badge & Settings
+═══════════════════════════════════════════════ */
+
+
+/* Settings card: biaya WD */
+.cex-wallet-status {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.8;
+  padding: 6px 0 2px;
+}
+.btn-update-wallet {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: opacity .2s;
+}
+.btn-update-wallet:disabled { opacity: .55; cursor: not-allowed; }
+.btn-update-wallet:active   { opacity: .8; }
+
+/* ═══════════════════════════════════════════════
+   WD/DP Badges — Scanner Card & Token List
+═══════════════════════════════════════════════ */
+
+/* Row di bawah header card scanner */
+.mon-wd-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 3px 8px 4px;
+  background: rgba(0,0,0,0.12);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  min-height: 22px;
+}
+
+/* Badge WD/WX/DP/DX */
+.wd-b {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.7;
+  white-space: nowrap;
+  cursor: default;
+}
+.wd-b.wd-ok   { background: rgba(30,185,80,0.18);  color: #28c864; border: 1px solid rgba(30,185,80,0.35); }
+.wd-b.wd-fail { background: rgba(220,50,50,0.18);  color: #e05555; border: 1px solid rgba(220,50,50,0.35); }
+.wd-b.wd-na   { background: rgba(180,160,0,0.12);  color: #b8a000; border: 1px solid rgba(180,160,0,0.25); font-weight: 400; font-style: italic; }
+
+/* Fee WD badge di sebelah modal di header tabel */
+.fwd-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffe082;
+  margin-left: 2px;
+  vertical-align: middle;
+}
+
+/* Fee WD label di bawah teks "ALL FEE" (kolom kiri tabel) */
+.fee-wd-lbl {
+  display: block;
+  font-size: 9px;
+  font-weight: 600;
+  color: #ffd54f;
+  margin-top: 1px;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+/* token-wd-status: class legacy, tidak dipakai lagi */
+
+/* ═══════════════════════════════════════════════
+   Header Card — Token VS Pair + WD/DP Icons
+═══════════════════════════════════════════════ */
+
+/* Sembunyikan teks BINANCE-ETHEREUM (diganti layout baru) */
+.mon-cex-chain { display: none; }
+
+/* Nama token dengan icon WD/DP */
+.mon-tok-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+}
+
+/* Separator "VS" antar token dan pair */
+.mon-vs {
+  font-size: 13px;
+  color: blue;
+  margin: 0 4px;
+}
+
+/* Container icon WD/DP di sebelah nama token */
+.wdp-ic {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 2px;
+  vertical-align: middle;
+}
+.wdp-ic-inner {
+  display: inline-flex;
+  gap: 1px;
+  align-items: center;
+}
+
+/* Icon individual */
+.wdp-ok   { font-size: 11px; line-height: 1; }
+.wdp-fail { font-size: 11px; line-height: 1; }
+.wdp-na   {
+  font-size: 13px;
+  color: gray;
+  font-style: italic;
+  letter-spacing: 0.5px;
+}
+
+/* mon-sym sekarang flex dengan semua elemen dalam satu baris */
+.mon-sym {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Sembunyikan mon-wd-row jika masih ada di DOM lama */
+.mon-wd-row { display: none; }
+
+/* ═══ Wallet Update Loading Overlay ═══════════════════════════════════════ */
+.wallet-update-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.72);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+.wallet-update-overlay.open {
+  display: flex;
+}
+.wallet-update-box {
+  background: #1e2433;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  padding: 32px 40px;
+  text-align: center;
+  min-width: 260px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+.wallet-update-spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid rgba(255,255,255,0.15);
+  border-top-color: #4caf50;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.wallet-update-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #e8f5e9;
+  margin-bottom: 8px;
+}
+.wallet-update-progress {
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+  min-height: 18px;
 }
