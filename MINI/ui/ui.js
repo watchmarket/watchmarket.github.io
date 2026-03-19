@@ -136,7 +136,7 @@ function loadSettings() {
         $('#setLevelCount').val(CFG.levelCount ?? APP_DEV_CONFIG.defaultLevelCount);
     }
     // Speed chips — tandai yang aktif berdasarkan CFG.interval
-    const speeds = [800, 600, 400];
+    const speeds = [800, 700, 500];
     const nearest = speeds.reduce((a, b) => Math.abs(b - CFG.interval) < Math.abs(a - CFG.interval) ? b : a);
     $('#speedChips .sort-btn').removeClass('active');
     $(`#speedChips [data-speed="${nearest}"]`).addClass('active');
@@ -257,6 +257,10 @@ function switchTab(tabId) {
     $('.tab-pane').removeClass('active');
     $('#' + tabId).addClass('active');
     if (tabId === 'tabToken') renderTokenList();
+    if (tabId === 'tabMonitor' && _monitorNeedsRebuild && !scanning) {
+        buildMonitorRows();
+        _monitorNeedsRebuild = false;
+    }
 }
 $('.nav-item[data-tab]').on('click', function () { switchTab($(this).data('tab')); });
 $('.top-tab-btn[data-tab]').on('click', function () { switchTab($(this).data('tab')); });
@@ -557,6 +561,7 @@ function isValidToken(t) {
 
 let tokenSort = 'az'; // 'az' | 'za'
 let tokenSearchQuery = '';
+let _monitorNeedsRebuild = false; // flag: rebuild monitor saat kembali ke tab Scanner
 let tokenFavFilter = false;
 let tokenRenderLimit = 50;
 let _renderDebounce = null;
@@ -592,9 +597,16 @@ function renderTokenList() {
             const cexCfg = CONFIG_CEX[t.cex] || {};
             const chainCfg = CONFIG_CHAINS[t.chain] || {};
             const tri = t.tickerPair && t.tickerPair !== t.ticker ? '↔️' : '→';
-            const pnlTxt = (isFinite(t.minPnl) && t.minPnl !== null) ? `💰 Min PnL: $${t.minPnl}` : '💰 Min PnL: default';
+            const pnlTxt = (isFinite(t.minPnl) && t.minPnl !== null) ? `PnL: $${t.minPnl}` : 'PnL: default';
             const valid = isValidToken(t);
             const invalidBadge = valid ? '' : ' <span class="token-invalid-badge">⚠ Data kurang</span>';
+            // WD/DP status icons inline (seperti header scanner)
+            const _hasCexData = typeof getCexTokenStatus === 'function';
+            const _stTok  = _hasCexData ? getCexTokenStatus(t.cex, t.ticker, t.chain, 1) : null;
+            const _pairTk = (t.tickerPair || 'USDT').toUpperCase();
+            const _stPair = _hasCexData ? getCexTokenStatus(t.cex, _pairTk, t.chain, 1) : null;
+            const _icTok  = _wdpIcons(_stTok);
+            const _icPair = _wdpIcons(_stPair);
             return `
     <div class="token-list-item${valid ? '' : ' token-invalid'}" id="li-${t.id}">
       <div class="token-list-badges">
@@ -606,8 +618,13 @@ function renderTokenList() {
         </span>
       </div>
       <div class="token-list-info">
-        <div class="token-list-sym">${t.ticker} ${tri} ${t.tickerPair || t.ticker}${invalidBadge}</div>
-        <div class="token-list-sub">$${t.modalCtD}/$${t.modalDtC} &nbsp;|&nbsp; ${pnlTxt}</div>
+        <div class="token-list-sym">
+          <span class="tl-tok-name">${t.ticker}<span class="wdp-ic">${_icTok}</span></span>
+          <span class="tl-sep">${tri}</span>
+          <span class="tl-tok-name">${t.tickerPair || t.ticker}<span class="wdp-ic">${_icPair}</span></span>
+          ${invalidBadge}
+        </div>
+        <div class="token-list-sub">💵 $${t.modalCtD}/$${t.modalDtC} &nbsp;|&nbsp; 💰 ${pnlTxt}</div>
       </div>
       <div style="display:flex;align-items:center;gap:6px">
         <button class="tok-fav btn-icon ${t.favorite ? 'fav-active' : ''}" onclick="toggleFavorite('${t.id}')" title="Favorit">⭐</button>
@@ -624,7 +641,14 @@ function renderTokenList() {
         }
         $('#tokenList').html(html);
     }
-    if (!scanning) buildMonitorRows();
+    if (!scanning) {
+        // Hanya rebuild monitor jika tab Scanner aktif; jika tidak, tandai perlu rebuild
+        if ($('#tabMonitor').hasClass('active')) {
+            buildMonitorRows();
+        } else {
+            _monitorNeedsRebuild = true;
+        }
+    }
     updateScanCount();
 }
 
@@ -656,11 +680,27 @@ function deleteToken(id) {
 }
 
 // ─── CSV Export / Import ─────────────────────
+// CSV_COLS: kolom inti token (untuk import/export)
 const CSV_COLS = ['ticker', 'cex', 'symbolToken', 'scToken', 'decToken', 'tickerPair', 'symbolPair', 'scPair', 'decPair', 'chain', 'modalCtD', 'modalDtC', 'minPnl', 'favorite'];
+// Kolom info tambahan untuk export (read-only dari cache, tidak dipakai saat import)
+const CSV_EXTRA_COLS = ['feeWd_token_usdt', 'feeWd_pair_usdt', 'wd_token_ok', 'dp_pair_ok'];
 
 $('#btnExport').on('click', () => {
     const tokens = getTokens();
-    const rows = [CSV_COLS.join(','), ...tokens.map(t => CSV_COLS.map(c => `"${t[c] ?? ''}"`).join(','))];
+    const allCols = [...CSV_COLS, ...CSV_EXTRA_COLS];
+    const rows = [allCols.join(','), ...tokens.map(t => {
+        // Kolom inti
+        const base = CSV_COLS.map(c => `"${t[c] ?? ''}"`);
+        // Kolom info fee WD dari cache (informatif saja)
+        let feeWdTok = '', feeWdPair = '', wdOk = '', dpOk = '';
+        if (typeof getCexTokenStatus === 'function') {
+            const stTok = getCexTokenStatus(t.cex, t.ticker, t.chain, 1);
+            const stPair = getCexTokenStatus(t.cex, t.tickerPair || 'USDT', t.chain, 1);
+            if (stTok)  { feeWdTok = stTok.feeWd;  wdOk = stTok.withdrawEnable ? '1' : '0'; }
+            if (stPair) { feeWdPair = stPair.feeWd; dpOk = stPair.depositEnable ? '1' : '0'; }
+        }
+        return [...base, `"${feeWdTok}"`, `"${feeWdPair}"`, `"${wdOk}"`, `"${dpOk}"`].join(',');
+    })];
     const csvContent = rows.join('\n');
 
     // Android WebView: blob URL download tidak didukung — pakai native bridge
@@ -716,13 +756,17 @@ $('#importFile').on('change', e => {
                 showAlert('Baris pertama file harus berisi header kolom dan minimal ada kolom <b>ticker</b>.', 'Format CSV Salah', 'error');
                 return;
             }
+            // Kolom extra (fee WD info) — diabaikan saat import, hanya untuk referensi
+            const SKIP_COLS = new Set(['feeWd_token_usdt', 'feeWd_pair_usdt', 'wd_token_ok', 'dp_pair_ok']);
             const tokens = lines.slice(1)
                 .filter(line => line.trim()) // skip baris benar-benar kosong
                 .map(line => {
                     const vals = parseCSVLine(line);
                     const obj = {};
-                    // Map by header name — urutan kolom tidak harus sama
-                    headers.forEach((h, i) => { obj[h] = (vals[i] ?? '').replace(/["\r]/g, '').trim(); });
+                    // Map by header name — urutan kolom tidak harus sama, skip kolom extra
+                    headers.forEach((h, i) => {
+                        if (!SKIP_COLS.has(h)) obj[h] = (vals[i] ?? '').replace(/["\r]/g, '').trim();
+                    });
                     obj.decToken = parseInt(obj.decToken) || 18;
                     obj.decPair = parseInt(obj.decPair) || 18;
                     obj.modalCtD = parseFloat(obj.modalCtD) || 100;
@@ -766,6 +810,42 @@ function toggleFavorite(id) {
 const MON_CTD_COLOR = '#579a69'; // hijau CEXtoDEX
 const MON_DTC_COLOR = '#d56666'; // merah DEXtoCEX
 
+// ─── WD/DP Badge HTML (build-time, dari cache) ────────────
+// Dipanggil saat buildMonitorRows & renderTokenList
+// Mengembalikan HTML badge WD/WX, DP/DX per token+pair
+function _buildWdBadgeHtml(cex, ticker, pairTicker, chain) {
+    if (typeof getCexTokenStatus !== 'function') return '';
+    const stTok  = getCexTokenStatus(cex, ticker, chain, 1);
+    const stPair = (pairTicker && pairTicker.toUpperCase() !== 'USDT')
+        ? getCexTokenStatus(cex, pairTicker, chain, 1) : null;
+
+    if (!stTok && !stPair) return '<span class="wd-b wd-na">? WD &nbsp; ? DP</span>';
+
+    const parts = [];
+    if (stTok) {
+        const wdOk = stTok.withdrawEnable;
+        const dpOk = stTok.depositEnable;
+        parts.push(`<span class="wd-b ${wdOk ? 'wd-ok' : 'wd-fail'}">${wdOk ? 'WD' : 'WX'} ${ticker}</span>`);
+        parts.push(`<span class="wd-b ${dpOk ? 'wd-ok' : 'wd-fail'}">${dpOk ? 'DP' : 'DX'} ${ticker}</span>`);
+    }
+    if (stPair) {
+        const wdOk = stPair.withdrawEnable;
+        const dpOk = stPair.depositEnable;
+        parts.push(`<span class="wd-b ${wdOk ? 'wd-ok' : 'wd-fail'}">${wdOk ? 'WD' : 'WX'} ${pairTicker}</span>`);
+        parts.push(`<span class="wd-b ${dpOk ? 'wd-ok' : 'wd-fail'}">${dpOk ? 'DP' : 'DX'} ${pairTicker}</span>`);
+    }
+    return parts.join('');
+}
+
+// WD/DP status icons: [WD_icon][DP_icon]
+// WD=withdraw, DP=deposit — ✅ terbuka, ⛔ ditutup, ? belum ada data
+function _wdpIcons(status) {
+    if (!status) return '<span class="wdp-ic-inner wdp-na">??</span>';
+    const wd = status.withdrawEnable ? '<span class="wdp-ok">✅</span>' : '<span class="wdp-fail">⛔</span>';
+    const dp = status.depositEnable  ? '<span class="wdp-ok">✅</span>' : '<span class="wdp-fail">⛔</span>';
+    return `<span class="wdp-ic-inner">${wd}${dp}</span>`;
+}
+
 function buildMonitorRows(tokenList) {
     const tokens = tokenList || getFilteredTokens();
     if (!tokens.length) {
@@ -783,23 +863,30 @@ function buildMonitorRows(tokenList) {
         `<td class="mon-dex-cell" data-${pfx}-${attr}="${i}">-</td>`
     ).join('');
 
+    const _hasCexSt = typeof getCexTokenStatus === 'function';
     $('#monitorList').html(tokens.map((t, idx) => {
         const cc = CONFIG_CEX[t.cex] || {};
         const ch = CONFIG_CHAINS[t.chain] || {};
-        const cexLabel = cc.label || t.cex;
-        const chainLabel = ch.label || t.chain;
         const tri = t.tickerPair && t.tickerPair !== t.ticker;
         const sym = t.ticker + (tri ? '↔' + t.tickerPair : '');
         const pairTk = t.tickerPair || t.ticker;
         const minPnlLbl = (isFinite(t.minPnl) && t.minPnl !== null) ? t.minPnl : APP_DEV_CONFIG.defaultMinPnl;
         const chainColor = ch.WARNA || '#555';
+        // WD/DP icons dari cache untuk header token name
+        const _stTok  = _hasCexSt ? getCexTokenStatus(t.cex, t.ticker, t.chain, 1) : null;
+        const _stPair = _hasCexSt ? getCexTokenStatus(t.cex, pairTk, t.chain, 1) : null;
+        const _icTok  = _wdpIcons(_stTok);
+        const _icPair = _wdpIcons(_stPair);
         return `<div class="mon-card" id="card-${t.id}" style="border-left:3px solid ${chainColor}">
   <div class="mon-card-hdr" style="background:linear-gradient(135deg,${chainColor}55 0%,${chainColor}20 100%);border-bottom:2px solid ${chainColor}88">
     <img src="icons/cex/${t.cex}.png" class="mon-hdr-icon" onerror="this.style.display='none'">
     <img src="icons/chains/${t.chain}.png" class="mon-hdr-icon" onerror="this.style.display='none'">
-    <span class="mon-cex-chain">${cexLabel.toUpperCase()}-${chainLabel.toUpperCase()}</span>
-    <span class="mon-sym"><span class="mon-num">[${idx + 1}]</span> ${sym}</span>
-
+    <span class="mon-sym">
+      <span class="mon-num">[${idx + 1}]</span>
+      <span class="mon-tok-name">${t.ticker}<span class="wdp-ic" id="wdic-tok-${t.id}">${_icTok}</span></span>
+      <span class="mon-vs">↔️</span>
+      <span class="mon-tok-name">${pairTk}<span class="wdp-ic" id="wdic-pair-${t.id}">${_icPair}</span></span>
+    </span>
     <span class="mon-card-actions">
       <button class="btn-icon mon-act mon-fav ${t.favorite ? 'fav-active' : ''}" onclick="toggleFavorite('${t.id}')" title="Favorit">⭐</button>
       <button class="btn-icon mon-act" onclick="openSheet('${t.id}')" title="Edit Koin">✏️</button>
@@ -839,33 +926,40 @@ function buildMonitorRows(tokenList) {
 </div>`;
     }).join(''));
 
-    // Build DOM element cache for fast access in scanToken
+    // Build DOM element cache — satu querySelectorAll per card, bukan satu per sel
     _cardEls.clear();
-    const _n = totalQuoteCount();
     tokens.forEach(t => {
         const card = document.getElementById('card-' + t.id);
         if (!card) return;
         const els = {
             card,
-            modalCtdHdr: card.querySelector('[data-modal-hdr="ctd"]'),
-            modalDtcHdr: card.querySelector('[data-modal-hdr="dtc"]'),
-            ctdStatus: card.querySelector('.ctd-table .tbl-status'),
-            dtcStatus: card.querySelector('.dtc-table .tbl-status'),
+            wdTokEl:     document.getElementById('wdic-tok-'  + t.id),
+            wdPairEl:    document.getElementById('wdic-pair-' + t.id),
+            modalCtdHdr: null, modalDtcHdr: null,
+            ctdStatus: null, dtcStatus: null,
             ctdHdr: [], ctdCex: [], ctdDex: [], ctdFee: [], ctdPnl: [],
             dtcHdr: [], dtcCex: [], dtcDex: [], dtcFee: [], dtcPnl: [],
         };
-        for (let i = 0; i < _n; i++) {
-            els.ctdHdr.push(card.querySelector(`[data-ctd-hdr="${i}"]`));
-            els.ctdCex.push(card.querySelector(`[data-ctd-cex="${i}"]`));
-            els.ctdDex.push(card.querySelector(`[data-ctd-dex="${i}"]`));
-            els.ctdFee.push(card.querySelector(`[data-ctd-fee="${i}"]`));
-            els.ctdPnl.push(card.querySelector(`[data-ctd-pnl="${i}"]`));
-            els.dtcHdr.push(card.querySelector(`[data-dtc-hdr="${i}"]`));
-            els.dtcCex.push(card.querySelector(`[data-dtc-cex="${i}"]`));
-            els.dtcDex.push(card.querySelector(`[data-dtc-dex="${i}"]`));
-            els.dtcFee.push(card.querySelector(`[data-dtc-fee="${i}"]`));
-            els.dtcPnl.push(card.querySelector(`[data-dtc-pnl="${i}"]`));
-        }
+        // Satu querySelectorAll per card → ambil semua sel sekaligus
+        card.querySelectorAll('[data-modal-hdr],[data-ctd-hdr],[data-ctd-cex],[data-ctd-dex],[data-ctd-fee],[data-ctd-pnl],[data-dtc-hdr],[data-dtc-cex],[data-dtc-dex],[data-dtc-fee],[data-dtc-pnl]').forEach(el => {
+            const d = el.dataset;
+            if (d.modalHdr === 'ctd') { els.modalCtdHdr = el; return; }
+            if (d.modalHdr === 'dtc') { els.modalDtcHdr = el; return; }
+            if (d.ctdHdr !== undefined) { els.ctdHdr[+d.ctdHdr] = el; return; }
+            if (d.ctdCex !== undefined) { els.ctdCex[+d.ctdCex] = el; return; }
+            if (d.ctdDex !== undefined) { els.ctdDex[+d.ctdDex] = el; return; }
+            if (d.ctdFee !== undefined) { els.ctdFee[+d.ctdFee] = el; return; }
+            if (d.ctdPnl !== undefined) { els.ctdPnl[+d.ctdPnl] = el; return; }
+            if (d.dtcHdr !== undefined) { els.dtcHdr[+d.dtcHdr] = el; return; }
+            if (d.dtcCex !== undefined) { els.dtcCex[+d.dtcCex] = el; return; }
+            if (d.dtcDex !== undefined) { els.dtcDex[+d.dtcDex] = el; return; }
+            if (d.dtcFee !== undefined) { els.dtcFee[+d.dtcFee] = el; return; }
+            if (d.dtcPnl !== undefined) { els.dtcPnl[+d.dtcPnl] = el; }
+        });
+        // tbl-status: ambil dari kedua tabel
+        const statEls = card.querySelectorAll('.tbl-status');
+        els.ctdStatus = statEls[0] || null;
+        els.dtcStatus = statEls[1] || null;
         _cardEls.set(t.id, els);
     });
 }
@@ -1028,12 +1122,18 @@ function showObTooltip(el) {
     const tokenSym = tok ? tok.ticker : '?';
     const pairSym = tok ? (tok.tickerPair || tok.ticker) : '?';
     const dexName = el.textContent.trim() || '?';
+    // Fee WD dari cache
+    const _feeWd = ob ? (dir === 'ctd' ? (ob.feeWdCtD || 0) : (ob.feeWdDtC || 0)) : 0;
+    const _feeWdLabel = dir === 'ctd' ? tokenSym : pairSym;
+    const _feeWdHtml = _feeWd > 0
+        ? `<div class="ob-tip-feewd">💸 Fee WD <b>${_feeWdLabel}</b>: <b class="ob-tip-feewd-val">${_feeWd.toFixed(3)}$</b></div>`
+        : '';
     const infoHeader = `<div class="ob-tip-info">
       <span class="ob-tip-lbl">Token</span> <b>${tokenSym}↔${pairSym}</b>
       &nbsp;·&nbsp; <span class="ob-tip-lbl">CEX</span> <b>${cexLabel}</b>
       &nbsp;·&nbsp; <span class="ob-tip-lbl">DEX</span> <b>${dexName}</b>
       &nbsp;·&nbsp; <span class="ob-tip-lbl">Chain</span> <b>${chainLabel}</b>
-    </div>`;
+    </div>${_feeWdHtml}`;
 
     if (!ob || (!ob.asks.length && !ob.bids.length)) {
         tooltip.innerHTML = infoHeader + '<div class="ob-tip-empty">Data orderbook belum tersedia.<br>Tunggu hasil scanning.</div>';
@@ -1111,7 +1211,7 @@ function hideObTooltip() {
     _tooltipHideTimer = setTimeout(() => {
         const tooltip = document.getElementById('obTooltip');
         if (tooltip) tooltip.style.display = 'none';
-    }, 200);
+    }, 3000);
 }
 // Close tooltip when tapping elsewhere
 document.addEventListener('touchstart', function (e) {

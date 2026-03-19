@@ -11,4 +11,4 @@ Entry UI: `index.html`
 
 Urutan load script sudah diatur pada `index.html`.
 
-Catatan: `app.js` lama masih disimpan sebagai referensi, tetapi tidak lagi diload.
+Catatan: file legacy `app.js` sudah dihapus karena tidak lagi dipakai.

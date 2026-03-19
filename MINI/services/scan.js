@@ -1,26 +1,45 @@
 // ─── PnL Calculator ──────────────────────────
-function calcPnl(modal, pairAmt, bidPair, cexKey) {
+// feeWdUsdt: biaya withdrawal dari CEX dalam USDT (default 0 jika belum ada data)
+// isPairStable: true jika PAIR adalah stablecoin (USDT/USDC/dll) → tidak perlu trade ke-2 di CEX
+// direction: 'ctd' = CEX→DEX, 'dtc' = DEX→CEX
+function calcPnl(modal, pairAmt, bidPair, cexKey, feeWdUsdt = 0, isPairStable = false, direction = 'ctd') {
     const fee = APP_DEV_CONFIG.fees[cexKey] || 0.001;
     const pairValue = pairAmt * bidPair;
-    const cexFee1 = modal * fee;        // fee trader (CEX beli/jual)
-    const cexFee2 = pairValue * fee;    // fee swap (gas/bridge)
-    return { pnl: pairValue - modal - cexFee1 - cexFee2, pairValue, cexFee1, cexFee2, totalFee: cexFee1 + cexFee2 };
+    let cexFee1, cexFee2;
+    if (direction === 'ctd') {
+        // CTD: BELI TOKEN di CEX (fee1) → swap DEX → JUAL PAIR di CEX (fee2)
+        // Jika PAIR = stablecoin, tidak perlu jual di CEX → fee2 = 0
+        cexFee1 = modal * fee;
+        cexFee2 = isPairStable ? 0 : pairValue * fee;
+    } else {
+        // DTC: BELI PAIR di CEX (fee1) → swap DEX → JUAL TOKEN di CEX (fee2)
+        // Jika PAIR = stablecoin (USDT), tidak perlu beli di CEX → fee1 = 0
+        cexFee1 = isPairStable ? 0 : modal * fee;
+        cexFee2 = pairValue * fee;
+    }
+    const wdFee = feeWdUsdt || 0;
+    return {
+        pnl: pairValue - modal - cexFee1 - cexFee2 - wdFee,
+        pairValue, cexFee1, cexFee2, wdFee,
+        totalFee: cexFee1 + cexFee2 + wdFee
+    };
 }
 
 // ─── Scan Engine (Dual Aggregator: METAX + JUMPX) ─────
 // Parse & compute PnL from a single parsed quote object
-function computeQuotePnl(parsed, destDec, bidPrice, modal, cexKey, askPrice, direction) {
+// feeWdUsdt: biaya WD token dari CEX (dalam USDT) sudah dihitung di scanToken
+function computeQuotePnl(parsed, destDec, bidPrice, modal, cexKey, askPrice, direction, feeWdUsdt = 0, isPairStable = false) {
     const recv = fromWei(parsed.amount + '', parsed.dec || destDec);
     const recvUSDT = recv * bidPrice;
     if (direction === 'ctd') {
         const tokensIn = askPrice > 0 ? modal / askPrice : 0;
         const effPrice = tokensIn > 0 ? recvUSDT / tokensIn : 0;
-        const { pnl, cexFee1, cexFee2, totalFee } = calcPnl(modal, recv, bidPrice, cexKey);
-        return { name: parsed.name, src: parsed.src, recvUSDT, effPrice, pnl, cexFee1, cexFee2, totalFee };
+        const { pnl, cexFee1, cexFee2, wdFee, totalFee } = calcPnl(modal, recv, bidPrice, cexKey, feeWdUsdt, isPairStable, 'ctd');
+        return { name: parsed.name, src: parsed.src, recvUSDT, effPrice, pnl, cexFee1, cexFee2, wdFee, totalFee };
     } else {
         const effPrice = recv > 0 ? modal / recv : 0;
-        const { pnl, cexFee1, cexFee2, totalFee } = calcPnl(modal, recv, bidPrice, cexKey);
-        return { name: parsed.name, src: parsed.src, recvUSDT, effPrice, pnl, cexFee1, cexFee2, totalFee };
+        const { pnl, cexFee1, cexFee2, wdFee, totalFee } = calcPnl(modal, recv, bidPrice, cexKey, feeWdUsdt, isPairStable, 'dtc');
+        return { name: parsed.name, src: parsed.src, recvUSDT, effPrice, pnl, cexFee1, cexFee2, wdFee, totalFee };
     }
 }
 
@@ -50,6 +69,24 @@ function calculateAutoVolume(orderbook, maxModal, levels, side) {
         return { actualModal: totalUSDT, avgPrice: totalUSDT / totalCoins, lastLevelPrice: lastPrice, levelsUsed };
     } catch { return null; }
 }
+
+// ─── WD/DP Icons di Header Card ───────────────
+// Update icon ✅⛔ di sebelah nama token & pair di header card
+function _updateWdBadge(card, tok, stToken, stPair, cardEls) {
+    const tokEl  = cardEls?.wdTokEl  || document.getElementById('wdic-tok-'  + tok.id);
+    const pairEl = cardEls?.wdPairEl || document.getElementById('wdic-pair-' + tok.id);
+
+    function _icons(st) {
+        if (!st) return '<span class="wdp-ic-inner wdp-na">??</span>';
+        const wd = st.withdrawEnable ? '<span class="wdp-ok">✅</span>' : '<span class="wdp-fail">⛔</span>';
+        const dp = st.depositEnable  ? '<span class="wdp-ok">✅</span>' : '<span class="wdp-fail">⛔</span>';
+        return `<span class="wdp-ic-inner">${wd}${dp}</span>`;
+    }
+
+    if (tokEl)  tokEl.innerHTML  = _icons(stToken);
+    if (pairEl) pairEl.innerHTML = _icons(stPair);
+}
+
 
 async function scanToken(tok) {
     const chainCfg = CONFIG_CHAINS[tok.chain];
@@ -87,6 +124,41 @@ async function scanToken(tok) {
     }
     if (!pairSc || !tok.scToken) { setCardStatus(card, 'SC kosong'); return; }
 
+    // 2b. Ambil fee WD & status WD/DP dari cache CEX wallet
+    // CTD: user beli token di CEX → WD token ke wallet → swap ke pair di DEX
+    // DTC: user swap pair → token di DEX → deposit token ke CEX → jual, lalu WD pair
+    const pairSymbol = (tok.tickerPair || 'USDT').toUpperCase();
+    const _STABLES = new Set(['USDT','USDC','BUSD','DAI','TUSD','USDP','FDUSD']);
+    // isPairStable: PAIR adalah stablecoin → tidak perlu trade ke-2 di CEX (fee lebih rendah)
+    const isPairStable = _STABLES.has(pairSymbol);
+    const feeWdCtD = (typeof getCexFeeWdUsdt === 'function')
+        ? getCexFeeWdUsdt(tok.cex, tok.ticker, tok.chain, obToken.askPrice) : 0;
+    const feeWdDtC = (typeof getCexFeeWdUsdt === 'function')
+        ? getCexFeeWdUsdt(tok.cex, pairSymbol, tok.chain, bidPair || 1) : 0;
+
+    // Status WD/DP: tampilkan badge di card
+    const stToken = (typeof getCexTokenStatus === 'function')
+        ? getCexTokenStatus(tok.cex, tok.ticker, tok.chain, obToken.askPrice) : null;
+    const stPair  = (typeof getCexTokenStatus === 'function')
+        ? getCexTokenStatus(tok.cex, pairSymbol, tok.chain, bidPair || 1) : null;
+    _updateWdBadge(card, tok, stToken, stPair, els);
+
+    // Block flag — hanya berlaku jika data sudah ada (stToken !== null)
+    // CTD: perlu WD token dari CEX → jika WX, skip CTD
+    // DTC: perlu DP token ke CEX → jika DX, skip DTC
+    const blockCtD = stToken !== null && stToken.withdrawEnable === false;
+    const blockDtC = stToken !== null && stToken.depositEnable  === false;
+
+    // Tampilkan notice DITUTUP di header tabel jika blocked
+    if (blockCtD) {
+        const ctdStatus = els?.ctdStatus;
+        if (ctdStatus) { ctdStatus.textContent = ' ⛔ WD DITUTUP'; ctdStatus.className = 'tbl-status tbl-status-err'; }
+    }
+    if (blockDtC) {
+        const dtcStatus = els?.dtcStatus;
+        if (dtcStatus) { dtcStatus.textContent = ' ⛔ DP DITUTUP'; dtcStatus.className = 'tbl-status tbl-status-err'; }
+    }
+
     // 3. Auto Level: hitung weighted avg price & actual modal dari orderbook depth
     let alCtD = null, alDtC = null;
     if (CFG.autoLevel && obToken.asks.length && obToken.bids.length) {
@@ -101,15 +173,19 @@ async function scanToken(tok) {
     const dispAskCtD = alCtD ? alCtD.lastLevelPrice : obToken.askPrice;
     const dispBidDtC = alDtC ? alDtC.lastLevelPrice : obToken.bidPrice;
 
-    // Simpan dispAsk/dispBid ke cache agar tooltip bisa akses harga LX yang sama
-    _obCache[tok.id].dispAsk = dispAskCtD;
-    _obCache[tok.id].dispBid = dispBidDtC;
+    // Simpan dispAsk/dispBid + fee WD ke cache agar tooltip bisa mengaksesnya
+    _obCache[tok.id].dispAsk  = dispAskCtD;
+    _obCache[tok.id].dispBid  = dispBidDtC;
+    _obCache[tok.id].feeWdCtD = feeWdCtD;
+    _obCache[tok.id].feeWdDtC = feeWdDtC;
+    _obCache[tok.id].pairSym  = pairSymbol;
+    _obCache[tok.id].isPairStable = isPairStable;
 
     // 4. Fetch DEX quotes from BOTH aggregators in parallel
     const weiCtD = toWei(askCtD > 0 ? modalCtD / askCtD : 0, tok.decToken);
     const weiDtC = toWei(isTriangular ? (askPair > 0 ? modalDtC / askPair : 0) : modalDtC, pairDec);
 
-    // Update header modal: tampilkan actualModal + status jika Auto Level aktif
+    // Update header modal: modal + status Auto Level (tanpa fee WD — fee WD tampil di label ALL FEE)
     const ctdHdr = els?.modalCtdHdr;
     const dtcHdr = els?.modalDtcHdr;
     if (CFG.autoLevel) {
@@ -126,6 +202,13 @@ async function scanToken(tok) {
     } else {
         if (ctdHdr) ctdHdr.innerHTML = `$${tok.modalCtD}<span class="tbl-status"></span>`;
         if (dtcHdr) dtcHdr.innerHTML = `$${tok.modalDtC}<span class="tbl-status"></span>`;
+    }
+    // Helper format fee cell: "wdFee+tradeFee$" jika ada feeWd, "-total$" jika tidak
+    function _fmtFeeCell(wdFee, tradeFee) {
+        const total = (wdFee + tradeFee).toFixed(2);
+        return wdFee > 0
+            ? `${total}$[${wdFee.toFixed(2)}$]`
+            : `-${tradeFee.toFixed(2)}$`;
     }
 
     const diagCtD = diagnoseWei(weiCtD);
@@ -160,35 +243,51 @@ async function scanToken(tok) {
         return labels;
     }
 
-    // 5. Combine & sort CTD quotes (METAX + JUMPX + KYBER + OKX) by PnL descending
+    // 5. Combine & sort CTD quotes — skip jika WD token ditutup (blockCtD)
     const tokMinPnl = (isFinite(tok.minPnl) && tok.minPnl !== null) ? tok.minPnl : 1;
     const allCtD = [];
-    mxCtD.forEach(q => { const p = parseDexQuoteMetax(q); if (p) allCtD.push(computeQuotePnl(p, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd')); });
-    jxCtD.forEach(q => { const p = parseDexQuoteJumpx(q); if (p) allCtD.push(computeQuotePnl(p, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd')); });
-    kbCtD.forEach(q => { if (q) allCtD.push(computeQuotePnl(q, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd')); });
-    okCtD.forEach(q => { if (q) allCtD.push(computeQuotePnl(q, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd')); });
-    allCtD.sort((a, b) => b.pnl - a.pnl); // best first
+    if (!blockCtD) {
+        mxCtD.forEach(q => { const p = parseDexQuoteMetax(q); if (p) allCtD.push(computeQuotePnl(p, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd', feeWdCtD, isPairStable)); });
+        jxCtD.forEach(q => { const p = parseDexQuoteJumpx(q); if (p) allCtD.push(computeQuotePnl(p, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd', feeWdCtD, isPairStable)); });
+        kbCtD.forEach(q => { if (q) allCtD.push(computeQuotePnl(q, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd', feeWdCtD, isPairStable)); });
+        okCtD.forEach(q => { if (q) allCtD.push(computeQuotePnl(q, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd', feeWdCtD, isPairStable)); });
+    }
+    allCtD.sort((a, b) => b.pnl - a.pnl);
     const ctdData = allCtD.slice(0, n);
-    const missingCtdLabels = buildMissingLabels(allCtD, mxCtD, jxCtD, kbCtD, okCtD);
+    const missingCtdLabels = blockCtD ? [] : buildMissingLabels(allCtD, mxCtD, jxCtD, kbCtD, okCtD);
 
-    // 6. Combine & sort DTC quotes by PnL descending (best first)
+    // 6. Combine & sort DTC quotes — skip jika DP token ditutup (blockDtC)
     const allDtC = [];
-    mxDtC.forEach(q => { const p = parseDexQuoteMetax(q); if (p) allDtC.push(computeQuotePnl(p, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc')); });
-    jxDtC.forEach(q => { const p = parseDexQuoteJumpx(q); if (p) allDtC.push(computeQuotePnl(p, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc')); });
-    kbDtC.forEach(q => { if (q) allDtC.push(computeQuotePnl(q, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc')); });
-    okDtC.forEach(q => { if (q) allDtC.push(computeQuotePnl(q, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc')); });
+    if (!blockDtC) {
+        mxDtC.forEach(q => { const p = parseDexQuoteMetax(q); if (p) allDtC.push(computeQuotePnl(p, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc', feeWdDtC, isPairStable)); });
+        jxDtC.forEach(q => { const p = parseDexQuoteJumpx(q); if (p) allDtC.push(computeQuotePnl(p, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc', feeWdDtC, isPairStable)); });
+        kbDtC.forEach(q => { if (q) allDtC.push(computeQuotePnl(q, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc', feeWdDtC, isPairStable)); });
+        okDtC.forEach(q => { if (q) allDtC.push(computeQuotePnl(q, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc', feeWdDtC, isPairStable)); });
+    }
     allDtC.sort((a, b) => b.pnl - a.pnl); // best first
     const dtcData = allDtC.slice(0, n);
     const missingDtcLabels = buildMissingLabels(allDtC, mxDtC, jxDtC, kbDtC, okDtC);
 
     // 6. Fill CTD table
     const ctdStatus = els?.ctdStatus;
-    if (ctdStatus) ctdStatus.textContent = '';
+    if (!blockCtD && ctdStatus) ctdStatus.textContent = '';
     for (let i = 0; i < n; i++) {
         const cexEl = els?.ctdCex[i];
-        if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(dispAskCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
+        if (cexEl) { cexEl.textContent = blockCtD ? '—' : `↑ ${fmtCompact(dispAskCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
     }
-    if (!ctdData.length) {
+    if (blockCtD) {
+        // WD token ditutup → isi semua sel CTD dengan pesan SKIP
+        const hdrEl0 = els?.ctdHdr[0];
+        if (hdrEl0) { hdrEl0.textContent = `⛔ WD ${tok.ticker}`; hdrEl0.className = 'mon-dex-hdr mon-dex-hdr-err'; }
+        for (let i = 1; i < n; i++) { const h = els?.ctdHdr[i]; if (h) { h.textContent = '—'; h.className = 'mon-dex-hdr'; } }
+        const dexEl0 = els?.ctdDex[0];
+        if (dexEl0) { dexEl0.textContent = 'WITHDRAW DITUTUP'; dexEl0.className = 'mon-dex-cell mc-err'; }
+        for (let i = 1; i < n; i++) { const d = els?.ctdDex[i]; if (d) { d.textContent = '—'; d.className = 'mon-dex-cell mc-muted'; } }
+        for (let i = 0; i < n; i++) {
+            const f = els?.ctdFee[i]; if (f) { f.textContent = '—'; f.className = 'mon-dex-cell mc-muted'; }
+            const p = els?.ctdPnl[i]; if (p) { p.textContent = '—'; p.className = 'mon-dex-cell mc-muted'; }
+        }
+    } else if (!ctdData.length) {
         const reason = diagCtD || 'TIDAK ADA LP / DEX';
         const hdrEl0 = els?.ctdHdr[0];
         if (hdrEl0) { hdrEl0.textContent = reason; hdrEl0.className = 'mon-dex-hdr mon-dex-hdr-err'; }
@@ -210,7 +309,7 @@ async function scanToken(tok) {
             if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; }
             if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(dispAskCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
-            if (feeEl) { feeEl.textContent = `-${r.totalFee.toFixed(2)}$`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
+            if (feeEl) { feeEl.textContent = _fmtFeeCell(r.wdFee, r.cexFee1 + r.cexFee2); feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
         });
         // Fill remaining empty columns with DEX name + error info
@@ -231,12 +330,24 @@ async function scanToken(tok) {
 
     // 7. Fill DTC table
     const dtcStatus = els?.dtcStatus;
-    if (dtcStatus) dtcStatus.textContent = '';
+    if (!blockDtC && dtcStatus) dtcStatus.textContent = '';
     for (let i = 0; i < n; i++) {
         const cexEl = els?.dtcCex[i];
-        if (cexEl) { cexEl.textContent = `↓ ${fmtCompact(dispBidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid'; }
+        if (cexEl) { cexEl.textContent = blockDtC ? '—' : `↓ ${fmtCompact(dispBidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid'; }
     }
-    if (!dtcData.length) {
+    if (blockDtC) {
+        // DP token ditutup → isi semua sel DTC dengan pesan SKIP
+        const hdrEl0 = els?.dtcHdr[0];
+        if (hdrEl0) { hdrEl0.textContent = `⛔ DP ${tok.ticker}`; hdrEl0.className = 'mon-dex-hdr mon-dex-hdr-err'; }
+        for (let i = 1; i < n; i++) { const h = els?.dtcHdr[i]; if (h) { h.textContent = '—'; h.className = 'mon-dex-hdr'; } }
+        const dexEl0 = els?.dtcDex[0];
+        if (dexEl0) { dexEl0.textContent = 'DEPOSIT DITUTUP'; dexEl0.className = 'mon-dex-cell mc-err'; }
+        for (let i = 1; i < n; i++) { const d = els?.dtcDex[i]; if (d) { d.textContent = '—'; d.className = 'mon-dex-cell mc-muted'; } }
+        for (let i = 0; i < n; i++) {
+            const f = els?.dtcFee[i]; if (f) { f.textContent = '—'; f.className = 'mon-dex-cell mc-muted'; }
+            const p = els?.dtcPnl[i]; if (p) { p.textContent = '—'; p.className = 'mon-dex-cell mc-muted'; }
+        }
+    } else if (!dtcData.length) {
         const reason = diagDtC || '';
         const hdrEl0 = els?.dtcHdr[0];
         if (hdrEl0) { hdrEl0.textContent = reason; hdrEl0.className = 'mon-dex-hdr mon-dex-hdr-err'; }
@@ -258,7 +369,7 @@ async function scanToken(tok) {
             if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; }
             if (cexEl) { cexEl.textContent = `↓ ${fmtCompact(dispBidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
             if (dexEl) { dexEl.textContent = `↑ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
-            if (feeEl) { feeEl.textContent = `-${r.totalFee.toFixed(2)}$`; feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
+            if (feeEl) { feeEl.textContent = _fmtFeeCell(r.wdFee, r.cexFee1 + r.cexFee2); feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
         });
         // Fill remaining empty columns with DEX name + error info
@@ -277,9 +388,11 @@ async function scanToken(tok) {
         }
     }
 
-    // 8. Signal chip & card highlight — best from all combined quotes
-    const bestCtD = ctdData.length ? ctdData[0].pnl : -999;
-    const bestDtC = dtcData.length ? dtcData[0].pnl : -999;
+    // 8. Signal chip & card highlight — hanya arah yang tidak blocked
+    // jika blockCtD → abaikan CTD dari pertimbangan signal
+    // jika blockDtC → abaikan DTC dari pertimbangan signal
+    const bestCtD = (!blockCtD && ctdData.length) ? ctdData[0].pnl : -999;
+    const bestDtC = (!blockDtC && dtcData.length) ? dtcData[0].pnl : -999;
     const best = Math.max(bestCtD, bestDtC);
     const isCtd = bestCtD >= bestDtC;
     const bestDir = isCtd ? 'CTD' : 'DTC';
@@ -298,7 +411,8 @@ async function scanToken(tok) {
     } else {
         card.classList.remove('has-signal');
     }
-    setCardStatus(card, '');
+    // Jangan hapus status WD/DP DITUTUP yang sudah ditampilkan
+    if (!blockCtD && !blockDtC) setCardStatus(card, '');
 }
 
 // Show error/status in both sub-table headers; clear when msg is empty
@@ -398,6 +512,8 @@ function resetMonitorCells() {
 
 // ─── Scan Loop ───────────────────────────────
 let _scanRound = 0;
+let _lastScanTokenKey = null; // cache key: cegah rebuild monitor cards jika urutan tidak berubah
+
 async function runScan() {
     if (scanning) return;
     scanning = true; scanAbort = false;
@@ -427,7 +543,13 @@ async function runScan() {
         if (monitorSort === 'rand') _shuffledTokens = null;
         const tokens = getFilteredTokens();
         if (!tokens.length) break;
-        buildMonitorRows(tokens); // rebuild cards dengan urutan sama persis
+        // Hanya rebuild monitor cards jika urutan/daftar token berubah
+        // (untuk sort 'rand' berubah tiap ronde; untuk 'az'/'za' hanya sekali)
+        const tokenKey = tokens.map(t => t.id).join(',');
+        if (_lastScanTokenKey !== tokenKey) {
+            buildMonitorRows(tokens);
+            _lastScanTokenKey = tokenKey;
+        }
         for (let i = 0; i < tokens.length; i += BATCH_SIZE) {
             if (scanAbort) break;
             const batch = tokens.slice(i, Math.min(i + BATCH_SIZE, tokens.length));
@@ -460,7 +582,8 @@ async function runScan() {
     stopScan(scanAbort ? 'manual' : 'done');
 }
 function stopScan(reason = 'manual') {
-    scanning = false; scanAbort = true;  // keep true so orphaned loop exits
+    scanning = false; scanAbort = true;
+    _lastScanTokenKey = null; // reset agar scan berikutnya rebuild cards bersih
     $('#btnScanIcon').text('▶'); $('#btnScanLbl').text('START'); $('#btnScan').removeClass('stop');
     updateScanCount();
     $('#scanBadge').removeClass('active');

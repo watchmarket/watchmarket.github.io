@@ -180,6 +180,28 @@
                 </div>
             </div>
 
+            <!-- SETTINGS CARD: CEX Wallet Fee WD -->
+            <div class="settings-card" id="cexWalletCard">
+                <h3>CEK BIAYA WD & STATUS DEPOSIT/WITHDRAW</h3>
+                <div class="settings-row">
+                    <label class="settings-label">Status per CEX
+                        <span class="settings-hint">(terakhir diperbarui: <span id="walletLastUpdate">—</span>)</span>
+                    </label>
+                    <div class="cex-wallet-status" id="cexWalletStatus">
+                        Belum Ada Info Fee WD & Status Deposit/Withdraw. Tekan "Check Wallet Exchanger" untuk mengambil Info dari Exchanger.
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <button class="btn-update-wallet" id="btnUpdateCexWallet" onclick="runUpdateCexWallet()">
+                        🔄 Check Wallet Exchanger
+                    </button>
+                </div>
+                <div class="settings-row">
+                    <span class="settings-hint">Fee WD otomatis dimasukkan ke kalkulasi PNL saat scanning. Badge
+                        <b>WD ✓/✗</b> tampil di card tiap token.</span>
+                </div>
+            </div>
+
             <div class="settings-card">
                 <h3>FILTER KOIN [<span id="filterCoinCount">0</span> KOIN ]</h3>
                 <div class="settings-row">
@@ -440,6 +462,15 @@
         </div><!-- /calc-modal -->
     </div><!-- /calc-overlay -->
 
+    <!-- Wallet Update Loading Overlay -->
+    <div class="wallet-update-overlay" id="walletUpdateOverlay">
+        <div class="wallet-update-box">
+            <div class="wallet-update-spinner"></div>
+            <div class="wallet-update-title">Mengambil Info Exchanger</div>
+            <div class="wallet-update-progress" id="walletUpdateProgress">Menghubungi server...</div>
+        </div>
+    </div>
+
     <!-- App Dialog Modal -->
     <div class="app-modal-overlay" id="appModal">
         <div class="app-modal-card">
@@ -459,8 +490,13 @@
     <script src="collectors/dex-jumpx.js"></script>
     <script src="collectors/dex-kyber.js"></script>
     <script src="collectors/dex-okx.js"></script>
+    <script src="services/cex-wallet.js"></script>
     <script src="services/scan.js"></script>
     <script src="ui/ui.js"></script>
+    <script>
+        // Init CEX wallet UI setelah halaman siap
+        $(document).ready(function () { if (typeof initCexWalletUI === 'function') initCexWalletUI(); });
+    </script>
 </body>
 
 </html>

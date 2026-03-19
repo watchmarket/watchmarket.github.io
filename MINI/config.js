@@ -3,6 +3,29 @@
 // Dev-only config. Diisi oleh developer, TIDAK diubah user.
 // ============================================================
 
+// ============================================================
+// CONFIG_CEX_KEYS — API Keys untuk fetch fee WD dari CEX
+// Digunakan oleh services/cex-wallet.js
+// ============================================================
+const CONFIG_CEX_KEYS = {
+  BINANCE: {
+    ApiKey: "PoMTZjrgq2rUNQHpqvoOW0Ajq1iKytG3OZueMyvYwJmMaH175kuVi2QyB98Zocnb",
+    ApiSecret: "bBq5FCpuCghA0hJuil7gCObTqDzYaLaVdsZVsdfSzv4MZ2rDBK6cpN590eXAwfod"
+  },
+  MEXC: {
+    ApiKey: "mx0vglNkKpxcAAEbtk",
+    ApiSecret: "54a488c04cdf4afabf44dd07915731c6"
+  },
+  GATE: {
+    ApiKey: "1dbe3d4c92a42de270692e65952574d0",
+    ApiSecret: "9436bfec02a8ed462bda4bd1a516ba82b4f322dd09e120a2bf7ea6b5f0930ef8"
+  },
+  INDODAX: {
+    ApiKey: "HRKOX8GL-KD9ANNF5-T7OKENAH-LHL5PBYQ-NW8GQICL",
+    ApiSecret: "2ff67f7546f9b1af3344f4012fbb5561969de9440f1d1432c89473d1fe007deb3f3d0bac7400622b"
+  },
+};
+
 const APP_DEV_CONFIG = {
   appName: "SCANNER CEX-DEX",
   appVersion: "03.20",
@@ -16,7 +39,7 @@ const APP_DEV_CONFIG = {
     binance: 0.001,
   },
   defaultMinPnl: 1,
-  defaultInterval: 300,
+  defaultInterval: 800,
   defaultSseTimeout: 6000,
   defaultQuoteCountMetax: 2,   // jumlah quote MetaMask SSE (0 = matikan)
   defaultQuoteCountJumpx: 2,   // jumlah quote Jumper/LiFi  (0 = matikan)
