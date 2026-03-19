@@ -1886,9 +1886,8 @@ body {
 }
 
 .settings-hint {
-  font-size: 10px;
-  color: var(--muted);
-  font-weight: 400;
+  font-size: 12px;
+  color: blue;
 }
 
 .fchip-group {
@@ -3336,7 +3335,7 @@ body {
   padding: 6px 0 2px;
 }
 .btn-update-wallet {
-  display: inline-flex;
+  text-align: center;
   align-items: center;
   gap: 6px;
   padding: 8px 18px;
@@ -3347,7 +3346,6 @@ body {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 4px;
   transition: opacity .2s;
 }
 .btn-update-wallet:disabled { opacity: .55; cursor: not-allowed; }
