@@ -4,8 +4,8 @@
 // ============================================================
 
 const APP_DEV_CONFIG = {
-  appName: "MONITORING PRICE",
-  appVersion: "03.15",
+  appName: "SCANNER CEX-DEX",
+  appVersion: "03.20",
   telegramBotToken: "8053447166:AAH7YYbyZ4eBoPX31D8h3bCYdzEeIaiG4JU",
   telegramGroupId: "-5271018516",
   corsProxy: "https://vercel-proxycors.vercel.app/?url=",
