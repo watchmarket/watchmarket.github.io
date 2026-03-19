@@ -153,50 +153,78 @@ async function _fetchMexcWallet() {
 }
 
 // ─── GATE.IO ──────────────────────────────────────────────
-// GET /api/v4/wallet/withdraw_status — signed HMAC-SHA512
+// Dua endpoint:
+// 1. GET /api/v4/spot/currencies  — public, status WD/DP per chain (via chains[])
+// 2. GET /api/v4/wallet/withdraw_status — signed, fee WD per chain
 async function _fetchGateWallet() {
+  // ── 1. Spot currencies (public) → status deposit/withdraw per chain ──
+  const currData = await _fetchJson('https://api.gateio.ws/api/v4/spot/currencies');
+
+  // Build statusMap: { TOKEN: { RAW_CHAIN_UPPER: { depositEnable, withdrawEnable } } }
+  // Prioritas: item.chains[] (per-chain), fallback: item.chain (top-level)
+  const statusMap = {};
+  for (const item of (currData || [])) {
+    const tk = (item.currency || '').toUpperCase();
+    if (!statusMap[tk]) statusMap[tk] = {};
+    const chains = Array.isArray(item.chains) && item.chains.length > 0
+      ? item.chains
+      : [{ name: item.chain || '', withdraw_disabled: item.withdraw_disabled, deposit_disabled: item.deposit_disabled }];
+    for (const ch of chains) {
+      const chKey = (ch.name || '').toUpperCase();
+      if (!chKey) continue;
+      statusMap[tk][chKey] = {
+        depositEnable:  !ch.deposit_disabled,
+        withdrawEnable: !ch.withdraw_disabled,
+      };
+    }
+  }
+
+  // ── 2. Withdraw status (authenticated) → fee WD per chain ──
   const { ApiKey, ApiSecret } = CONFIG_CEX_KEYS.GATE;
   const ts = Math.floor(Date.now() / 1000).toString();
-  const method = 'GET';
-  const path = '/api/v4/wallet/withdraw_status';
   const bodyHash = await _sha512hex('');
-  const sigPayload = `${method}\n${path}\n\n${bodyHash}\n${ts}`;
+  const sigPayload = `GET\n/api/v4/wallet/withdraw_status\n\n${bodyHash}\n${ts}`;
   const sig = await _hmacSha512(ApiSecret, sigPayload);
-  const url = `https://api.gateio.ws${path}`;
-  const data = await _fetchJson(url, {
+  const feeData = await _fetchJson('https://api.gateio.ws/api/v4/wallet/withdraw_status', {
     headers: { 'KEY': ApiKey, 'SIGN': sig, 'Timestamp': ts }
   });
 
-  const result = [];
-  for (const item of (data || [])) {
-    // Gate: currency bisa "ETH_BSC" atau "USDT" — ambil symbol utama
+  // Build feeMap: { TOKEN: { RAW_CHAIN_UPPER: { feeWd, minWd } } }
+  const feeMap = {};
+  for (const item of (feeData || [])) {
     const token = (item.currency || '').toUpperCase().split('_')[0];
-    const depositEnable = item.deposit_disabled !== 1 && item.deposit_disabled !== '1';
-    const withdrawEnable = item.withdraw_disabled !== 1 && item.withdraw_disabled !== '1';
-    const minWd = parseFloat(item.withdraw_amount_mini || item.withdraw_min_amount || 0);
-
-    // Prioritas: gunakan withdraw_fix_on_chains untuk per-chain breakdown
+    if (!feeMap[token]) feeMap[token] = {};
     const chainsMap = item.withdraw_fix_on_chains || {};
     const chainKeys = Object.keys(chainsMap);
     if (chainKeys.length > 0) {
       for (const rawChain of chainKeys) {
-        const chain = _normalizeChain(rawChain);
-        if (!chain) continue;
-        result.push({
-          token, chain,
+        feeMap[token][rawChain.toUpperCase()] = {
           feeWd: parseFloat(chainsMap[rawChain]) || 0,
-          depositEnable, withdrawEnable, minWd,
-        });
+          minWd: parseFloat(item.withdraw_amount_mini || item.withdraw_min_amount || 0),
+        };
       }
-    } else {
-      // Fallback: single-chain dari field 'chain' atau nama currency
-      const rawChain = item.chain || '';
-      const chain = _normalizeChain(rawChain) || _normalizeChain(item.currency);
+    } else if (item.chain) {
+      feeMap[token][item.chain.toUpperCase()] = {
+        feeWd: parseFloat(item.withdraw_fix || item.withdraw_percent || 0),
+        minWd: parseFloat(item.withdraw_amount_mini || item.withdraw_min_amount || 0),
+      };
+    }
+  }
+
+  // ── 3. Merge: sumber utama adalah statusMap dari spot/currencies ──
+  // Setiap chain yang dikenali di statusMap akan masuk result, fee diambil dari feeMap (0 jika tidak ada)
+  const result = [];
+  for (const [token, chainStatus] of Object.entries(statusMap)) {
+    for (const [rawChain, st] of Object.entries(chainStatus)) {
+      const chain = _normalizeChain(rawChain);
       if (!chain) continue;
+      const fee = (feeMap[token] || {})[rawChain] || {};
       result.push({
         token, chain,
-        feeWd: parseFloat(item.withdraw_fix || item.withdraw_percent || 0),
-        depositEnable, withdrawEnable, minWd,
+        feeWd:         fee.feeWd || 0,
+        depositEnable:  st.depositEnable,
+        withdrawEnable: st.withdrawEnable,
+        minWd:         fee.minWd || 0,
       });
     }
   }
@@ -325,6 +353,14 @@ function getCexTokenStatus(cexKey, tokenSymbol, chain, tokenPriceUsdt) {
     feeWdUsdt,
     minWd:     chainData.minWd || 0,
   };
+}
+
+// Apakah data wallet untuk CEX tertentu sudah pernah di-fetch?
+// Digunakan untuk membedakan "belum fetch" (→ ??) vs "sudah fetch tapi token tidak ada" (→ ✖)
+function isCexWalletFetched(cexKey) {
+  const cache = _getCexWalletCache();
+  const cexData = cache[cexKey];
+  return !!cexData && Object.keys(cexData).length > 0;
 }
 
 // Waktu terakhir update

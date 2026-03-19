@@ -605,8 +605,9 @@ function renderTokenList() {
             const _stTok  = _hasCexData ? getCexTokenStatus(t.cex, t.ticker, t.chain, 1) : null;
             const _pairTk = (t.tickerPair || 'USDT').toUpperCase();
             const _stPair = _hasCexData ? getCexTokenStatus(t.cex, _pairTk, t.chain, 1) : null;
-            const _icTok  = _wdpIcons(_stTok);
-            const _icPair = _wdpIcons(_stPair);
+            const _wf     = t.cex !== 'indodax' && typeof isCexWalletFetched === 'function' && isCexWalletFetched(t.cex);
+            const _icTok  = _wdpIcons(_stTok, _wf, t.cex);
+            const _icPair = _wdpIcons(_stPair, _wf, t.cex);
             return `
     <div class="token-list-item${valid ? '' : ' token-invalid'}" id="li-${t.id}">
       <div class="token-list-badges">
@@ -839,8 +840,12 @@ function _buildWdBadgeHtml(cex, ticker, pairTicker, chain) {
 
 // WD/DP status icons: [WD_icon][DP_icon]
 // WD=withdraw, DP=deposit — ✅ terbuka, ⛔ ditutup, ? belum ada data
-function _wdpIcons(status) {
-    if (!status) return '<span class="wdp-ic-inner wdp-na">??</span>';
+function _wdpIcons(status, walletFetched, cexKey) {
+    // Indodax: API tidak menyediakan status WD/DP asli → selalu ??
+    if (cexKey === 'indodax') return '<span class="wdp-ic-inner wdp-na">??</span>';
+    if (!status) return walletFetched
+        ? '<span class="wdp-ic-inner wdp-unsupported"><span class="wdp-fail">❌</span><span class="wdp-fail">❌</span></span>'
+        : '<span class="wdp-ic-inner wdp-na">??</span>';
     const wd = status.withdrawEnable ? '<span class="wdp-ok">✅</span>' : '<span class="wdp-fail">⛔</span>';
     const dp = status.depositEnable  ? '<span class="wdp-ok">✅</span>' : '<span class="wdp-fail">⛔</span>';
     return `<span class="wdp-ic-inner">${wd}${dp}</span>`;
@@ -875,8 +880,9 @@ function buildMonitorRows(tokenList) {
         // WD/DP icons dari cache untuk header token name
         const _stTok  = _hasCexSt ? getCexTokenStatus(t.cex, t.ticker, t.chain, 1) : null;
         const _stPair = _hasCexSt ? getCexTokenStatus(t.cex, pairTk, t.chain, 1) : null;
-        const _icTok  = _wdpIcons(_stTok);
-        const _icPair = _wdpIcons(_stPair);
+        const _wf     = t.cex !== 'indodax' && typeof isCexWalletFetched === 'function' && isCexWalletFetched(t.cex);
+        const _icTok  = _wdpIcons(_stTok, _wf, t.cex);
+        const _icPair = _wdpIcons(_stPair, _wf, t.cex);
         return `<div class="mon-card" id="card-${t.id}" style="border-left:3px solid ${chainColor}">
   <div class="mon-card-hdr" style="background:linear-gradient(135deg,${chainColor}55 0%,${chainColor}20 100%);border-bottom:2px solid ${chainColor}88">
     <img src="icons/cex/${t.cex}.png" class="mon-hdr-icon" onerror="this.style.display='none'">

@@ -72,12 +72,14 @@ function calculateAutoVolume(orderbook, maxModal, levels, side) {
 
 // ─── WD/DP Icons di Header Card ───────────────
 // Update icon ✅⛔ di sebelah nama token & pair di header card
-function _updateWdBadge(card, tok, stToken, stPair, cardEls) {
+function _updateWdBadge(card, tok, stToken, stPair, cardEls, walletFetched) {
     const tokEl  = cardEls?.wdTokEl  || document.getElementById('wdic-tok-'  + tok.id);
     const pairEl = cardEls?.wdPairEl || document.getElementById('wdic-pair-' + tok.id);
 
     function _icons(st) {
-        if (!st) return '<span class="wdp-ic-inner wdp-na">??</span>';
+        if (!st) return walletFetched
+            ? '<span class="wdp-ic-inner wdp-unsupported"><span class="wdp-fail">❌</span><span class="wdp-fail">❌</span></span>'
+            : '<span class="wdp-ic-inner wdp-na">??</span>';
         const wd = st.withdrawEnable ? '<span class="wdp-ok">✅</span>' : '<span class="wdp-fail">⛔</span>';
         const dp = st.depositEnable  ? '<span class="wdp-ok">✅</span>' : '<span class="wdp-fail">⛔</span>';
         return `<span class="wdp-ic-inner">${wd}${dp}</span>`;
@@ -141,13 +143,16 @@ async function scanToken(tok) {
         ? getCexTokenStatus(tok.cex, tok.ticker, tok.chain, obToken.askPrice) : null;
     const stPair  = (typeof getCexTokenStatus === 'function')
         ? getCexTokenStatus(tok.cex, pairSymbol, tok.chain, bidPair || 1) : null;
-    _updateWdBadge(card, tok, stToken, stPair, els);
+    // Indodax: API tidak punya status WD/DP asli → walletFetched = false agar tidak diblock dan tampil ??
+    const walletFetched = tok.cex !== 'indodax' && typeof isCexWalletFetched === 'function' && isCexWalletFetched(tok.cex);
+    _updateWdBadge(card, tok, stToken, stPair, els, walletFetched);
 
-    // Block flag — hanya berlaku jika data sudah ada (stToken !== null)
-    // CTD: perlu WD token dari CEX → jika WX, skip CTD
-    // DTC: perlu DP token ke CEX → jika DX, skip DTC
-    const blockCtD = stToken !== null && stToken.withdrawEnable === false;
-    const blockDtC = stToken !== null && stToken.depositEnable  === false;
+    // Block flag:
+    // - Jika stToken ada: block sesuai flag withdrawEnable / depositEnable
+    // - Jika stToken null & wallet sudah di-fetch: token tidak disuport di chain ini → block keduanya
+    // - Jika stToken null & wallet belum di-fetch: data belum ada → tidak diblock
+    const blockCtD = stToken !== null ? stToken.withdrawEnable === false : walletFetched;
+    const blockDtC = stToken !== null ? stToken.depositEnable  === false : walletFetched;
 
     // Tampilkan notice DITUTUP di header tabel jika blocked
     if (blockCtD) {
