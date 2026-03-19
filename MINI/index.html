@@ -180,27 +180,7 @@
                 </div>
             </div>
 
-            <!-- SETTINGS CARD: CEX Wallet Fee WD -->
-            <div class="settings-card" id="cexWalletCard">
-                <h3>CEK BIAYA WD & STATUS DEPOSIT/WITHDRAW</h3>
-                <div class="settings-row">
-                    <label class="settings-label">Status per CEX
-                        <span class="settings-hint">(terakhir diperbarui: <span id="walletLastUpdate">—</span>)</span>
-                    </label>
-                    <div class="cex-wallet-status" id="cexWalletStatus">
-                        Belum Ada Info Fee WD & Status Deposit/Withdraw. Tekan "Check Wallet Exchanger" untuk mengambil Info dari Exchanger.
-                    </div>
-                </div>
-                <div class="settings-row">
-                    <button class="btn-update-wallet" id="btnUpdateCexWallet" onclick="runUpdateCexWallet()">
-                        🔄 Check Wallet Exchanger
-                    </button>
-                </div>
-                <div class="settings-row">
-                    <span class="settings-hint">Fee WD otomatis dimasukkan ke kalkulasi PNL saat scanning. Badge
-                        <b>WD ✓/✗</b> tampil di card tiap token.</span>
-                </div>
-            </div>
+           
 
             <div class="settings-card">
                 <h3>FILTER KOIN [<span id="filterCoinCount">0</span> KOIN ]</h3>
@@ -214,6 +194,25 @@
                             nonaktifkan)</span></label>
                     <div class="fchip-group" id="filterChainChips"></div>
                 </div>
+            </div>
+
+             <!-- SETTINGS CARD: CEX Wallet Fee WD -->
+            <div class="settings-card" id="cexWalletCard">
+                <h3>CEK BIAYA WD & STATUS DEPOSIT/WITHDRAW</h3>
+                <div class="settings-row">
+                    <label class="settings-label">
+                        <span class="settings-hint">(terakhir diperbarui: <span id="walletLastUpdate">—</span>)</span>
+                    </label>
+                    <div class="cex-wallet-status" id="cexWalletStatus">
+                        Belum Ada Info Fee WD & Status Deposit/Withdraw. Tekan "Check Wallet Exchanger" untuk mengambil Info dari Exchanger.
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <button class="btn-update-wallet" id="btnUpdateCexWallet" onclick="runUpdateCexWallet()">
+                        🔄 Check Wallet Exchanger
+                    </button>
+                </div>
+                
             </div>
         </div>
     </div>
