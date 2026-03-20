@@ -885,8 +885,6 @@ function buildMonitorRows(tokenList) {
         const _icPair = _wdpIcons(_stPair, _wf, t.cex);
         return `<div class="mon-card" id="card-${t.id}" style="border-left:3px solid ${chainColor}">
   <div class="mon-card-hdr" style="background:linear-gradient(135deg,${chainColor}55 0%,${chainColor}20 100%);border-bottom:2px solid ${chainColor}88">
-    <img src="icons/cex/${t.cex}.png" class="mon-hdr-icon" onerror="this.style.display='none'">
-    <img src="icons/chains/${t.chain}.png" class="mon-hdr-icon" onerror="this.style.display='none'">
     <span class="mon-sym">
       <span class="mon-num">[${idx + 1}]</span>
       <span class="mon-tok-name">${t.ticker}<span class="wdp-ic" id="wdic-tok-${t.id}">${_icTok}</span></span>
@@ -894,6 +892,8 @@ function buildMonitorRows(tokenList) {
       <span class="mon-tok-name">${pairTk}<span class="wdp-ic" id="wdic-pair-${t.id}">${_icPair}</span></span>
     </span>
     <span class="mon-card-actions">
+      <img src="icons/cex/${t.cex}.png" class="mon-hdr-icon" onerror="this.style.display='none'">
+      <img src="icons/chains/${t.chain}.png" class="mon-hdr-icon" onerror="this.style.display='none'">
       <button class="btn-icon mon-act mon-fav ${t.favorite ? 'fav-active' : ''}" onclick="toggleFavorite('${t.id}')" title="Favorit">⭐</button>
       <button class="btn-icon mon-act" onclick="openSheet('${t.id}')" title="Edit Koin">✏️</button>
       <button class="btn-icon danger mon-act" onclick="deleteToken('${t.id}')" title="Hapus Koin">🗑️</button>
@@ -907,7 +907,7 @@ function buildMonitorRows(tokenList) {
       ${dexHdr('ctd', MON_CTD_COLOR, t.id)}
     </tr></thead>
     <tbody>
-      <tr class="mon-row-cex"><td class="mon-lbl-side"><span style='color:green;'>BELI CEX ↑</span></td>${dexRow('ctd', 'cex')}</tr>
+      <tr class="mon-row-cex"><td class="mon-lbl-side"><span style='color:green;'>BELI [${t.ticker}]</span></td>${dexRow('ctd', 'cex')}</tr>
       <tr class="mon-row-dex"><td class="mon-lbl-side"><span style='color:red;'>${t.ticker}→${pairTk}</span></td>${dexRow('ctd', 'dex')}</tr>
       <tr class="mon-row-recv"><td class="mon-lbl-side">ALL FEE</td>${dexRow('ctd', 'fee')}</tr>
       <tr class="mon-row-pnl"><td class="mon-lbl-side">💰 PNL <span class="lbl-minpnl">($${minPnlLbl})</span></td>${dexRow('ctd', 'pnl')}</tr>
@@ -922,7 +922,7 @@ function buildMonitorRows(tokenList) {
     </tr></thead>
     <tbody>
       <tr class="mon-row-dex"><td class="mon-lbl-side"><span style='color:green;'>${pairTk}→${t.ticker}</span></td>${dexRow('dtc', 'dex')}</tr>
-      <tr class="mon-row-cex"><td class="mon-lbl-side lbl-pair"><span style='color:red;'>JUAL CEX ↓</span></td>${dexRow('dtc', 'cex')}</tr>
+      <tr class="mon-row-cex"><td class="mon-lbl-side lbl-pair"><span style='color:red;'>JUAL [${t.ticker}]</span></td>${dexRow('dtc', 'cex')}</tr>
       <tr class="mon-row-recv"><td class="mon-lbl-side">ALL FEE</td>${dexRow('dtc', 'fee')}</tr>
       <tr class="mon-row-pnl"><td class="mon-lbl-side">💰 PNL <span class="lbl-minpnl">($${minPnlLbl})</span></td>${dexRow('dtc', 'pnl')}</tr>
     </tbody>
