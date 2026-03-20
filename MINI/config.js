@@ -27,7 +27,7 @@ const CONFIG_CEX_KEYS = {
 };
 
 const APP_DEV_CONFIG = {
-  appName: "MONITORING CEX-DEX",
+  appName: "MONITORING",
   appVersion: "03.22",
   telegramBotToken: "8053447166:AAH7YYbyZ4eBoPX31D8h3bCYdzEeIaiG4JU",
   telegramGroupId: "-5271018516",
