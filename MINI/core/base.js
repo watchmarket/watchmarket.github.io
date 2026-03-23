@@ -9,6 +9,8 @@ const LS_TOKENS = 'cexdex_tokens';
 const LS_SETTINGS = 'cexdex_settings';
 
 // ─── Runtime State ───────────────────────────
+const STABLE_COINS = new Set(['USDT','USDC','BUSD','DAI','TUSD','FDUSD','USDD','USDP','FRAX','LUSD','CRVUSD','PYUSD','GUSD','SUSD','MUSD','USDE','EUSD','USDS','USD0','USDX']);
+
 let CFG = {
     username: '',
     wallet: '',
@@ -19,6 +21,7 @@ let CFG = {
     soundMuted: false,
     activeCex: [],    // [] = semua aktif
     activeChains: [], // [] = semua aktif
+    pairType: 'all',  // 'all' | 'stable' | 'non'
     autoLevel: APP_DEV_CONFIG.defaultAutoLevel,  // Auto Level CEX default dari config.js
     levelCount: APP_DEV_CONFIG.defaultLevelCount, // Level orderbook default dari config.js
 };
@@ -52,7 +55,10 @@ function getFilteredTokens() {
             const cexOk = CFG.activeCex.length === 0 || CFG.activeCex.includes(t.cex);
             const chainOk = CFG.activeChains.length === 0 || CFG.activeChains.includes(t.chain);
             const favOk = !monitorFavOnly || t.favorite;
-            return cexOk && chainOk && favOk;
+            const pairTk = (t.tickerPair || 'USDT').toUpperCase();
+            const isStable = STABLE_COINS.has(pairTk);
+            const pairOk = CFG.pairType === 'all' || (CFG.pairType === 'stable' ? isStable : !isStable);
+            return cexOk && chainOk && favOk && pairOk;
         });
     if (monitorSort === 'za') return filtered.sort((a, b) => (b.ticker || '').localeCompare(a.ticker || ''));
     if (monitorSort === 'rand') {

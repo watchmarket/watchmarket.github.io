@@ -185,7 +185,7 @@
             <div class="settings-card">
                 <h3>FILTER KOIN [<span id="filterCoinCount">0</span> KOIN ]</h3>
                 <div class="settings-row">
-                    <label class="settings-label">CEX Aktif <span class="settings-hint">(ketuk untuk
+                    <label class="settings-label">Exchanger Aktif <span class="settings-hint">(ketuk untuk
                             nonaktifkan)</span></label>
                     <div class="fchip-group" id="filterCexChips"></div>
                 </div>
@@ -193,6 +193,15 @@
                     <label class="settings-label">Chain Aktif <span class="settings-hint">(ketuk untuk
                             nonaktifkan)</span></label>
                     <div class="fchip-group" id="filterChainChips"></div>
+                </div>
+                <div class="settings-row">
+                    <label class="settings-label">Pilih Pair <span class="settings-hint">(ketuk untuk
+                            nonaktifkan)</span></label>
+                    <div class="fchip-group" id="filterPairTypeChips">
+                        <span class="fchip pair-type-chip on" data-val="all"    onclick="setPairTypeFilter('all')">🟢 SEMUA</span>
+                        <span class="fchip pair-type-chip"   data-val="stable"  onclick="setPairTypeFilter('stable')">🟡 STABLE</span>
+                        <span class="fchip pair-type-chip"   data-val="non"     onclick="setPairTypeFilter('non')">🔴 NON-STABLE</span>
+                    </div>
                 </div>
             </div>
 

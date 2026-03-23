@@ -440,6 +440,13 @@ body {
   color: var(--text);
 }
 
+.chip-pair {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text2);
+  opacity: 0.75;
+}
+
 .chip-modal {
   font-size: 11px;
   font-weight: 600;
