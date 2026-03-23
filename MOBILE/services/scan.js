@@ -77,12 +77,14 @@ function _updateWdBadge(card, tok, stToken, stPair, cardEls, walletFetched) {
     const pairEl = cardEls?.wdPairEl || document.getElementById('wdic-pair-' + tok.id);
 
     function _icons(st) {
+        // Indodax: API tidak punya status WD/DP asli → selalu ??
+        if (tok.cex === 'indodax') return '<span class="wdp-ic-inner wdp-na">??</span>';
         if (!st) return walletFetched
-            ? '<span class="wdp-ic-inner wdp-unsupported"><span class="wdp-fail">❌</span><span class="wdp-fail">❌</span></span>'
+            ? '<span class="wdp-ic-inner wdp-unsupported"><span class="wdp-fail">WX</span> <span class="wdp-fail">DX</span></span>'
             : '<span class="wdp-ic-inner wdp-na">??</span>';
-        const wd = st.withdrawEnable ? '<span class="wdp-ok">✅</span>' : '<span class="wdp-fail">⛔</span>';
-        const dp = st.depositEnable  ? '<span class="wdp-ok">✅</span>' : '<span class="wdp-fail">⛔</span>';
-        return `<span class="wdp-ic-inner">${wd}${dp}</span>`;
+        const wd = st.withdrawEnable ? '<span class="wdp-ok">WD</span>' : '<span class="wdp-fail">WX</span>';
+        const dp = st.depositEnable  ? '<span class="wdp-ok">DP</span>' : '<span class="wdp-fail">DX</span>';
+        return `<span class="wdp-ic-inner">${wd} ${dp}</span>`;
     }
 
     if (tokEl)  tokEl.innerHTML  = _icons(stToken);
@@ -522,6 +524,7 @@ let _lastScanTokenKey = null; // cache key: cegah rebuild monitor cards jika uru
 async function runScan() {
     if (scanning) return;
     scanning = true; scanAbort = false;
+    document.body.classList.add('is-scanning');
     $('#btnScanIcon').text('■'); $('#btnScanLbl').text('STOP'); $('#btnScan').addClass('stop');
     $('#btnScanCount').text('');
     $('#scanBadge').addClass('active');
@@ -588,6 +591,7 @@ async function runScan() {
 }
 function stopScan(reason = 'manual') {
     scanning = false; scanAbort = true;
+    document.body.classList.remove('is-scanning');
     _lastScanTokenKey = null; // reset agar scan berikutnya rebuild cards bersih
     $('#btnScanIcon').text('▶'); $('#btnScanLbl').text('START'); $('#btnScan').removeClass('stop');
     updateScanCount();

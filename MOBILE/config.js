@@ -28,7 +28,7 @@ const CONFIG_CEX_KEYS = {
 
 const APP_DEV_CONFIG = {
   appName: "MONITORING CRYPTO",
-  appVersion: "03.20",
+  appVersion: "03.24",
   telegramBotToken: "8053447166:AAH7YYbyZ4eBoPX31D8h3bCYdzEeIaiG4JU",
   telegramGroupId: "-5271018516",
   corsProxy: "https://vercel-proxycors.vercel.app/?url=",
@@ -121,7 +121,12 @@ const CONFIG_CHAINS = {
     DATAJSON: "https://watchmarket.github.io/JSON/SNAPSHOT_koin_BSC.json",
     LINKS: {
       token: (addr) => `https://bscscan.com/token/${addr}`,
-    }
+    },WALLET_CEX: {
+            GATE: { address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe' },
+            BINANCE: { address: '0x8894E0a0c962CB723c1976a4421c95949bE2D4E3'  },
+            MEXC: { address: '0x4982085C9e2F89F2eCb8131Eca71aFAD896e89CB' },
+            INDODAX: { address: '0xaBa3002AB1597433bA79aBc48eeAd54DC10A45F2'  },
+        },
   },
   ethereum: {
     Kode_Chain: 1,
@@ -133,7 +138,12 @@ const CONFIG_CHAINS = {
     DATAJSON: "https://watchmarket.github.io/JSON/SNAPSHOT_koin_ETHEREUM.json",
     LINKS: {
       token: (addr) => `https://etherscan.io/token/${addr}`,
-    }
+    },WALLET_CEX: {
+            GATE: { address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe' },
+            BINANCE: { address: '0xDFd5293D8e347dFe59E90eFd55b2956a1343963d'},
+            INDODAX: { address: '0x3C02290922a3618A4646E3BbCa65853eA45FE7C6' },
+            MEXC: { address: '0x75e89d5979E4f6Fba9F97c104c2F0AFB3F1dcB88'},
+        },
   },
   polygon: {
     Kode_Chain: 137,
@@ -145,7 +155,13 @@ const CONFIG_CHAINS = {
     DATAJSON: "https://watchmarket.github.io/JSON/SNAPSHOT_koin_POLYGON.json",
     LINKS: {
       token: (addr) => `https://polygonscan.com/token/${addr}`,
-    }
+    },
+        WALLET_CEX: {
+            GATE: { address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe' },
+            BINANCE: { address: '0x290275e3db66394C52272398959845170E4DCb88' },
+            MEXC: { address: '0x51E3D44172868Acc60D68ca99591Ce4230bc75E0' },
+            INDODAX: { address: '0x3C02290922a3618A4646E3BbCa65853eA45FE7C6' },
+     }
   },
   arbitrum: {
     Kode_Chain: 42161,
@@ -157,8 +173,13 @@ const CONFIG_CHAINS = {
     DATAJSON: "https://watchmarket.github.io/JSON/SNAPSHOT_koin_ARBITRUM.json",
     LINKS: {
       token: (addr) => `https://arbiscan.io/token/${addr}`,
-    }
-  },
+    },WALLET_CEX: {
+            GATE: { address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe' },
+            BINANCE: { address: '0x290275e3db66394C52272398959845170E4DCb88'},
+            MEXC: { address: '0x4982085C9e2F89F2eCb8131Eca71aFAD896e89CB'  },
+            INDODAX: { address: '0x3C02290922a3618A4646E3BbCa65853eA45FE7C6'  },
+  }
+},
 
   base: {
     Kode_Chain: 8453,
@@ -170,7 +191,13 @@ const CONFIG_CHAINS = {
     DATAJSON: "https://watchmarket.github.io/JSON/SNAPSHOT_koin_BASE.json",
     LINKS: {
       token: (addr) => `https://basescan.org/token/${addr}`,
-    }
+    }, WALLET_CEX: {
+            GATE: { address: '0x0D0707963952f2fBA59dD06f2b425ace40b492Fe'},
+            BINANCE: { address: '0xDFd5293D8e347dFe59E90eFd55b2956a1343963d' },
+            MEXC: { address: '0x4e3ae00E8323558fA5Cac04b152238924AA31B60'},
+            INDODAX: { address: '0x3C02290922a3618A4646E3BbCa65853eA45FE7C6'   },
+           
+        }
   },
 };
 

@@ -844,11 +844,11 @@ function _wdpIcons(status, walletFetched, cexKey) {
     // Indodax: API tidak menyediakan status WD/DP asli → selalu ??
     if (cexKey === 'indodax') return '<span class="wdp-ic-inner wdp-na">??</span>';
     if (!status) return walletFetched
-        ? '<span class="wdp-ic-inner wdp-unsupported"><span class="wdp-fail">❌</span><span class="wdp-fail">❌</span></span>'
+        ? '<span class="wdp-ic-inner wdp-unsupported"><span class="wdp-fail">WX</span> <span class="wdp-fail">DX</span></span>'
         : '<span class="wdp-ic-inner wdp-na">??</span>';
-    const wd = status.withdrawEnable ? '<span class="wdp-ok">✅</span>' : '<span class="wdp-fail">⛔</span>';
-    const dp = status.depositEnable  ? '<span class="wdp-ok">✅</span>' : '<span class="wdp-fail">⛔</span>';
-    return `<span class="wdp-ic-inner">${wd}${dp}</span>`;
+    const wd = status.withdrawEnable ? '<span class="wdp-ok">WD</span>' : '<span class="wdp-fail">WX</span>';
+    const dp = status.depositEnable  ? '<span class="wdp-ok">DP</span>' : '<span class="wdp-fail">DX</span>';
+    return `<span class="wdp-ic-inner">${wd} ${dp}</span>`;
 }
 
 function buildMonitorRows(tokenList) {
@@ -883,10 +883,25 @@ function buildMonitorRows(tokenList) {
         const _wf     = t.cex !== 'indodax' && typeof isCexWalletFetched === 'function' && isCexWalletFetched(t.cex);
         const _icTok  = _wdpIcons(_stTok, _wf, t.cex);
         const _icPair = _wdpIcons(_stPair, _wf, t.cex);
+        // Stock links — explorer URL: {URL_Chain}/token/{sc}?a={walletAddr}
+        const _cexKey = t.cex.toUpperCase();
+        const _walletInfo = ch.WALLET_CEX && ch.WALLET_CEX[_cexKey];
+        const _explorerBase = ch.URL_Chain || '';
+        function _mkStokLinks(sc, label) {
+            if (!sc || !_walletInfo || !_explorerBase) return '';
+            const addrs = [_walletInfo.address, _walletInfo.address2, _walletInfo.address3].filter(Boolean);
+            return addrs.map((addr, i) => {
+                const url = `${_explorerBase}/token/${sc}?a=${addr}`;
+                const tip = `Stok ${label} ${cc.label||t.cex}${i>0?' #'+(i+1):''} — klik copy URL`;
+                return `<span class="stok-link" title="${tip}" onclick="navigator.clipboard.writeText('${url}').then(()=>showToast('URL stok ${label} disalin!'))">📋&nbsp;</span>`;
+            }).join('');
+        }
+        const _stokCtd = _mkStokLinks(t.scToken, t.ticker);
+        const _stokDtc = _mkStokLinks(t.scPair,  pairTk);
         return `<div class="mon-card" id="card-${t.id}" style="border-left:3px solid ${chainColor}">
   <div class="mon-card-hdr" style="background:linear-gradient(135deg,${chainColor}55 0%,${chainColor}20 100%);border-bottom:2px solid ${chainColor}88">
     <span class="mon-sym">
-      <span class="mon-num">[${idx + 1}]</span>
+      <span class="mon-num">${idx + 1}</span>
       <span class="mon-tok-name">${t.ticker}<span class="wdp-ic" id="wdic-tok-${t.id}">${_icTok}</span></span>
       <span class="mon-vs">↔️</span>
       <span class="mon-tok-name">${pairTk}<span class="wdp-ic" id="wdic-pair-${t.id}">${_icPair}</span></span>
@@ -903,7 +918,7 @@ function buildMonitorRows(tokenList) {
   <div class="mon-table-scroll">
   <table class="mon-sub-table ctd-table">
     <thead><tr class="mon-sub-hdr">
-      <td class="mon-lbl-hdr" data-modal-hdr="ctd" style="background:${MON_CTD_COLOR}">$${t.modalCtD}<span class="tbl-status"></span></td>
+      <td class="mon-lbl-hdr" style="background:${MON_CTD_COLOR}">${_stokCtd}<span class="hdr-amt" data-modal-hdr="ctd">$${t.modalCtD}<span class="tbl-status"></span></span></td>
       ${dexHdr('ctd', MON_CTD_COLOR, t.id)}
     </tr></thead>
     <tbody>
@@ -917,7 +932,7 @@ function buildMonitorRows(tokenList) {
   <div class="mon-table-scroll">
   <table class="mon-sub-table dtc-table">
     <thead><tr class="mon-sub-hdr">
-      <td class="mon-lbl-hdr" data-modal-hdr="dtc" style="background:${MON_DTC_COLOR}">$${t.modalDtC}<span class="tbl-status"></span></td>
+      <td class="mon-lbl-hdr" style="background:${MON_DTC_COLOR}">${_stokDtc}<span class="hdr-amt" data-modal-hdr="dtc">$${t.modalDtC}<span class="tbl-status"></span></span></td>
       ${dexHdr('dtc', MON_DTC_COLOR, t.id)}
     </tr></thead>
     <tbody>
