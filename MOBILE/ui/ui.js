@@ -1169,18 +1169,28 @@ function showObTooltip(el) {
     const tokenSym = tok ? tok.ticker : '?';
     const pairSym = tok ? (tok.tickerPair || tok.ticker) : '?';
     const dexName = el.textContent.trim() || '?';
-    // Fee WD dari cache
-    const _feeWd = ob ? (dir === 'ctd' ? (ob.feeWdCtD || 0) : (ob.feeWdDtC || 0)) : 0;
+    // Fee detail dari dataset header element (per kolom DEX)
     const _feeWdLabel = dir === 'ctd' ? tokenSym : pairSym;
-    const _feeWdHtml = _feeWd > 0
-        ? `<div class="ob-tip-feewd">💸 Fee WD <b>${_feeWdLabel}</b>: <b class="ob-tip-feewd-val">${_feeWd.toFixed(3)}$</b></div>`
+    const _cexFee1  = parseFloat(el.dataset.cexFee1) || 0;
+    const _cexFee2  = parseFloat(el.dataset.cexFee2) || 0;
+    const _feeWd    = parseFloat(el.dataset.feeWd) || (ob ? (dir === 'ctd' ? (ob.feeWdCtD || 0) : (ob.feeWdDtC || 0)) : 0);
+    const _totalFee = parseFloat(el.dataset.totalFee) || (_cexFee1 + _cexFee2 + _feeWd);
+    const _buyLabel  = dir === 'ctd' ? `Fee Beli ${tokenSym} (CEX)` : `Fee Beli ${pairSym} (CEX)`;
+    const _sellLabel = dir === 'ctd' ? `Fee Jual ${pairSym} (CEX)` : `Fee Jual ${tokenSym} (CEX)`;
+    const _feeDetailHtml = (_cexFee1 > 0 || _cexFee2 > 0 || _feeWd > 0)
+        ? `<div class="ob-tip-fee-detail">${_cexFee1 > 0 ? `
+            <div class="ob-tip-fee-row"><span class="ob-tip-lbl">${_buyLabel}</span><span class="ob-tip-feewd-val">-${_cexFee1.toFixed(3)}$</span></div>` : ''}${_cexFee2 > 0 ? `
+            <div class="ob-tip-fee-row"><span class="ob-tip-lbl">${_sellLabel}</span><span class="ob-tip-feewd-val">-${_cexFee2.toFixed(3)}$</span></div>` : ''}${_feeWd > 0 ? `
+            <div class="ob-tip-fee-row"><span class="ob-tip-lbl">Fee WD ${_feeWdLabel}</span><span class="ob-tip-feewd-val">-${_feeWd.toFixed(3)}$</span></div>` : ''}
+            <div class="ob-tip-fee-row ob-tip-fee-total"><span class="ob-tip-lbl">Total Fee</span><span class="ob-tip-feewd-val">-${_totalFee.toFixed(3)}$</span></div>
+          </div>`
         : '';
     const infoHeader = `<div class="ob-tip-info">
       <span class="ob-tip-lbl">Token</span> <b>${tokenSym}↔${pairSym}</b>
       &nbsp;·&nbsp; <span class="ob-tip-lbl">CEX</span> <b>${cexLabel}</b>
       &nbsp;·&nbsp; <span class="ob-tip-lbl">DEX</span> <b>${dexName}</b>
       &nbsp;·&nbsp; <span class="ob-tip-lbl">Chain</span> <b>${chainLabel}</b>
-    </div>${_feeWdHtml}`;
+    </div>${_feeDetailHtml}`;
 
     if (!ob || (!ob.asks.length && !ob.bids.length)) {
         tooltip.innerHTML = infoHeader + '<div class="ob-tip-empty">Data orderbook belum tersedia.<br>Tunggu hasil scanning.</div>';
