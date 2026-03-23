@@ -137,7 +137,8 @@ async function scanToken(tok) {
     const isPairStable = _STABLES.has(pairSymbol);
     const feeWdCtD = (typeof getCexFeeWdUsdt === 'function')
         ? getCexFeeWdUsdt(tok.cex, tok.ticker, tok.chain, obToken.askPrice) : 0;
-    const feeWdDtC = (typeof getCexFeeWdUsdt === 'function')
+    // DTC + pair stablecoin: tidak perlu WD stablecoin dari CEX (diasumsikan sudah ada di DEX wallet)
+    const feeWdDtC = isPairStable ? 0 : (typeof getCexFeeWdUsdt === 'function')
         ? getCexFeeWdUsdt(tok.cex, pairSymbol, tok.chain, bidPair || 1) : 0;
 
     // Status WD/DP: tampilkan badge di card
@@ -210,12 +211,10 @@ async function scanToken(tok) {
         if (ctdHdr) ctdHdr.innerHTML = `$${tok.modalCtD}<span class="tbl-status"></span>`;
         if (dtcHdr) dtcHdr.innerHTML = `$${tok.modalDtC}<span class="tbl-status"></span>`;
     }
-    // Helper format fee cell: "wdFee+tradeFee$" jika ada feeWd, "-total$" jika tidak
+    // Helper format fee cell: hanya tampilkan total fee
     function _fmtFeeCell(wdFee, tradeFee) {
-        const total = (wdFee + tradeFee).toFixed(2);
-        return wdFee > 0
-            ? `${total}$[${wdFee.toFixed(2)}$]`
-            : `-${tradeFee.toFixed(2)}$`;
+        const total = wdFee + tradeFee;
+        return `-${total.toFixed(2)}$`;
     }
 
     const diagCtD = diagnoseWei(weiCtD);
@@ -313,7 +312,7 @@ async function scanToken(tok) {
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
             const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : '';
-            if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; }
+            if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; hdrEl.dataset.cexFee1 = r.cexFee1.toFixed(4); hdrEl.dataset.cexFee2 = r.cexFee2.toFixed(4); hdrEl.dataset.feeWd = r.wdFee.toFixed(4); hdrEl.dataset.totalFee = r.totalFee.toFixed(4); }
             if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(dispAskCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
             if (feeEl) { feeEl.textContent = _fmtFeeCell(r.wdFee, r.cexFee1 + r.cexFee2); feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
@@ -373,7 +372,7 @@ async function scanToken(tok) {
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
             const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : '';
-            if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; }
+            if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; hdrEl.dataset.cexFee1 = r.cexFee1.toFixed(4); hdrEl.dataset.cexFee2 = r.cexFee2.toFixed(4); hdrEl.dataset.feeWd = r.wdFee.toFixed(4); hdrEl.dataset.totalFee = r.totalFee.toFixed(4); }
             if (cexEl) { cexEl.textContent = `↓ ${fmtCompact(dispBidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
             if (dexEl) { dexEl.textContent = `↑ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (feeEl) { feeEl.textContent = _fmtFeeCell(r.wdFee, r.cexFee1 + r.cexFee2); feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }

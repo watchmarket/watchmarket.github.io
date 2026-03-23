@@ -2762,6 +2762,31 @@ body.is-scanning .scan-sort-group {
   color: #ffd700;
 }
 
+.ob-tip-fee-detail {
+  margin-top: 6px;
+  padding: 4px 6px;
+  background: rgba(255, 200, 0, 0.08);
+  border-left: 2px solid rgba(255, 200, 0, 0.4);
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.ob-tip-fee-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.75);
+  padding: 1px 0;
+}
+
+.ob-tip-fee-total {
+  border-top: 1px solid rgba(255, 200, 0, 0.3);
+  margin-top: 3px;
+  padding-top: 3px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.9);
+}
+
 /* ══════════════════════════════════════════
    KALKULATOR MODAL
 ══════════════════════════════════════════ */
