@@ -33,9 +33,9 @@ const APP_DEV_CONFIG = {
   telegramGroupId: "-5271018516",
   corsProxy: "https://vercel-proxycors.vercel.app/?url=",
   fees: {
-    indodax: 0.001,
-    mexc: 0.001,
-    gate: 0.002,
+    indodax: 0.002,
+    mexc: 0.0015,
+    gate: 0.0015,
     binance: 0.001,
   },
   defaultMinPnl: 1,
