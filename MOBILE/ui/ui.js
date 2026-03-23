@@ -501,7 +501,7 @@ $('#btnSheetSave').on('click', () => {
     else if (!/^[A-Z0-9]+$/.test(ticker))
         errs.push(['fTicker', 'Symbol TOKEN hanya huruf/angka (A-Z, 0-9)']);
 
-    if (!symbolToken)
+    if (!symbolToken && !isUsdtNoSymbol(cex, ticker))
         errs.push(['fSymbolToken', 'Ticker CEX Token wajib diisi']);
 
     if (!scToken)
