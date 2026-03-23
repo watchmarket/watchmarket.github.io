@@ -40,11 +40,14 @@ function showConfirm(msg, title, labelOk, onOk, onCancel) {
 
 // ─── Settings ────────────────────────────────
 function getAllFilteredTokens() {
-    // Hitung semua token yg lolos filter CEX+chain, termasuk favorit (ignore monitorFavOnly)
+    // Hitung semua token yg lolos filter CEX+chain+pairType, termasuk favorit (ignore monitorFavOnly)
     return getTokens().filter(t => {
         const cexOk = CFG.activeCex.length === 0 || CFG.activeCex.includes(t.cex);
         const chainOk = CFG.activeChains.length === 0 || CFG.activeChains.includes(t.chain);
-        return cexOk && chainOk;
+        const pairTk = (t.tickerPair || 'USDT').toUpperCase();
+        const isStable = STABLE_COINS.has(pairTk);
+        const pairOk = CFG.pairType === 'all' || (CFG.pairType === 'stable' ? isStable : !isStable);
+        return cexOk && chainOk && pairOk;
     });
 }
 
@@ -77,7 +80,26 @@ function renderFilterChips() {
           <img src="icons/chains/${k}.png" class="chip-icon" onerror="this.style.display='none'">
           ${v.label}</span>`;
     }).join(''));
+    // Pair type chips — sync active state
+    document.querySelectorAll('#filterPairTypeChips .pair-type-chip').forEach(el => {
+        const active = el.dataset.val === (CFG.pairType || 'all');
+        el.classList.toggle('on', active);
+        el.style.background = active ? '#365cd3' : '';
+        el.style.color = active ? '#fff' : '';
+    });
 }
+
+function setPairTypeFilter(val) {
+    CFG.pairType = val;
+    _persistCFG();
+    renderFilterChips();
+    if (!scanning) buildMonitorRows();
+    renderTokenList();
+    updateScanCount();
+    const labels = { all: 'Semua pair', stable: 'Pair Stable Coin', non: 'Pair Non-Stable' };
+    showToast(`🔄 Filter pair: ${labels[val]}`);
+}
+
 function toggleFilterChip(el, type) {
     const key = el.dataset.key;
     const arr = type === 'cex' ? CFG.activeCex : CFG.activeChains;
@@ -115,6 +137,7 @@ function loadSettings() {
     try { const s = JSON.parse(localStorage.getItem(LS_SETTINGS)); if (s) Object.assign(CFG, s); } catch { }
     if (!Array.isArray(CFG.activeCex)) CFG.activeCex = [];
     if (!Array.isArray(CFG.activeChains)) CFG.activeChains = [];
+    if (!['all','stable','non'].includes(CFG.pairType)) CFG.pairType = 'all';
     // Migration from old single quoteCount
     if (CFG.quoteCount && !CFG.quoteCountMetax) { CFG.quoteCountMetax = CFG.quoteCount; delete CFG.quoteCount; }
     $('#setUsername').val(CFG.username);
@@ -571,7 +594,10 @@ function renderTokenList() {
     tokens = tokens.filter(t => {
         const cexOk = CFG.activeCex.length === 0 || CFG.activeCex.includes(t.cex);
         const chainOk = CFG.activeChains.length === 0 || CFG.activeChains.includes(t.chain);
-        return cexOk && chainOk;
+        const pairTk = (t.tickerPair || 'USDT').toUpperCase();
+        const isStable = STABLE_COINS.has(pairTk);
+        const pairOk = CFG.pairType === 'all' || (CFG.pairType === 'stable' ? isStable : !isStable);
+        return cexOk && chainOk && pairOk;
     });
     if (tokenSort === 'za') tokens = tokens.sort((a, b) => (b.ticker || '').localeCompare(a.ticker || ''));
     else tokens = tokens.sort((a, b) => (a.ticker || '').localeCompare(b.ticker || ''));
@@ -1020,7 +1046,7 @@ function updateSignalChip(tok, pnl, dir) {
                 <span class="chip-dir ${dirClass}">${dirLabel}</span>
             </div>
             <div class="chip-row-bottom">
-                <span class="chip-ticker">${tok.ticker}</span>
+                <span class="chip-ticker">${tok.ticker}<span class="chip-pair">/${tok.tickerPair || 'USDT'}</span></span>
                 <span class="chip-sep">|</span>
                 <span class="chip-modal">${modalLbl}</span>
                 <span class="chip-sep">|</span>
