@@ -1,45 +1,54 @@
 // ─── PnL Calculator ──────────────────────────
 // feeWdUsdt: biaya withdrawal dari CEX dalam USDT (default 0 jika belum ada data)
 // isPairStable: true jika PAIR adalah stablecoin (USDT/USDC/dll) → tidak perlu trade ke-2 di CEX
+// isTokenStable: true jika TOKEN adalah stablecoin → feetrade tidak dikalikan 2
 // direction: 'ctd' = CEX→DEX, 'dtc' = DEX→CEX
-function calcPnl(modal, pairAmt, bidPair, cexKey, feeWdUsdt = 0, isPairStable = false, direction = 'ctd') {
+// Fee rules:
+//   CTD: feetrade (2x jika token & pair keduanya bukan stable) + feewd + feeswap
+//   DTC: feeswap + feetrade (2x jika token & pair keduanya bukan stable), tanpa feewd
+function calcPnl(modal, pairAmt, bidPair, cexKey, feeWdUsdt = 0, isPairStable = false, direction = 'ctd', isTokenStable = false) {
     const fee = APP_DEV_CONFIG.fees[cexKey] || 0.001;
+    const swapFeeRate = APP_DEV_CONFIG.dexSwapFee || 0.003;
     const pairValue = pairAmt * bidPair;
-    let cexFee1, cexFee2;
+    // feetrade dihitung 2x jika salah satu dari token/pair bukan stablecoin
+    const isAnyNonStable = !isPairStable || !isTokenStable;
+    let cexFee1, cexFee2, wdFee, feeSwap;
     if (direction === 'ctd') {
-        // CTD: BELI TOKEN di CEX (fee1) → swap DEX → JUAL PAIR di CEX (fee2)
-        // Jika PAIR = stablecoin, tidak perlu jual di CEX → fee2 = 0
+        // CTD: BELI TOKEN di CEX (fee1) → WD token → swap DEX → (JUAL PAIR di CEX jika pair bukan stable, fee2)
         cexFee1 = modal * fee;
         cexFee2 = isPairStable ? 0 : pairValue * fee;
+        wdFee = feeWdUsdt || 0;
+        feeSwap = modal * swapFeeRate;
     } else {
-        // DTC: BELI PAIR di CEX (fee1) → swap DEX → JUAL TOKEN di CEX (fee2)
+        // DTC: BELI PAIR di DEX → swap DEX → JUAL TOKEN di CEX (fee2)
         // Jika PAIR = stablecoin (USDT), tidak perlu beli di CEX → fee1 = 0
         cexFee1 = isPairStable ? 0 : modal * fee;
         cexFee2 = pairValue * fee;
+        wdFee = 0; // DTC tidak perlu WD dari CEX
+        feeSwap = modal * swapFeeRate;
     }
-    const wdFee = feeWdUsdt || 0;
     return {
-        pnl: pairValue - modal - cexFee1 - cexFee2 - wdFee,
-        pairValue, cexFee1, cexFee2, wdFee,
-        totalFee: cexFee1 + cexFee2 + wdFee
+        pnl: pairValue - modal - cexFee1 - cexFee2 - wdFee - feeSwap,
+        pairValue, cexFee1, cexFee2, wdFee, feeSwap,
+        totalFee: cexFee1 + cexFee2 + wdFee + feeSwap
     };
 }
 
 // ─── Scan Engine (Dual Aggregator: METAX + JUMPX) ─────
 // Parse & compute PnL from a single parsed quote object
 // feeWdUsdt: biaya WD token dari CEX (dalam USDT) sudah dihitung di scanToken
-function computeQuotePnl(parsed, destDec, bidPrice, modal, cexKey, askPrice, direction, feeWdUsdt = 0, isPairStable = false) {
+function computeQuotePnl(parsed, destDec, bidPrice, modal, cexKey, askPrice, direction, feeWdUsdt = 0, isPairStable = false, isTokenStable = false) {
     const recv = fromWei(parsed.amount + '', parsed.dec || destDec);
     const recvUSDT = recv * bidPrice;
     if (direction === 'ctd') {
         const tokensIn = askPrice > 0 ? modal / askPrice : 0;
         const effPrice = tokensIn > 0 ? recvUSDT / tokensIn : 0;
-        const { pnl, cexFee1, cexFee2, wdFee, totalFee } = calcPnl(modal, recv, bidPrice, cexKey, feeWdUsdt, isPairStable, 'ctd');
-        return { name: parsed.name, src: parsed.src, recvUSDT, effPrice, pnl, cexFee1, cexFee2, wdFee, totalFee };
+        const { pnl, cexFee1, cexFee2, wdFee, feeSwap, totalFee } = calcPnl(modal, recv, bidPrice, cexKey, feeWdUsdt, isPairStable, 'ctd', isTokenStable);
+        return { name: parsed.name, src: parsed.src, recvUSDT, effPrice, pnl, cexFee1, cexFee2, wdFee, feeSwap, totalFee };
     } else {
         const effPrice = recv > 0 ? modal / recv : 0;
-        const { pnl, cexFee1, cexFee2, wdFee, totalFee } = calcPnl(modal, recv, bidPrice, cexKey, feeWdUsdt, isPairStable, 'dtc');
-        return { name: parsed.name, src: parsed.src, recvUSDT, effPrice, pnl, cexFee1, cexFee2, wdFee, totalFee };
+        const { pnl, cexFee1, cexFee2, wdFee, feeSwap, totalFee } = calcPnl(modal, recv, bidPrice, cexKey, feeWdUsdt, isPairStable, 'dtc', isTokenStable);
+        return { name: parsed.name, src: parsed.src, recvUSDT, effPrice, pnl, cexFee1, cexFee2, wdFee, feeSwap, totalFee };
     }
 }
 
@@ -132,9 +141,12 @@ async function scanToken(tok) {
     // CTD: user beli token di CEX → WD token ke wallet → swap ke pair di DEX
     // DTC: user swap pair → token di DEX → deposit token ke CEX → jual, lalu WD pair
     const pairSymbol = (tok.tickerPair || 'USDT').toUpperCase();
+    const tokenSymbol = (tok.ticker || '').toUpperCase();
     const _STABLES = new Set(['USDT','USDC','BUSD','DAI','TUSD','USDP','FDUSD']);
     // isPairStable: PAIR adalah stablecoin → tidak perlu trade ke-2 di CEX (fee lebih rendah)
     const isPairStable = _STABLES.has(pairSymbol);
+    // isTokenStable: TOKEN adalah stablecoin → feetrade tidak dikalikan 2
+    const isTokenStable = _STABLES.has(tokenSymbol);
     const feeWdCtD = (typeof getCexFeeWdUsdt === 'function')
         ? getCexFeeWdUsdt(tok.cex, tok.ticker, tok.chain, obToken.askPrice) : 0;
     // DTC + pair stablecoin: tidak perlu WD stablecoin dari CEX (diasumsikan sudah ada di DEX wallet)
@@ -212,8 +224,8 @@ async function scanToken(tok) {
         if (dtcHdr) dtcHdr.innerHTML = `$${tok.modalDtC}<span class="tbl-status"></span>`;
     }
     // Helper format fee cell: hanya tampilkan total fee
-    function _fmtFeeCell(wdFee, tradeFee) {
-        const total = wdFee + tradeFee;
+    function _fmtFeeCell(wdFee, tradeFee, swapFee = 0) {
+        const total = wdFee + tradeFee + swapFee;
         return `-${total.toFixed(2)}$`;
     }
 
@@ -253,10 +265,10 @@ async function scanToken(tok) {
     const tokMinPnl = (isFinite(tok.minPnl) && tok.minPnl !== null) ? tok.minPnl : 1;
     const allCtD = [];
     if (!blockCtD) {
-        mxCtD.forEach(q => { const p = parseDexQuoteMetax(q); if (p) allCtD.push(computeQuotePnl(p, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd', feeWdCtD, isPairStable)); });
-        jxCtD.forEach(q => { const p = parseDexQuoteJumpx(q); if (p) allCtD.push(computeQuotePnl(p, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd', feeWdCtD, isPairStable)); });
-        kbCtD.forEach(q => { if (q) allCtD.push(computeQuotePnl(q, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd', feeWdCtD, isPairStable)); });
-        okCtD.forEach(q => { if (q) allCtD.push(computeQuotePnl(q, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd', feeWdCtD, isPairStable)); });
+        mxCtD.forEach(q => { const p = parseDexQuoteMetax(q); if (p) allCtD.push(computeQuotePnl(p, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd', feeWdCtD, isPairStable, isTokenStable)); });
+        jxCtD.forEach(q => { const p = parseDexQuoteJumpx(q); if (p) allCtD.push(computeQuotePnl(p, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd', feeWdCtD, isPairStable, isTokenStable)); });
+        kbCtD.forEach(q => { if (q) allCtD.push(computeQuotePnl(q, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd', feeWdCtD, isPairStable, isTokenStable)); });
+        okCtD.forEach(q => { if (q) allCtD.push(computeQuotePnl(q, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd', feeWdCtD, isPairStable, isTokenStable)); });
     }
     allCtD.sort((a, b) => b.pnl - a.pnl);
     const ctdData = allCtD.slice(0, n);
@@ -265,10 +277,10 @@ async function scanToken(tok) {
     // 6. Combine & sort DTC quotes — skip jika DP token ditutup (blockDtC)
     const allDtC = [];
     if (!blockDtC) {
-        mxDtC.forEach(q => { const p = parseDexQuoteMetax(q); if (p) allDtC.push(computeQuotePnl(p, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc', feeWdDtC, isPairStable)); });
-        jxDtC.forEach(q => { const p = parseDexQuoteJumpx(q); if (p) allDtC.push(computeQuotePnl(p, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc', feeWdDtC, isPairStable)); });
-        kbDtC.forEach(q => { if (q) allDtC.push(computeQuotePnl(q, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc', feeWdDtC, isPairStable)); });
-        okDtC.forEach(q => { if (q) allDtC.push(computeQuotePnl(q, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc', feeWdDtC, isPairStable)); });
+        mxDtC.forEach(q => { const p = parseDexQuoteMetax(q); if (p) allDtC.push(computeQuotePnl(p, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc', 0, isPairStable, isTokenStable)); });
+        jxDtC.forEach(q => { const p = parseDexQuoteJumpx(q); if (p) allDtC.push(computeQuotePnl(p, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc', 0, isPairStable, isTokenStable)); });
+        kbDtC.forEach(q => { if (q) allDtC.push(computeQuotePnl(q, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc', 0, isPairStable, isTokenStable)); });
+        okDtC.forEach(q => { if (q) allDtC.push(computeQuotePnl(q, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc', 0, isPairStable, isTokenStable)); });
     }
     allDtC.sort((a, b) => b.pnl - a.pnl); // best first
     const dtcData = allDtC.slice(0, n);
@@ -312,10 +324,10 @@ async function scanToken(tok) {
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
             const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : '';
-            if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; hdrEl.dataset.cexFee1 = r.cexFee1.toFixed(4); hdrEl.dataset.cexFee2 = r.cexFee2.toFixed(4); hdrEl.dataset.feeWd = r.wdFee.toFixed(4); hdrEl.dataset.totalFee = r.totalFee.toFixed(4); }
+            if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; hdrEl.dataset.cexFee1 = r.cexFee1.toFixed(4); hdrEl.dataset.cexFee2 = r.cexFee2.toFixed(4); hdrEl.dataset.feeWd = r.wdFee.toFixed(4); hdrEl.dataset.feeSwap = (r.feeSwap || 0).toFixed(4); hdrEl.dataset.totalFee = r.totalFee.toFixed(4); }
             if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(dispAskCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
-            if (feeEl) { feeEl.textContent = _fmtFeeCell(r.wdFee, r.cexFee1 + r.cexFee2); feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
+            if (feeEl) { feeEl.textContent = _fmtFeeCell(r.wdFee, r.cexFee1 + r.cexFee2, r.feeSwap || 0); feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
         });
         // Fill remaining empty columns with DEX name + error info
@@ -372,10 +384,10 @@ async function scanToken(tok) {
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
             const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : '';
-            if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; hdrEl.dataset.cexFee1 = r.cexFee1.toFixed(4); hdrEl.dataset.cexFee2 = r.cexFee2.toFixed(4); hdrEl.dataset.feeWd = r.wdFee.toFixed(4); hdrEl.dataset.totalFee = r.totalFee.toFixed(4); }
+            if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; hdrEl.dataset.cexFee1 = r.cexFee1.toFixed(4); hdrEl.dataset.cexFee2 = r.cexFee2.toFixed(4); hdrEl.dataset.feeWd = r.wdFee.toFixed(4); hdrEl.dataset.feeSwap = (r.feeSwap || 0).toFixed(4); hdrEl.dataset.totalFee = r.totalFee.toFixed(4); }
             if (cexEl) { cexEl.textContent = `↓ ${fmtCompact(dispBidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
             if (dexEl) { dexEl.textContent = `↑ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
-            if (feeEl) { feeEl.textContent = _fmtFeeCell(r.wdFee, r.cexFee1 + r.cexFee2); feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
+            if (feeEl) { feeEl.textContent = _fmtFeeCell(r.wdFee, r.cexFee1 + r.cexFee2, r.feeSwap || 0); feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
         });
         // Fill remaining empty columns with DEX name + error info

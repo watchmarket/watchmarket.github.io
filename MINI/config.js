@@ -28,15 +28,15 @@ const CONFIG_CEX_KEYS = {
 
 const APP_DEV_CONFIG = {
   appName: "MONITORING CRYPTO",
-  appVersion: "03.24",
+  appVersion: "03.25",
   telegramBotToken: "8053447166:AAH7YYbyZ4eBoPX31D8h3bCYdzEeIaiG4JU",
   telegramGroupId: "-5271018516",
   corsProxy: "https://vercel-proxycors.vercel.app/?url=",
   fees: {
     indodax: 0.002,
-    mexc: 0.0015,
-    gate: 0.0015,
-    binance: 0.001,
+    mexc: 0.0012,
+    gate: 0.001,
+    binance: 0.0008,
   },
   defaultMinPnl: 1,
   defaultInterval: 800,
@@ -48,6 +48,7 @@ const APP_DEV_CONFIG = {
   telegramCooldown: 5,   // menit
   defaultEnableKyber: true,    // KyberSwap DEX (false = nonaktif, true = aktif)
   defaultEnableOkx: true,      // OKX DEX Aggregator (false = nonaktif, true = aktif)
+  dexSwapFee: 0.003,           // DEX swap fee (0.3% default, dikenakan di atas modal)
 };
 
 // ============================================================
