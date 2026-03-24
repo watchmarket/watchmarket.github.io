@@ -29,11 +29,11 @@ const APP_DEV_CONFIG = {
   defaultInterval:        800,
   defaultSseTimeout:      6000,
   defaultQuoteCountMetax: 2,     // 0 = matikan MetaMask SSE
-  defaultQuoteCountJumpx: 2,     // 0 = matikan Jumper/LiFi
-  defaultAutoLevel:       true,  // Auto Level CEX orderbook
+  defaultQuoteCountJumpx: 0,     // 0 = matikan Jumper/LiFi
+  defaultAutoLevel:       false,  // Auto Level CEX orderbook
   defaultLevelCount:      2,     // jumlah level orderbook (1–4)
   defaultEnableKyber:     true,  // KyberSwap DEX
-  defaultEnableOkx:       true,  // OKX DEX Aggregator
+  defaultEnableOkx:       false,  // OKX DEX Aggregator
 };
 
 
