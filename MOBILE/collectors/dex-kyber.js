@@ -47,9 +47,12 @@ async function fetchDexQuotesKyber(chainKey, srcToken, destToken, amountWei, dec
             const resp = await fetch(url, { headers: { 'x-client-id': 'hybridapp' } });
             if (!resp.ok) return [];
             const data = await resp.json();
-            const amountOut = data?.data?.routeSummary?.amountOut;
+            const rs = data?.data?.routeSummary;
+            const amountOut = rs?.amountOut;
             if (!amountOut) return [];
-            const res = [{ amount: parseFloat(amountOut), dec: decOut, name: 'KYBER', src: 'KB' }];
+            // gasUsd: gas cost in USD dari Kyber response (gasInclude=true di URL)
+            const feeSwapUsdt = parseFloat(rs?.gasUsd || rs?.gas || 0) || 0;
+            const res = [{ amount: parseFloat(amountOut), dec: decOut, name: 'KYBER', src: 'KB', feeSwapUsdt }];
             cacheSet(cacheKey, res, 900);
             return res;
       //  }

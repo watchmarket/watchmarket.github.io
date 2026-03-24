@@ -11,6 +11,7 @@ async function _signOkxHmac(secret, message) {
     return btoa(String.fromCharCode(...new Uint8Array(sig)));
 }
 
+
 async function fetchDexQuotesOkx(chainId, srcToken, destToken, amountWei, decOut) {
     if (!isOkxEnabled()) return [];
     const cacheKey = `dex:ox:${chainId}:${srcToken}:${destToken}:${amountWei}`;
@@ -36,9 +37,12 @@ async function fetchDexQuotesOkx(chainId, srcToken, destToken, amountWei, decOut
             });
             if (!resp.ok) return [];
             const data = await resp.json();
-            const toAmt = data?.data?.[0]?.toTokenAmount;
+            const d = data?.data?.[0];
+            const toAmt = d?.toTokenAmount;
             if (!toAmt) return [];
-            return [{ amount: parseFloat(toAmt), dec: decOut, name: 'OKX', src: 'OX' }];
+            // OKX DEX tidak mengembalikan biaya gas yang valid — feeSwapUsdt = 0
+            // Akan di-fallback ke chainGasFallback (eth_gasPrice via RPC proxy) di scan.js
+            return [{ amount: parseFloat(toAmt), dec: decOut, name: 'OKX', src: 'OX', feeSwapUsdt: 0 }];
         } catch { return []; }
     });
 }

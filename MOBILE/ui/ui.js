@@ -834,8 +834,8 @@ function toggleFavorite(id) {
 }
 
 // ─── Monitor Cards Build ──────────────────────
-const MON_CTD_COLOR = '#c0504d'; // merah CEXtoDEX (beli CEX, jual DEX)
-const MON_DTC_COLOR = '#4a9a6a'; // hijau DEXtoCEX (beli DEX, jual CEX)
+const MON_CTD_COLOR = '#4a9a6a'; // hijau CEXtoDEX (beli CEX, jual DEX)
+const MON_DTC_COLOR = '#c0504d'; // merah DEXtoCEX (beli DEX, jual CEX)
 
 // ─── WD/DP Badge HTML (build-time, dari cache) ────────────
 // Dipanggil saat buildMonitorRows & renderTokenList
@@ -1173,20 +1173,24 @@ function showObTooltip(el) {
     const _feeWdLabel = dir === 'ctd' ? tokenSym : pairSym;
     const _cexFee1  = parseFloat(el.dataset.cexFee1) || 0;
     const _cexFee2  = parseFloat(el.dataset.cexFee2) || 0;
-    const _feeWd    = parseFloat(el.dataset.feeWd) || (ob ? (dir === 'ctd' ? (ob.feeWdCtD || 0) : (ob.feeWdDtC || 0)) : 0);
-    const _totalFee = parseFloat(el.dataset.totalFee) || (_cexFee1 + _cexFee2 + _feeWd);
+    const _feeWd    = parseFloat(el.dataset.feeWd) || (ob ? (dir === 'ctd' ? (ob.feeWdCtD || 0) : 0) : 0);
+    const _feeSwap  = parseFloat(el.dataset.feeSwap) || 0;
+    const _totalFee = parseFloat(el.dataset.totalFee) || (_cexFee1 + _cexFee2 + _feeWd + _feeSwap);
     const _buyLabel  = dir === 'ctd' ? `Fee Beli ${tokenSym} (CEX)` : `Fee Beli ${pairSym} (CEX)`;
     const _sellLabel = dir === 'ctd' ? `Fee Jual ${pairSym} (CEX)` : `Fee Jual ${tokenSym} (CEX)`;
-    const _feeDetailHtml = (_cexFee1 > 0 || _cexFee2 > 0 || _feeWd > 0)
+    const _feeDetailHtml = (_cexFee1 > 0 || _cexFee2 > 0 || _feeWd > 0 || _feeSwap > 0)
         ? `<div class="ob-tip-fee-detail">${_cexFee1 > 0 ? `
             <div class="ob-tip-fee-row"><span class="ob-tip-lbl">${_buyLabel}</span><span class="ob-tip-feewd-val">-${_cexFee1.toFixed(3)}$</span></div>` : ''}${_cexFee2 > 0 ? `
             <div class="ob-tip-fee-row"><span class="ob-tip-lbl">${_sellLabel}</span><span class="ob-tip-feewd-val">-${_cexFee2.toFixed(3)}$</span></div>` : ''}${_feeWd > 0 ? `
-            <div class="ob-tip-fee-row"><span class="ob-tip-lbl">Fee WD ${_feeWdLabel}</span><span class="ob-tip-feewd-val">-${_feeWd.toFixed(3)}$</span></div>` : ''}
+            <div class="ob-tip-fee-row"><span class="ob-tip-lbl">Fee WD ${_feeWdLabel}</span><span class="ob-tip-feewd-val">-${_feeWd.toFixed(3)}$</span></div>` : ''}${_feeSwap > 0 ? `
+            <div class="ob-tip-fee-row"><span class="ob-tip-lbl">Fee Swap (DEX)</span><span class="ob-tip-feewd-val">-${_feeSwap.toFixed(3)}$</span></div>` : ''}
             <div class="ob-tip-fee-row ob-tip-fee-total"><span class="ob-tip-lbl">Total Fee</span><span class="ob-tip-feewd-val">-${_totalFee.toFixed(3)}$</span></div>
           </div>`
         : '';
+    // CTD: tampilkan token → pair; DTC: tampilkan pair → token
+    const _infoToken = dir === 'ctd' ? `${tokenSym}→${pairSym}` : `${pairSym}→${tokenSym}`;
     const infoHeader = `<div class="ob-tip-info">
-      <span class="ob-tip-lbl">Token</span> <b>${tokenSym}↔${pairSym}</b>
+      <span class="ob-tip-lbl">Token</span> <b>${_infoToken}</b>
       &nbsp;·&nbsp; <span class="ob-tip-lbl">CEX</span> <b>${cexLabel}</b>
       &nbsp;·&nbsp; <span class="ob-tip-lbl">DEX</span> <b>${dexName}</b>
       &nbsp;·&nbsp; <span class="ob-tip-lbl">Chain</span> <b>${chainLabel}</b>
