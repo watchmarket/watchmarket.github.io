@@ -82,6 +82,8 @@ function parseDexQuoteJumpx(route) {
         const dec = route.toToken?.decimals || 18;
         let name = 'JUMPX';
         try { const t = route.steps?.[0]?.toolDetails?.name; if (t) name = String(t).toUpperCase(); } catch { }
-        return { amount, dec, name, src: 'JX' };
+        // gasCostUSD: total gas cost in USD dari LiFi response
+        const feeSwapUsdt = parseFloat(route.gasCostUSD || 0) || 0;
+        return { amount, dec, name, src: 'JX', feeSwapUsdt };
     } catch { return null; }
 }

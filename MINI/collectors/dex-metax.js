@@ -30,6 +30,13 @@ function parseDexQuoteMetax(q) {
         const dest = q.quote?.destTokenAmount || q.destTokenAmount || '0';
         const dec = q.quote?.destAsset?.decimals || 18;
         const name = (q.quote?.bridgeId || q.bridgeId || 'DEX').toString().toUpperCase();
-        return { amount: parseFloat(dest), dec, name, src: 'MX' };
+        const feeSwapUsdt = parseFloat(
+            q.quote?.gasFee?.amountInUSD ||
+            q.gasFee?.amountInUSD ||
+            q.quote?.totalNetworkFee?.amountInUSD ||
+            q.totalNetworkFee?.amountInUSD ||
+            0
+        ) || 0;
+        return { amount: parseFloat(dest), dec, name, src: 'MX', feeSwapUsdt };
     } catch { return null; }
 }
