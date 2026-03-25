@@ -33,9 +33,10 @@
   --loss: #e63950;
   --warn: #f59e0b;
 
-  /* ─── METAX & JUMPX Colors ─── */
+  /* ─── METAX & JUMPX & BUNGEE Colors ─── */
   --metax-color: #e87122;
   --jumpx-color: #8b5cf6;
+  --bungee-color: #171716;
 
   /* ─── Misc ─── */
   --radius: 16px;
@@ -106,6 +107,18 @@ body {
 .badge-jumpx {
   display: inline-block;
   background: var(--jumpx-color);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: .3px;
+  vertical-align: middle;
+}
+
+.badge-bungee {
+  display: inline-block;
+  background: var(--bungee-color);
   color: #fff;
   font-size: 11px;
   font-weight: 700;
@@ -825,6 +838,12 @@ body {
 .src-tag.ox {
   background: #1a1a1a;
   color: #fff;
+}
+
+.src-tag.bg {
+  background: var(--bungee-color);
+  color: #fff;
+  font-size: 6px;
 }
 
 .mon-sub-table tbody tr {
@@ -1838,6 +1857,13 @@ body.is-scanning .scan-sort-group {
 .settings-grid-3 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.settings-grid-4 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 10px;
   margin-bottom: 4px;
 }
