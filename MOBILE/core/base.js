@@ -16,8 +16,9 @@ let CFG = {
     wallet: '',
     interval: APP_DEV_CONFIG.defaultInterval,
     sseTimeout: APP_DEV_CONFIG.defaultSseTimeout,
-    quoteCountMetax: APP_DEV_CONFIG.defaultQuoteCountMetax,
-    quoteCountJumpx: APP_DEV_CONFIG.defaultQuoteCountJumpx,
+    quoteCountMetax:  APP_DEV_CONFIG.defaultQuoteCountMetax,
+    quoteCountJumpx:  APP_DEV_CONFIG.defaultQuoteCountJumpx,
+    quoteCountBungee: APP_DEV_CONFIG.defaultQuoteCountBungee,
     soundMuted: false,
     activeCex: [],    // [] = semua aktif
     activeChains: [], // [] = semua aktif
@@ -28,13 +29,15 @@ let CFG = {
 function totalQuoteCount() {
     const raw = CFG.quoteCountMetax + CFG.quoteCountJumpx
         + (isKyberEnabled() ? 1 : 0)
-        + (isOkxEnabled() ? 1 : 0);
+        + (isOkxEnabled() ? 1 : 0)
+        + (isBungeeEnabled() ? CFG.quoteCountBungee : 0);
     return Math.min(raw, 4); // maks 4 kolom, tampilkan yg terbaik
 }
 function isJumpxEnabled() { return APP_DEV_CONFIG.defaultQuoteCountJumpx > 0; }
 function isAutoLevelEnabled() { return APP_DEV_CONFIG.defaultAutoLevel !== false; }
 function isKyberEnabled() { return APP_DEV_CONFIG.defaultEnableKyber === true; }
 function isOkxEnabled() { return APP_DEV_CONFIG.defaultEnableOkx === true; }
+function isBungeeEnabled() { return (CFG.quoteCountBungee || 0) > 0; }
 
 // Kembalikan token yang lolos filter CEX+chain, diurutkan sesuai monitorSort
 let monitorSort = 'az'; // 'az' | 'za' | 'rand'

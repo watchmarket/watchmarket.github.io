@@ -230,7 +230,7 @@ async function scanToken(tok) {
     const diagCtD = diagnoseWei(weiCtD);
     const diagDtC = diagnoseWei(weiDtC);
     const chainId = chainCfg.Kode_Chain;
-    const [mxCtD, mxDtC, jxCtD, jxDtC, kbCtD, kbDtC, okCtD, okDtC] = await Promise.all([
+    const [mxCtD, mxDtC, jxCtD, jxDtC, kbCtD, kbDtC, okCtD, okDtC, bgCtD, bgDtC] = await Promise.all([
         fetchDexQuotesMetax(chainId, tok.scToken, pairSc, weiCtD),
         fetchDexQuotesMetax(chainId, pairSc, tok.scToken, weiDtC),
         fetchDexQuotesJumpx(chainId, tok.scToken, pairSc, weiCtD),
@@ -239,13 +239,16 @@ async function scanToken(tok) {
         fetchDexQuotesKyber(tok.chain, pairSc, tok.scToken, weiDtC, tok.decToken, pairDec, 'dtc'),
         fetchDexQuotesOkx(chainId, tok.scToken, pairSc, weiCtD, pairDec),
         fetchDexQuotesOkx(chainId, pairSc, tok.scToken, weiDtC, tok.decToken),
+        fetchDexQuotesBungee(chainId, tok.scToken, pairSc, weiCtD),
+        fetchDexQuotesBungee(chainId, pairSc, tok.scToken, weiDtC),
     ]);
 
     // helper: build list of {name, error} for empty columns
-    function buildMissingLabels(allData, mxRaw, jxRaw, kbRaw, okRaw) {
+    function buildMissingLabels(allData, mxRaw, jxRaw, kbRaw, okRaw, bgRaw) {
         const labels = [];
         const mtIn = allData.filter(r => r.src === 'MX').length;
         const jxIn = allData.filter(r => r.src === 'JX').length;
+        const bgIn = allData.filter(r => r.src === 'BG').length;
         const kbIn = allData.some(r => r.src === 'KB');
         const okIn = allData.some(r => r.src === 'OX');
         for (let i = mtIn; i < CFG.quoteCountMetax; i++)
@@ -256,6 +259,10 @@ async function scanToken(tok) {
             labels.push({ name: 'KYBER', error: kbRaw.length === 0 ? 'NO QUOTE' : 'NO ROUTE' });
         if (isOkxEnabled() && !okIn)
             labels.push({ name: 'OKX', error: okRaw.length === 0 ? 'NO QUOTE' : 'NO ROUTE' });
+        if (isBungeeEnabled()) {
+            for (let i = bgIn; i < CFG.quoteCountBungee; i++)
+                labels.push({ name: 'BUNGEE', error: bgRaw.length === 0 ? 'NO QUOTE' : 'NO ROUTE' });
+        }
         return labels;
     }
 
@@ -270,10 +277,11 @@ async function scanToken(tok) {
         jxCtD.forEach(q => { const p = parseDexQuoteJumpx(q); if (p) allCtD.push(computeQuotePnl(p, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd', feeWdCtD, isPairStable, chainGasFee)); });
         kbCtD.forEach(q => { if (q) allCtD.push(computeQuotePnl(q, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd', feeWdCtD, isPairStable, chainGasFee)); });
         okCtD.forEach(q => { if (q) allCtD.push(computeQuotePnl(q, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd', feeWdCtD, isPairStable, chainGasFee)); });
+        bgCtD.forEach(q => { const p = parseDexQuoteBungee(q); if (p) allCtD.push(computeQuotePnl(p, pairDec, bidPair, modalCtD, tok.cex, askCtD, 'ctd', feeWdCtD, isPairStable, chainGasFee)); });
     }
     allCtD.sort((a, b) => b.pnl - a.pnl);
     const ctdData = allCtD.slice(0, n);
-    const missingCtdLabels = blockCtD ? [] : buildMissingLabels(allCtD, mxCtD, jxCtD, kbCtD, okCtD);
+    const missingCtdLabels = blockCtD ? [] : buildMissingLabels(allCtD, mxCtD, jxCtD, kbCtD, okCtD, bgCtD);
 
     // 6. Combine & sort DTC quotes — skip jika DP token ditutup (blockDtC)
     const allDtC = [];
@@ -282,10 +290,11 @@ async function scanToken(tok) {
         jxDtC.forEach(q => { const p = parseDexQuoteJumpx(q); if (p) allDtC.push(computeQuotePnl(p, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc', 0, isPairStable, chainGasFee)); });
         kbDtC.forEach(q => { if (q) allDtC.push(computeQuotePnl(q, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc', 0, isPairStable, chainGasFee)); });
         okDtC.forEach(q => { if (q) allDtC.push(computeQuotePnl(q, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc', 0, isPairStable, chainGasFee)); });
+        bgDtC.forEach(q => { const p = parseDexQuoteBungee(q); if (p) allDtC.push(computeQuotePnl(p, tok.decToken, bidDtC, modalDtC, tok.cex, askCtD, 'dtc', 0, isPairStable, chainGasFee)); });
     }
     allDtC.sort((a, b) => b.pnl - a.pnl); // best first
     const dtcData = allDtC.slice(0, n);
-    const missingDtcLabels = buildMissingLabels(allDtC, mxDtC, jxDtC, kbDtC, okDtC);
+    const missingDtcLabels = buildMissingLabels(allDtC, mxDtC, jxDtC, kbDtC, okDtC, bgDtC);
 
     // 6. Fill CTD table
     const ctdStatus = els?.ctdStatus;
@@ -324,7 +333,7 @@ async function scanToken(tok) {
             const pnlEl = els?.ctdPnl[i];
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
-            const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : '';
+            const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : r.src === 'BG' ? '<span class="src-tag bg">BG</span>' : '';
             if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; hdrEl.dataset.cexFee1 = r.cexFee1.toFixed(4); hdrEl.dataset.cexFee2 = r.cexFee2.toFixed(4); hdrEl.dataset.feeWd = r.wdFee.toFixed(4); hdrEl.dataset.feeSwap = (r.feeSwap || 0).toFixed(6); hdrEl.dataset.totalFee = r.totalFee.toFixed(6); }
             if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(dispAskCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
@@ -384,7 +393,7 @@ async function scanToken(tok) {
             const pnlEl = els?.dtcPnl[i];
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
-            const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : '';
+            const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : r.src === 'BG' ? '<span class="src-tag bg">BG</span>' : '';
             if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; hdrEl.dataset.cexFee1 = r.cexFee1.toFixed(4); hdrEl.dataset.cexFee2 = r.cexFee2.toFixed(4); hdrEl.dataset.feeWd = r.wdFee.toFixed(4); hdrEl.dataset.feeSwap = (r.feeSwap || 0).toFixed(6); hdrEl.dataset.totalFee = r.totalFee.toFixed(6); }
             if (cexEl) { cexEl.textContent = `↓ ${fmtCompact(dispBidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
             if (dexEl) { dexEl.textContent = `↑ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
@@ -461,7 +470,7 @@ async function sendTelegram(tok, pnl, info) {
     const cexLbl = CONFIG_CEX[tok.cex]?.label || tok.cex;
     const dexName = info?.dexName || 'DEX';
     const dexSrc  = info?.dexSrc  || '';
-    const dexBadge = dexSrc === 'MX' ? ' <code>[MT]</code>' : dexSrc === 'JX' ? ' <code>[JM]</code>' : '';
+    const dexBadge = dexSrc === 'MX' ? ' <code>[MT]</code>' : dexSrc === 'JX' ? ' <code>[JM]</code>' : dexSrc === 'BG' ? ' <code>[BG]</code>' : '';
     const dir   = info?.dir || 'CEX↔DEX';
     const fee   = info?.totalFee != null ? info.totalFee.toFixed(2) : '-';
     const modal = info?.modal ?? tok.modalCtD;

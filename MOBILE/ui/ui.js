@@ -145,6 +145,7 @@ function loadSettings() {
     $('#setInterval').val(CFG.interval);
     $('#setQuoteMetax').val(CFG.quoteCountMetax);
     $('#setQuoteJumpx').val(CFG.quoteCountJumpx);
+    $('#setQuoteBungee').val(CFG.quoteCountBungee);
     // Hide Jumpx settings row if disabled in config
     if (!isJumpxEnabled()) {
         CFG.quoteCountJumpx = 0;
@@ -190,12 +191,15 @@ function _persistCFG() {
 
 // Simpan field non-kritis langsung saat berubah (tanpa toast)
 function _autoSaveFields() {
-    const qMetax = parseInt($('#setQuoteMetax').val());
-    const qJumpx = parseInt($('#setQuoteJumpx').val());
+    const qMetax  = parseInt($('#setQuoteMetax').val());
+    const qJumpx  = parseInt($('#setQuoteJumpx').val());
+    const qBungee = parseInt($('#setQuoteBungee').val());
     if (!isNaN(qMetax) && qMetax >= 1 && qMetax <= 5)
         CFG.quoteCountMetax = qMetax;
     if (isJumpxEnabled() && !isNaN(qJumpx) && qJumpx >= 1 && qJumpx <= 5)
         CFG.quoteCountJumpx = qJumpx;
+    if (!isNaN(qBungee) && qBungee >= 1 && qBungee <= 5)
+        CFG.quoteCountBungee = qBungee;
     CFG.soundMuted = !$('#setSoundMuted').prop('checked'); // centang = suara ON = NOT muted
     CFG.levelCount = Math.min(4, Math.max(1, parseInt($('#setLevelCount').val()) || 2));
     _persistCFG();
@@ -1095,6 +1099,10 @@ $('#setQuoteMetax').on('change', function () {
 $('#setQuoteJumpx').on('change', function () {
     _autoSaveFields();
     showToast('✓ Quote JM tersimpan: ' + $(this).val());
+});
+$('#setQuoteBungee').on('change', function () {
+    _autoSaveFields();
+    showToast('✓ Quote BG tersimpan: ' + $(this).val());
 });
 $('#setLevelCount').on('change', function () {
     const clamped = Math.min(4, Math.max(1, parseInt($(this).val()) || 2));
