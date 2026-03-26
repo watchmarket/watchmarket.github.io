@@ -194,8 +194,8 @@ async function scanToken(tok) {
     const dispBidDtC = alDtC ? alDtC.lastLevelPrice : obToken.bidPrice;
 
     // Simpan dispAsk/dispBid + fee WD ke cache agar tooltip bisa mengaksesnya
-    _obCache[tok.id].dispAsk  = dispAskCtD;
-    _obCache[tok.id].dispBid  = dispBidDtC;
+    _obCache[tok.id].dispAsk  = askCtD;     // weighted avg (sama dgn PNL calc)
+    _obCache[tok.id].dispBid  = bidDtC;     // weighted avg (sama dgn PNL calc)
     _obCache[tok.id].feeWdCtD = feeWdCtD;
     _obCache[tok.id].feeWdDtC = feeWdDtC;
     _obCache[tok.id].pairSym  = pairSymbol;
@@ -303,7 +303,7 @@ async function scanToken(tok) {
     if (!blockCtD && ctdStatus) ctdStatus.textContent = '';
     for (let i = 0; i < n; i++) {
         const cexEl = els?.ctdCex[i];
-        if (cexEl) { cexEl.textContent = blockCtD ? '—' : `↑ ${fmtCompact(dispAskCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
+        if (cexEl) { cexEl.textContent = blockCtD ? '—' : `↑ ${fmtCompact(askCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask'; }
     }
     if (blockCtD) {
         // WD token ditutup → isi semua sel CTD dengan pesan SKIP
@@ -337,7 +337,7 @@ async function scanToken(tok) {
             const sigCls = isSignal ? ' col-signal' : '';
             const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : r.src === 'BG' ? '<span class="src-tag bg">BG</span>' : '';
             if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; hdrEl.dataset.cexFee1 = r.cexFee1.toFixed(4); hdrEl.dataset.cexFee2 = r.cexFee2.toFixed(4); hdrEl.dataset.feeWd = r.wdFee.toFixed(4); hdrEl.dataset.feeSwap = (r.feeSwap || 0).toFixed(6); hdrEl.dataset.totalFee = r.totalFee.toFixed(6); hdrEl.dataset.pnlKotor = (r.pnlKotor || 0).toFixed(4); hdrEl.dataset.pnlBersih = r.pnl.toFixed(4); }
-            if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(dispAskCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
+            if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(askCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
             if (feeEl) { feeEl.textContent = _fmtFeeCell(r.wdFee, r.cexFee1 + r.cexFee2, r.feeSwap || 0); feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
@@ -363,7 +363,7 @@ async function scanToken(tok) {
     if (!blockDtC && dtcStatus) dtcStatus.textContent = '';
     for (let i = 0; i < n; i++) {
         const cexEl = els?.dtcCex[i];
-        if (cexEl) { cexEl.textContent = blockDtC ? '—' : `↓ ${fmtCompact(dispBidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid'; }
+        if (cexEl) { cexEl.textContent = blockDtC ? '—' : `↓ ${fmtCompact(bidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid'; }
     }
     if (blockDtC) {
         // DP token ditutup → isi semua sel DTC dengan pesan SKIP
@@ -397,7 +397,7 @@ async function scanToken(tok) {
             const sigCls = isSignal ? ' col-signal' : '';
             const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : r.src === 'BG' ? '<span class="src-tag bg">BG</span>' : '';
             if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; hdrEl.dataset.cexFee1 = r.cexFee1.toFixed(4); hdrEl.dataset.cexFee2 = r.cexFee2.toFixed(4); hdrEl.dataset.feeWd = r.wdFee.toFixed(4); hdrEl.dataset.feeSwap = (r.feeSwap || 0).toFixed(6); hdrEl.dataset.totalFee = r.totalFee.toFixed(6); hdrEl.dataset.pnlKotor = (r.pnlKotor || 0).toFixed(4); hdrEl.dataset.pnlBersih = r.pnl.toFixed(4); }
-            if (cexEl) { cexEl.textContent = `↓ ${fmtCompact(dispBidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
+            if (cexEl) { cexEl.textContent = `↓ ${fmtCompact(bidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
             if (dexEl) { dexEl.textContent = `↑ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (feeEl) { feeEl.textContent = _fmtFeeCell(r.wdFee, r.cexFee1 + r.cexFee2, r.feeSwap || 0); feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
             if (pnlEl) { const cls = r.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'; pnlEl.textContent = `${fmtPnl(r.pnl)}$`; pnlEl.className = `mon-dex-cell mc-pnl ${cls}` + sigCls; }
@@ -439,8 +439,8 @@ async function scanToken(tok) {
             dtcSignals,
             modalCtD:     tok.modalCtD,
             modalDtC:     tok.modalDtC,
-            buyPriceCtD:  dispAskCtD,                       // harga beli CEX (CTD)
-            sellPriceDtC: dispBidDtC,                       // harga jual CEX (DTC)
+            buyPriceCtD:  askCtD,                           // harga beli rata-rata CEX (CTD) — sama dgn yg dipakai PNL
+            sellPriceDtC: bidDtC,                           // harga jual rata-rata CEX (DTC) — sama dgn yg dipakai PNL
         };
         sendTelegram(tok, best, tgInfo);
     } else {

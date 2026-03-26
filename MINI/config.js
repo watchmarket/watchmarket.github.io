@@ -27,7 +27,7 @@ const APP_DEV_CONFIG = {
 
   defaultMinPnl: 1,
   defaultInterval: 800,
-  defaultSseTimeout: 6000,
+  defaultSseTimeout: 4000,
   defaultQuoteCountMetax: 2,     // 0 = matikan MetaMask SSE
   defaultQuoteCountBungee: 2,    // jumlah route Bungee (1–4), 0 = matikan Bungee
   defaultLevelCount: 2,     // jumlah level orderbook (1–4)
@@ -36,7 +36,7 @@ const APP_DEV_CONFIG = {
   defaultEnableOkx: true,  // OKX DEX Aggregator
   defaultAutoLevel: true,  // Auto Level CEX orderbook
   defaultQuoteCountJumpx: 2,     // 0 = matikan Jumper/LiFi
-  scanBatchSize: 5,     // jumlah koin yang di-scan paralel per batch
+  scanBatchSize: 10,     // jumlah koin yang di-scan paralel per batch
   maxDexDisplay: 5,     // jumlah kolom DEX yang tampil di hasil scanning (maks = jumlah DEX aktif)
 
   bungeeApiKey: "71XdjSawshaeie5DeH5b9avPjaoVtoOc2g5ZZx1d",

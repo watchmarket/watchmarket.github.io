@@ -884,6 +884,10 @@ function _wdpIcons(status, walletFetched, cexKey) {
 function buildMonitorRows(tokenList) {
     const tokens = tokenList || getFilteredTokens();
     const monitorList = document.getElementById('monitorList');
+    // Hapus signal chips lama karena card akan di-rebuild (data di-reset)
+    _clearAllSignalChips();
+    signalCache = [];
+    updateNoSignalNotice();
     if (!tokens.length) {
         monitorList.innerHTML = '<div class="token-list-empty">Tidak ada token. Tambahkan KOIN di menu DATA KOIN.</div>';
         return;
