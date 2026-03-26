@@ -682,7 +682,7 @@ async function runScan() {
         _chainGasEstimateUsdt[id] = await fetchChainGasEstimateUsdt(id);
     }));
 
-    const BATCH_SIZE = 8; // scan 8 koin paralel sekaligus
+    const BATCH_SIZE = APP_DEV_CONFIG.scanBatchSize || 8;
     while (!scanAbort) {
         _scanRound++;
         // Clear orderbook cache to free memory each round

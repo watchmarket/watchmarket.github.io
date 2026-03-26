@@ -31,7 +31,7 @@ function totalQuoteCount() {
         + (isKyberEnabled() ? 1 : 0)
         + (isOkxEnabled() ? 1 : 0)
         + (isBungeeEnabled() ? CFG.quoteCountBungee : 0);
-    return Math.min(raw, 4); // maks 4 kolom, tampilkan yg terbaik
+    return Math.min(raw, APP_DEV_CONFIG.maxDexDisplay || 4);
 }
 function isJumpxEnabled() { return APP_DEV_CONFIG.defaultQuoteCountJumpx > 0; }
 function isAutoLevelEnabled() { return APP_DEV_CONFIG.defaultAutoLevel !== false; }
