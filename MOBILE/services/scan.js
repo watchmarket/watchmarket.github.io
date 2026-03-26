@@ -22,8 +22,10 @@ function calcPnl(modal, pairAmt, bidPair, cexKey, feeWdUsdt = 0, isPairStable = 
         wdFee = 0;
     }
     const feeSwap = feeSwapUsdt || 0;
+    const pnlKotor = pairValue - modal;
     return {
-        pnl: pairValue - modal - cexFee1 - cexFee2 - wdFee - feeSwap,
+        pnl: pnlKotor - cexFee1 - cexFee2 - wdFee - feeSwap,
+        pnlKotor,
         pairValue, cexFee1, cexFee2, wdFee, feeSwap,
         totalFee: cexFee1 + cexFee2 + wdFee + feeSwap
     };
@@ -44,12 +46,12 @@ function computeQuotePnl(parsed, destDec, bidPrice, modal, cexKey, askPrice, dir
     if (direction === 'ctd') {
         const tokensIn = askPrice > 0 ? modal / askPrice : 0;
         const effPrice = tokensIn > 0 ? recvUSDT / tokensIn : 0;
-        const { pnl, cexFee1, cexFee2, wdFee, feeSwap, totalFee } = calcPnl(modal, recv, bidPrice, cexKey, feeWdUsdt, isPairStable, 'ctd', feeSwapUsdt);
-        return { name: parsed.name, src: parsed.src, recvUSDT, effPrice, pnl, cexFee1, cexFee2, wdFee, feeSwap, totalFee };
+        const { pnl, pnlKotor, cexFee1, cexFee2, wdFee, feeSwap, totalFee } = calcPnl(modal, recv, bidPrice, cexKey, feeWdUsdt, isPairStable, 'ctd', feeSwapUsdt);
+        return { name: parsed.name, src: parsed.src, recvUSDT, effPrice, pnl, pnlKotor, cexFee1, cexFee2, wdFee, feeSwap, totalFee };
     } else {
         const effPrice = recv > 0 ? modal / recv : 0;
-        const { pnl, cexFee1, cexFee2, wdFee, feeSwap, totalFee } = calcPnl(modal, recv, bidPrice, cexKey, feeWdUsdt, isPairStable, 'dtc', feeSwapUsdt);
-        return { name: parsed.name, src: parsed.src, recvUSDT, effPrice, pnl, cexFee1, cexFee2, wdFee, feeSwap, totalFee };
+        const { pnl, pnlKotor, cexFee1, cexFee2, wdFee, feeSwap, totalFee } = calcPnl(modal, recv, bidPrice, cexKey, feeWdUsdt, isPairStable, 'dtc', feeSwapUsdt);
+        return { name: parsed.name, src: parsed.src, recvUSDT, effPrice, pnl, pnlKotor, cexFee1, cexFee2, wdFee, feeSwap, totalFee };
     }
 }
 
@@ -334,7 +336,7 @@ async function scanToken(tok) {
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
             const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : r.src === 'BG' ? '<span class="src-tag bg">BG</span>' : '';
-            if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; hdrEl.dataset.cexFee1 = r.cexFee1.toFixed(4); hdrEl.dataset.cexFee2 = r.cexFee2.toFixed(4); hdrEl.dataset.feeWd = r.wdFee.toFixed(4); hdrEl.dataset.feeSwap = (r.feeSwap || 0).toFixed(6); hdrEl.dataset.totalFee = r.totalFee.toFixed(6); }
+            if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; hdrEl.dataset.cexFee1 = r.cexFee1.toFixed(4); hdrEl.dataset.cexFee2 = r.cexFee2.toFixed(4); hdrEl.dataset.feeWd = r.wdFee.toFixed(4); hdrEl.dataset.feeSwap = (r.feeSwap || 0).toFixed(6); hdrEl.dataset.totalFee = r.totalFee.toFixed(6); hdrEl.dataset.pnlKotor = (r.pnlKotor || 0).toFixed(4); hdrEl.dataset.pnlBersih = r.pnl.toFixed(4); }
             if (cexEl) { cexEl.textContent = `↑ ${fmtCompact(dispAskCtD)}$`; cexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (dexEl) { dexEl.textContent = `↓ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
             if (feeEl) { feeEl.textContent = _fmtFeeCell(r.wdFee, r.cexFee1 + r.cexFee2, r.feeSwap || 0); feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
@@ -394,7 +396,7 @@ async function scanToken(tok) {
             const isSignal = r.pnl >= tokMinPnl;
             const sigCls = isSignal ? ' col-signal' : '';
             const srcTag = r.src === 'MX' ? '<span class="src-tag mx">MT</span>' : r.src === 'JX' ? '<span class="src-tag jx">JM</span>' : r.src === 'BG' ? '<span class="src-tag bg">BG</span>' : '';
-            if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; hdrEl.dataset.cexFee1 = r.cexFee1.toFixed(4); hdrEl.dataset.cexFee2 = r.cexFee2.toFixed(4); hdrEl.dataset.feeWd = r.wdFee.toFixed(4); hdrEl.dataset.feeSwap = (r.feeSwap || 0).toFixed(6); hdrEl.dataset.totalFee = r.totalFee.toFixed(6); }
+            if (hdrEl) { hdrEl.innerHTML = (srcTag ? srcTag + ' ' : '') + r.name; hdrEl.className = 'mon-dex-hdr'; hdrEl.dataset.effprice = r.effPrice; hdrEl.dataset.cexFee1 = r.cexFee1.toFixed(4); hdrEl.dataset.cexFee2 = r.cexFee2.toFixed(4); hdrEl.dataset.feeWd = r.wdFee.toFixed(4); hdrEl.dataset.feeSwap = (r.feeSwap || 0).toFixed(6); hdrEl.dataset.totalFee = r.totalFee.toFixed(6); hdrEl.dataset.pnlKotor = (r.pnlKotor || 0).toFixed(4); hdrEl.dataset.pnlBersih = r.pnl.toFixed(4); }
             if (cexEl) { cexEl.textContent = `↓ ${fmtCompact(dispBidDtC)}$`; cexEl.className = 'mon-dex-cell mc-bid' + sigCls; }
             if (dexEl) { dexEl.textContent = `↑ ${fmtCompact(r.effPrice)}$`; dexEl.className = 'mon-dex-cell mc-ask' + sigCls; }
             if (feeEl) { feeEl.textContent = _fmtFeeCell(r.wdFee, r.cexFee1 + r.cexFee2, r.feeSwap || 0); feeEl.className = 'mon-dex-cell mc-recv' + sigCls; }
@@ -422,19 +424,24 @@ async function scanToken(tok) {
     const bestCtD = (!blockCtD && ctdData.length) ? ctdData[0].pnl : -999;
     const bestDtC = (!blockDtC && dtcData.length) ? dtcData[0].pnl : -999;
     const best = Math.max(bestCtD, bestDtC);
-    const isCtd = bestCtD >= bestDtC;
-    const bestDir = isCtd ? 'CTD' : 'DTC';
-    updateSignalChip(tok, best, bestDir);
+    // Update chip per sinyal profitable, masing-masing arah
+    const ctdProfit = !blockCtD ? ctdData.filter(r => r.pnl >= tokMinPnl) : [];
+    const dtcProfit = !blockDtC ? dtcData.filter(r => r.pnl >= tokMinPnl) : [];
+    updateSignalChips(tok, ctdProfit, 'CTD');
+    updateSignalChips(tok, dtcProfit, 'DTC');
     if (best >= tokMinPnl) {
         card.classList.add('has-signal');
-        const bestRow = isCtd ? ctdData[0] : dtcData[0];
-        const tgInfo = bestRow ? {
-            dexName: bestRow.name,
-            dexSrc: bestRow.src,
-            totalFee: bestRow.totalFee,
-            modal: isCtd ? tok.modalCtD : tok.modalDtC,
-            dir: isCtd ? 'CEX→DEX' : 'DEX→CEX',
-        } : null;
+        // Kumpulkan SEMUA baris yang memenuhi minPnl, dari kedua arah
+        const ctdSignals = ctdData.filter(r => r.pnl >= tokMinPnl);
+        const dtcSignals = dtcData.filter(r => r.pnl >= tokMinPnl);
+        const tgInfo = {
+            ctdSignals,
+            dtcSignals,
+            modalCtD:     tok.modalCtD,
+            modalDtC:     tok.modalDtC,
+            buyPriceCtD:  dispAskCtD,                       // harga beli CEX (CTD)
+            sellPriceDtC: dispBidDtC,                       // harga jual CEX (DTC)
+        };
         sendTelegram(tok, best, tgInfo);
     } else {
         card.classList.remove('has-signal');
@@ -456,7 +463,6 @@ function setCardStatus(card, msg) {
 }
 
 // ─── Telegram + Android Notification ─────────────────────────────────────
-// Cooldown berlaku untuk keduanya (Telegram & Android bridge)
 async function sendTelegram(tok, pnl, info) {
     const now = Date.now();
     const last = tgCooldown.get(tok.id) || 0;
@@ -464,49 +470,152 @@ async function sendTelegram(tok, pnl, info) {
     tgCooldown.set(tok.id, now);
     playSignalSound();
 
-    const appName = APP_DEV_CONFIG.appName || 'MONITORING PRICE';
-    const appVer  = APP_DEV_CONFIG.appVersion ? ' v' + APP_DEV_CONFIG.appVersion : '';
-    const chain  = CONFIG_CHAINS[tok.chain]?.label || tok.chain.toUpperCase();
-    const cexLbl = CONFIG_CEX[tok.cex]?.label || tok.cex;
-    const dexName = info?.dexName || 'DEX';
-    const dexSrc  = info?.dexSrc  || '';
-    const dexBadge = dexSrc === 'MX' ? ' <code>[MT]</code>' : dexSrc === 'JX' ? ' <code>[JM]</code>' : dexSrc === 'BG' ? ' <code>[BG]</code>' : '';
-    const dir   = info?.dir || 'CEX↔DEX';
-    const fee   = info?.totalFee != null ? info.totalFee.toFixed(2) : '-';
-    const modal = info?.modal ?? tok.modalCtD;
-    const pairLbl = tok.tickerPair && tok.tickerPair !== tok.ticker ? tok.tickerPair : tok.ticker;
-    const wallet = CFG.wallet
-        ? CFG.wallet.slice(0, 10) + '.....' + CFG.wallet.slice(-10)
-        : '-';
-    const pnlSign = pnl >= 0 ? '+' : '';
-    const dirArrow = dir === 'CEX→DEX' ? '⬆️' : '⬇️';
-    const esc = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const appName  = APP_DEV_CONFIG.appName || 'MONITORING PRICE';
+    const appVer   = APP_DEV_CONFIG.appVersion ? ' v' + APP_DEV_CONFIG.appVersion : '';
+    const chain    = CONFIG_CHAINS[tok.chain]?.label || tok.chain.toUpperCase();
+    const cexLbl   = CONFIG_CEX[tok.cex]?.label || tok.cex;
+    const pairLbl  = tok.tickerPair && tok.tickerPair !== tok.ticker ? tok.tickerPair : tok.ticker;
+    const wallet   = CFG.wallet ? CFG.wallet.slice(0, 10) + '.....' + CFG.wallet.slice(-10) : '-';
+    const pnlSign  = pnl >= 0 ? '+' : '';
+    const esc      = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const fmtP     = (p) => p > 0 ? (p < 0.0001 ? p.toExponential(3) : p < 1 ? p.toFixed(6) : p < 1000 ? p.toFixed(4) : p.toFixed(2)) + '$' : '-';
+    const fmtPnl2  = (v) => (v >= 0 ? '+' : '') + v.toFixed(2) + '$';
 
-    // ── Android native notification (via WebView JS Bridge) ──────────────
+    const ctdSignals  = info?.ctdSignals  || [];
+    const dtcSignals  = info?.dtcSignals  || [];
+    const modalCtD    = info?.modalCtD    ?? tok.modalCtD;
+    const modalDtC    = info?.modalDtC    ?? tok.modalDtC;
+    const buyPriceCtD = info?.buyPriceCtD || 0;   // harga ask CEX untuk CTD
+    const sellPriceDtC = info?.sellPriceDtC || 0; // harga bid CEX untuk DTC
+
+    // ── Android notification ──────────────────────────────────────────────
     if (window.AndroidBridge) {
         const title = `🟢 ${appName} — SIGNAL: ${tok.ticker}↔${pairLbl}`;
-        const body = `${cexLbl} ➜ ${dexName} [${chain}] [${dir}]\nPnL: ${pnlSign}${pnl.toFixed(2)}$  |  Modal: $${modal}`;
+        const body  = `${cexLbl} [${chain}]  PnL: ${pnlSign}${pnl.toFixed(2)}$`;
         window.AndroidBridge.showNotification(title, body);
     }
 
-    // ── Telegram ──────────────────────────────────────────────────────────
     if (!APP_DEV_CONFIG.telegramBotToken || APP_DEV_CONFIG.telegramBotToken.length < 20) return;
+
+    // ── Helper links ──────────────────────────────────────────────────────
+    const chainCfg2   = CONFIG_CHAINS[tok.chain];
+    const chainId2    = chainCfg2?.Kode_Chain || '';
+    const _pairSc     = tok.scPair || chainCfg2?.USDT_SC || '';
+    const _kyberChain = { 56:'bnb', 1:'ethereum', 137:'polygon', 42161:'arbitrum', 8453:'base' }[chainId2] || 'bnb';
+    const _tradeSym   = tok.symbolToken || (tok.ticker + 'USDT');
+
+    const _tradeLink = ({ binance:`https://www.binance.com/en/trade/${_tradeSym}`,
+        gate:`https://www.gate.io/trade/${_tradeSym}`, mexc:`https://www.mexc.com/exchange/${_tradeSym}`,
+        indodax:`https://indodax.com/market/${tok.symbolToken||tok.ticker.toLowerCase()+'idr'}` })[tok.cex] || '';
+
+    function _swapLink(_src, fromSc, toSc, dexName) {
+        const n           = (dexName || '').toLowerCase();
+        const _sushiChain = { 56:'bsc', 1:'ethereum', 137:'polygon', 42161:'arbitrum', 8453:'base' }[chainId2] || 'bsc';
+        const _ooChain    = { 56:'bsc', 1:'eth',      137:'polygon', 42161:'arbitrum', 8453:'base' }[chainId2] || 'bsc';
+        const _uniChain   = { 56:'bnb', 1:'ethereum', 137:'polygon', 42161:'arbitrum', 8453:'base' }[chainId2] || 'bnb';
+        const from = fromSc.toLowerCase();
+        const to   = toSc.toLowerCase();
+        // ── Deteksi dari nama DEX (lebih akurat dari src) ─────────────────────
+        if (/^0x\b|0x protocol/i.test(n))
+            return `https://matcha.xyz/trade?chainId=${chainId2}&sellToken=${fromSc}&buyToken=${toSc}`;
+        if (/1inch/i.test(n))
+            return `https://1inch.io/swap?src=${chainId2}:${from}&dst=${chainId2}:${to}`;
+        if (/kyber/i.test(n))
+            return `https://kyberswap.com/swap/${_kyberChain}/${fromSc}-to-${toSc}`;
+        if (/openocean|open.ocean/i.test(n))
+            return `https://app.openocean.finance/swap/${_ooChain}/${fromSc}/${toSc}`;
+        if (/sushi/i.test(n))
+            return `https://www.sushi.com/${_sushiChain}/swap?token0=${fromSc}&token1=${toSc}`;
+        if (/pancake/i.test(n))
+            return `https://pancakeswap.finance/swap?inputCurrency=${fromSc}&outputCurrency=${toSc}`;
+        if (/uniswap|uni.v/i.test(n))
+            return `https://app.uniswap.org/swap?inputCurrency=${fromSc}&outputCurrency=${toSc}&chain=${_uniChain}`;
+        if (/apeswap/i.test(n))
+            return `https://app.apeswap.finance/swap?inputCurrency=${fromSc}&outputCurrency=${toSc}`;
+        if (/biswap/i.test(n))
+            return `https://exchange.biswap.org/swap?inputCurrency=${fromSc}&outputCurrency=${toSc}`;
+        if (/camelot/i.test(n))
+            return `https://app.camelot.exchange/swap?inputCurrency=${fromSc}&outputCurrency=${toSc}`;
+        if (/aerodrome/i.test(n))
+            return `https://aerodrome.finance/swap?from=${fromSc}&to=${toSc}`;
+        if (/okx|okdex/i.test(n))
+            return `https://www.okx.com/web3/dex-swap?inputChain=${chainId2}&inputCurrency=${fromSc}&outputChain=${chainId2}&outputCurrency=${toSc}`;
+        // ── Fallback: DEX tidak dikenal → aggregator netral ───────────────────
+        return `https://jumper.exchange/?fromChain=${chainId2}&toChain=${chainId2}&fromToken=${fromSc}&toToken=${toSc}`;
+    }
+    function _wdLink(ticker) {
+        return ({ binance:`https://www.binance.com/en/my/wallet/account/main/withdrawal/crypto/${ticker}`,
+            gate:`https://www.gate.io/myaccount/withdraw/${ticker}`,
+            mexc:`https://www.mexc.com/assets/withdraw?currency=${ticker}`,
+            indodax:`https://indodax.com/account/withdraw/idr` })[tok.cex] || '';
+    }
+    function _dpLink(ticker) {
+        return ({ binance:`https://www.binance.com/en/my/wallet/account/main/deposit/crypto/${ticker}`,
+            gate:`https://www.gate.io/myaccount/deposit/${ticker}`,
+            mexc:`https://www.mexc.com/assets/deposit?currency=${ticker}`,
+            indodax:`https://indodax.com/account/deposit/idr` })[tok.cex] || '';
+    }
+    function _lnk(url, txt) { return url ? `<a href="${url}">${txt}</a>` : txt; }
+    function _badge(src) { return src==='MX'?'[MT]':src==='JX'?'[JM]':src==='BG'?'[BG]':src==='KB'?'[KB]':''; }
+
+    // ── Build one section per arah yang ada signalnya ─────────────────────
+    function _section(signals, dir, modal, cexPrice) {
+        if (!signals.length) return '';
+        const arrow    = dir === 'CTD' ? '⬆️' : '⬇️';
+        const dirLabel = dir === 'CTD' ? 'CEX→DEX' : 'DEX→CEX';
+        const fromSc   = dir === 'CTD' ? tok.scToken : _pairSc;
+        const toSc     = dir === 'CTD' ? _pairSc     : tok.scToken;
+        // CTD: TOKEN ⇄ PAIR  |  DTC: PAIR ⇄ TOKEN
+        const coinPair = dir === 'CTD'
+            ? `${esc(tok.ticker)} ⇄ ${esc(pairLbl)}`
+            : `${esc(pairLbl)} ⇄ ${esc(tok.ticker)}`;
+        // WD/DP
+        const wdTk = dir === 'CTD' ? tok.ticker : pairLbl;
+        const dpTk = dir === 'CTD' ? pairLbl    : tok.ticker;
+        const wdPart = _lnk(_wdLink(wdTk), `WD ${esc(wdTk)}`);
+        const dpPart = _lnk(_dpLink(dpTk), `DP ${esc(dpTk)}`);
+        const wdLine = dir === 'CTD' ? `💳 ${wdPart} | ${dpPart}` : `💳 ${dpPart} | ${wdPart}`;
+
+        const cexTxt = _tradeLink ? _lnk(_tradeLink, esc(cexLbl).toUpperCase()) : esc(cexLbl).toUpperCase();
+
+        // Tiap DEX signal = satu blok ringkas
+        const dexBlocks = signals.map(r => {
+            const badge   = _badge(r.src);
+            const dexLink = _swapLink(r.src, fromSc, toSc, r.name);
+            const dexTxt  = _lnk(dexLink, `${badge ? badge + ' ' : ''}${esc(r.name)}`);
+            // CTD: beli di CEX (cexPrice), jual di DEX (effPrice)
+            // DTC: beli di DEX (effPrice), jual di CEX (cexPrice)
+            const buyPr  = dir === 'CTD' ? cexPrice    : r.effPrice;
+            const sellPr = dir === 'CTD' ? r.effPrice  : cexPrice;
+            const bruto  = r.pnlKotor != null ? fmtPnl2(r.pnlKotor) : '-';
+            const tradeFlow = dir === 'CTD' ? `${cexTxt} -> ${dexTxt}` : `${dexTxt} -> ${cexTxt}`;
+            return `🏦 ${tradeFlow}
+💲 Buy:${fmtP(buyPr)} ➜ Sell:${fmtP(sellPr)}
+💵 Modal:$${modal}  |  💰 PNL NET : <b>${fmtPnl2(r.pnl)}</b>
+🔄 PNL BRUTO :${bruto} | FEE ALL:-$${r.totalFee.toFixed(2)}`;
+        }).join('\n┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄\n');
+
+        return `${arrow} <b>${coinPair}</b>  [ <i>${dirLabel}</i> ]
+${dexBlocks}
+${wdLine}`;
+    }
+
+    const _ctdSec = _section(ctdSignals, 'CTD', modalCtD, buyPriceCtD);
+    const _dtcSec = _section(dtcSignals, 'DTC', modalDtC, sellPriceDtC);
+    const _body   = [_ctdSec, _dtcSec].filter(Boolean).join('\n━━━\n');
 
     const msg =
 `🟢 <b>${esc(appName)}${appVer}</b>
 👤 @${esc(CFG.username || 'user')}  •  🔗 <b>${esc(chain)}</b>
 ━━━━━━━━━━━━━━━
-🪙 <b>${esc(tok.ticker)} ⇄ ${esc(pairLbl)}</b> [ ${dirArrow} <i>${esc(dir)}</i> ]
-🏦 ${esc(cexLbl).toUpperCase()} ➜ <b>${esc(dexName).toUpperCase()}</b>${dexBadge}
-💵 Modal : $${esc(modal)}
-💰 PnL : <b>${pnlSign}${pnl.toFixed(2)}$</b> | 💸 Fee  :  -$${esc(fee)}
+${_body}
 ━━━━━━━━━━━━━━━
 👛 <code>${esc(wallet)}</code>`;
 
     try {
         await fetch(`https://api.telegram.org/bot${APP_DEV_CONFIG.telegramBotToken}/sendMessage`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: APP_DEV_CONFIG.telegramGroupId, text: msg, parse_mode: 'HTML' })
+            body: JSON.stringify({ chat_id: APP_DEV_CONFIG.telegramGroupId, text: msg, parse_mode: 'HTML', disable_web_page_preview: true })
         });
     } catch { }
 }

@@ -9,7 +9,7 @@
 // ============================================================
 const APP_DEV_CONFIG = {
   appName:    "MONITORING CRYPTO",
-  appVersion: "03.25",
+  appVersion: "03.27",
 
   telegramBotToken:  "8053447166:AAH7YYbyZ4eBoPX31D8h3bCYdzEeIaiG4JU",
   telegramGroupId:   "-5271018516",

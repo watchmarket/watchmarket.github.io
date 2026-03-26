@@ -1023,30 +1023,41 @@ function updateNoSignalNotice() {
     el.style.display = (scanning && !hasSignal) ? 'inline-flex' : 'none';
 }
 
-function updateSignalChip(tok, pnl, dir) {
-    const tokMinPnl = (isFinite(tok.minPnl) && tok.minPnl !== null) ? tok.minPnl : 1;
-    const chipId = 'chip-' + tok.id;
-    let chip = document.getElementById(chipId);
-    if (pnl >= tokMinPnl) {
+function updateSignalChips(tok, signals, dir) {
+    const bar    = document.getElementById('signalBar');
+    const prefix = `chip-${dir.toLowerCase()}-${tok.id}-`;
+
+    // Hapus chip lama yang sudah tidak ada sinyalnya
+    const activeSrcs = new Set(signals.map(r => r.src));
+    bar.querySelectorAll(`[id^="${prefix}"]`).forEach(c => {
+        if (!activeSrcs.has(c.id.slice(prefix.length))) c.remove();
+    });
+
+    const cexCfg  = CONFIG_CEX[tok.cex] || {};
+    const cexLabel = (cexCfg.label || tok.cex || '').toUpperCase();
+    const modalLbl = dir === 'CTD' ? `$${tok.modalCtD}` : `$${tok.modalDtC}`;
+    const dirClass = dir === 'CTD' ? 'dir-ctd' : 'dir-dtc';
+
+    signals.forEach(r => {
+        const chipId = `${prefix}${r.src}`;
+        let chip = document.getElementById(chipId);
         if (!chip) {
             chip = document.createElement('div');
             chip.className = 'signal-chip';
             chip.id = chipId;
             chip.dataset.tokId = tok.id;
-            document.getElementById('signalBar').appendChild(chip);
+            bar.appendChild(chip);
         }
-        const cexCfg = CONFIG_CEX[tok.cex] || {};
-        const cexLabel = (cexCfg.label || tok.cex || '').toUpperCase();
-        const dirLabel = dir === 'CTD' ? 'CEX→DEX' : 'DEX→CEX';
-        const dirClass = dir === 'CTD' ? 'dir-ctd' : 'dir-dtc';
-        const pnlClass = pnl >= 0 ? 'chip-pnl-pos' : 'chip-pnl-neg';
-        const modalLbl = dir === 'CTD' ? `$${tok.modalCtD}` : `$${tok.modalDtC}`;
+        const dexSrc   = r.src || '';
+        const dexName  = r.name ? r.name.toUpperCase() : 'DEX';
+        const dexBadge = dexSrc === 'MX' ? '[MT]' : dexSrc === 'JX' ? '[JM]' : dexSrc === 'BG' ? '[BG]' : dexSrc === 'KB' ? '[KB]' : '';
+        const dexFull  = dexBadge ? `<span class="src-tag ${dexSrc.toLowerCase()}">${dexBadge}</span> ${dexName}` : dexName;
+        const dirLabel = dir === 'CTD' ? `${cexLabel}→${dexFull}` : `${dexFull}→${cexLabel}`;
+        const pnlClass = r.pnl >= 0 ? 'chip-pnl-pos' : 'chip-pnl-neg';
 
         chip.innerHTML = `
             <div class="chip-row-top">
-                <img src="icons/cex/${tok.cex}.png" class="chip-icon" onerror="this.style.display='none'">
                 <img src="icons/chains/${tok.chain}.png" class="chip-icon" onerror="this.style.display='none'">
-                <span class="chip-cex">${cexLabel}</span>
                 <span class="chip-dir ${dirClass}">${dirLabel}</span>
             </div>
             <div class="chip-row-bottom">
@@ -1054,12 +1065,11 @@ function updateSignalChip(tok, pnl, dir) {
                 <span class="chip-sep">|</span>
                 <span class="chip-modal">${modalLbl}</span>
                 <span class="chip-sep">|</span>
-                <span class="chip-pnl ${pnlClass}">${fmtPnl(pnl)}$</span>
+                <span class="chip-pnl ${pnlClass}">${fmtPnl(r.pnl)}$</span>
             </div>`;
-        chip.className = 'signal-chip' + (pnl < 0 ? ' loss' : '');
-    } else if (chip) {
-        chip.remove();
-    }
+        chip.className = 'signal-chip' + (r.pnl < 0 ? ' loss' : '');
+    });
+
     updateNoSignalNotice();
 }
 
@@ -1183,9 +1193,14 @@ function showObTooltip(el) {
     const _cexFee2  = parseFloat(el.dataset.cexFee2) || 0;
     const _feeWd    = parseFloat(el.dataset.feeWd) || (ob ? (dir === 'ctd' ? (ob.feeWdCtD || 0) : 0) : 0);
     const _feeSwap  = parseFloat(el.dataset.feeSwap) || 0;
-    const _totalFee = parseFloat(el.dataset.totalFee) || (_cexFee1 + _cexFee2 + _feeWd + _feeSwap);
+    const _totalFee  = parseFloat(el.dataset.totalFee)  || (_cexFee1 + _cexFee2 + _feeWd + _feeSwap);
+    const _pnlKotor  = parseFloat(el.dataset.pnlKotor)  || 0;
+    const _pnlBersih = parseFloat(el.dataset.pnlBersih) || 0;
     const _buyLabel  = dir === 'ctd' ? `Fee Beli ${tokenSym} (CEX)` : `Fee Beli ${pairSym} (CEX)`;
     const _sellLabel = dir === 'ctd' ? `Fee Jual ${pairSym} (CEX)` : `Fee Jual ${tokenSym} (CEX)`;
+    const _pnlKotorSign  = _pnlKotor  >= 0 ? '+' : '';
+    const _pnlBersihSign = _pnlBersih >= 0 ? '+' : '';
+    const _pnlBersihCls  = _pnlBersih >= 0 ? 'pnl-pos' : 'pnl-neg';
     const _feeDetailHtml = (_cexFee1 > 0 || _cexFee2 > 0 || _feeWd > 0 || _feeSwap > 0)
         ? `<div class="ob-tip-fee-detail">${_cexFee1 > 0 ? `
             <div class="ob-tip-fee-row"><span class="ob-tip-lbl">${_buyLabel}</span><span class="ob-tip-feewd-val">-${_cexFee1.toFixed(3)}$</span></div>` : ''}${_cexFee2 > 0 ? `
@@ -1193,6 +1208,11 @@ function showObTooltip(el) {
             <div class="ob-tip-fee-row"><span class="ob-tip-lbl">Fee WD ${_feeWdLabel}</span><span class="ob-tip-feewd-val">-${_feeWd.toFixed(3)}$</span></div>` : ''}${_feeSwap > 0 ? `
             <div class="ob-tip-fee-row"><span class="ob-tip-lbl">Fee Swap (DEX)</span><span class="ob-tip-feewd-val">-${_feeSwap.toFixed(3)}$</span></div>` : ''}
             <div class="ob-tip-fee-row ob-tip-fee-total"><span class="ob-tip-lbl">Total Fee</span><span class="ob-tip-feewd-val">-${_totalFee.toFixed(3)}$</span></div>
+          </div>
+          <div class="ob-tip-pnl-summary">
+            <div class="ob-tip-fee-row"><span class="ob-tip-lbl">PNL Kotor</span><span class="ob-tip-pnl-gross">${_pnlKotorSign}${_pnlKotor.toFixed(3)}$</span></div>
+            <div class="ob-tip-fee-row"><span class="ob-tip-lbl">All Fee</span><span class="ob-tip-feewd-val">-${_totalFee.toFixed(3)}$</span></div>
+            <div class="ob-tip-fee-row ob-tip-pnl-net-row"><span class="ob-tip-lbl">PNL Bersih</span><span class="${_pnlBersihCls} ob-tip-pnl-net">${_pnlBersihSign}${_pnlBersih.toFixed(3)}$</span></div>
           </div>`
         : '';
     // CTD: tampilkan token → pair; DTC: tampilkan pair → token
