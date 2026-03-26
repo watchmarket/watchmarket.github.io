@@ -516,8 +516,10 @@ async function sendTelegram(tok, pnl, info) {
         const from = fromSc.toLowerCase();
         const to   = toSc.toLowerCase();
         // ── Deteksi dari nama DEX (lebih akurat dari src) ─────────────────────
-        if (/^0x\b|0x protocol/i.test(n))
-            return `https://matcha.xyz/trade?chainId=${chainId2}&sellToken=${fromSc}&buyToken=${toSc}`;
+        if (/^0x\b|0x protocol/i.test(n)) {
+            const _matchaChain = { 56:'bsc', 1:'ethereum', 137:'polygon', 42161:'arbitrum', 8453:'base' }[chainId2] || 'ethereum';
+            return `https://matcha.xyz/tokens/${_matchaChain}/${from}?buyAddress=${to}&buyChain=${chainId2}`;
+        }
         if (/1inch/i.test(n))
             return `https://1inch.io/swap?src=${chainId2}:${from}&dst=${chainId2}:${to}`;
         if (/kyber/i.test(n))
