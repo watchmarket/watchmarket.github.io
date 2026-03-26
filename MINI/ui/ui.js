@@ -621,7 +621,7 @@ function renderTokenList() {
     $('#favCount').text(favCount > 0 ? `⭐ ${favCount}/${tokens.length}` : '');
     const displayTokens = tokens.slice(0, tokenRenderLimit);
     if (!displayTokens.length) {
-        $('#tokenList').html('<div class="token-list-empty">Belum ada token. Ketuk + untuk menambah.</div>');
+        document.getElementById('tokenList').innerHTML = '<div class="token-list-empty">Belum ada token. Ketuk + untuk menambah.</div>';
     } else {
         let html = displayTokens.map(t => {
             const cexCfg = CONFIG_CEX[t.cex] || {};
@@ -670,7 +670,7 @@ function renderTokenList() {
             const remaining = tokens.length - tokenRenderLimit;
             html += `<div class="load-more-wrap"><button class="btn-load-more" id="btnLoadMore">Tampilkan ${Math.min(remaining, 50)} lagi (${remaining} tersisa)</button></div>`;
         }
-        $('#tokenList').html(html);
+        document.getElementById('tokenList').innerHTML = html;
     }
     if (!scanning) {
         // Hanya rebuild monitor jika tab Scanner aktif; jika tidak, tandai perlu rebuild
@@ -883,8 +883,9 @@ function _wdpIcons(status, walletFetched, cexKey) {
 
 function buildMonitorRows(tokenList) {
     const tokens = tokenList || getFilteredTokens();
+    const monitorList = document.getElementById('monitorList');
     if (!tokens.length) {
-        $('#monitorList').html('<div class="token-list-empty">Tidak ada token. Tambahkan KOIN di menu DATA KOIN.</div>');
+        monitorList.innerHTML = '<div class="token-list-empty">Tidak ada token. Tambahkan KOIN di menu DATA KOIN.</div>';
         return;
     }
     const n = totalQuoteCount();
@@ -899,7 +900,7 @@ function buildMonitorRows(tokenList) {
     ).join('');
 
     const _hasCexSt = typeof getCexTokenStatus === 'function';
-    $('#monitorList').html(tokens.map((t, idx) => {
+    monitorList.innerHTML = tokens.map((t, idx) => {
         const cc = CONFIG_CEX[t.cex] || {};
         const ch = CONFIG_CHAINS[t.chain] || {};
         const tri = t.tickerPair && t.tickerPair !== t.ticker;
@@ -975,7 +976,7 @@ function buildMonitorRows(tokenList) {
   </div>
   </div>
 </div>`;
-    }).join(''));
+    }).join('');
 
     // Build DOM element cache — satu querySelectorAll per card, bukan satu per sel
     _cardEls.clear();
@@ -1016,12 +1017,24 @@ function buildMonitorRows(tokenList) {
 }
 
 // ─── Signal Chips ─────────────────────────────
+let _signalChipCount = 0; // counter untuk cek cepat tanpa DOM query
+
+function _clearAllSignalChips() {
+    const bar = document.getElementById('signalBar');
+    if (!bar) return;
+    const chips = bar.querySelectorAll('.signal-chip');
+    chips.forEach(c => c.remove());
+    _signalChipCount = 0;
+}
+
 function updateNoSignalNotice() {
     const el = document.getElementById('noSignalNotice');
     if (!el) return;
-    const hasSignal = !!document.querySelector('#signalBar .signal-chip');
-    el.style.display = (scanning && !hasSignal) ? 'inline-flex' : 'none';
+    el.style.display = (scanning && _signalChipCount === 0) ? 'inline-flex' : 'none';
 }
+
+// Cache elemen internal chip agar tidak perlu innerHTML setiap update
+const _chipElsCache = new Map(); // chipId → { dirEl, tickerEl, modalEl, pnlEl }
 
 function updateSignalChips(tok, signals, dir) {
     const bar    = document.getElementById('signalBar');
@@ -1030,7 +1043,11 @@ function updateSignalChips(tok, signals, dir) {
     // Hapus chip lama yang sudah tidak ada sinyalnya
     const activeSrcs = new Set(signals.map(r => r.src));
     bar.querySelectorAll(`[id^="${prefix}"]`).forEach(c => {
-        if (!activeSrcs.has(c.id.slice(prefix.length))) c.remove();
+        if (!activeSrcs.has(c.id.slice(prefix.length))) {
+            c.remove();
+            _chipElsCache.delete(c.id);
+            _signalChipCount--;
+        }
     });
 
     const cexCfg  = CONFIG_CEX[tok.cex] || {};
@@ -1041,13 +1058,7 @@ function updateSignalChips(tok, signals, dir) {
     signals.forEach(r => {
         const chipId = `${prefix}${r.src}`;
         let chip = document.getElementById(chipId);
-        if (!chip) {
-            chip = document.createElement('div');
-            chip.className = 'signal-chip';
-            chip.id = chipId;
-            chip.dataset.tokId = tok.id;
-            bar.appendChild(chip);
-        }
+        let cached = _chipElsCache.get(chipId);
         const dexSrc   = r.src || '';
         const dexName  = r.name ? r.name.toUpperCase() : 'DEX';
         const dexBadge = dexSrc === 'MX' ? '[MT]' : dexSrc === 'JX' ? '[JM]' : dexSrc === 'BG' ? '[BG]' : dexSrc === 'KB' ? '[KB]' : '';
@@ -1055,18 +1066,43 @@ function updateSignalChips(tok, signals, dir) {
         const dirLabel = dir === 'CTD' ? `${cexLabel}→${dexFull}` : `${dexFull}→${cexLabel}`;
         const pnlClass = r.pnl >= 0 ? 'chip-pnl-pos' : 'chip-pnl-neg';
 
-        chip.innerHTML = `
-            <div class="chip-row-top">
-                <img src="icons/chains/${tok.chain}.png" class="chip-icon" onerror="this.style.display='none'">
-                <span class="chip-dir ${dirClass}">${dirLabel}</span>
-            </div>
-            <div class="chip-row-bottom">
-                <span class="chip-ticker">${tok.ticker}<span class="chip-pair">/${tok.tickerPair || 'USDT'}</span></span>
-                <span class="chip-sep">|</span>
-                <span class="chip-modal">${modalLbl}</span>
-                <span class="chip-sep">|</span>
-                <span class="chip-pnl ${pnlClass}">${fmtPnl(r.pnl)}$</span>
-            </div>`;
+        if (!chip) {
+            // Chip baru — buat via innerHTML (hanya sekali)
+            chip = document.createElement('div');
+            chip.className = 'signal-chip';
+            chip.id = chipId;
+            chip.dataset.tokId = tok.id;
+            chip.innerHTML = `
+                <div class="chip-row-top">
+                    <img src="icons/chains/${tok.chain}.png" class="chip-icon" onerror="this.style.display='none'">
+                    <span class="chip-dir ${dirClass}"></span>
+                </div>
+                <div class="chip-row-bottom">
+                    <span class="chip-ticker">${tok.ticker}<span class="chip-pair">/${tok.tickerPair || 'USDT'}</span></span>
+                    <span class="chip-sep">|</span>
+                    <span class="chip-modal"></span>
+                    <span class="chip-sep">|</span>
+                    <span class="chip-pnl"></span>
+                </div>`;
+            bar.appendChild(chip);
+            _signalChipCount++;
+            // Cache referensi ke elemen internal untuk update cepat
+            cached = {
+                dirEl:   chip.querySelector('.chip-dir'),
+                modalEl: chip.querySelector('.chip-modal'),
+                pnlEl:   chip.querySelector('.chip-pnl'),
+            };
+            _chipElsCache.set(chipId, cached);
+        }
+        // Update hanya field yang berubah (via textContent/innerHTML — jauh lebih ringan)
+        if (cached) {
+            if (cached.dirEl) cached.dirEl.innerHTML = dirLabel;
+            if (cached.modalEl) cached.modalEl.textContent = modalLbl;
+            if (cached.pnlEl) {
+                cached.pnlEl.textContent = fmtPnl(r.pnl) + '$';
+                cached.pnlEl.className = 'chip-pnl ' + pnlClass;
+            }
+        }
         chip.className = 'signal-chip' + (r.pnl < 0 ? ' loss' : '');
     });
 
@@ -1296,16 +1332,22 @@ function showObTooltip(el) {
     tooltip.style.top = (rect.bottom + window.scrollY + 4) + 'px';
     tooltip.style.display = 'block';
 }
+// Cached tooltip element — avoid getElementById on every hide/touch
+let _tooltipEl = null;
+function _getTooltipEl() {
+    if (!_tooltipEl) _tooltipEl = document.getElementById('obTooltip');
+    return _tooltipEl;
+}
 function hideObTooltip() {
     _tooltipHideTimer = setTimeout(() => {
-        const tooltip = document.getElementById('obTooltip');
+        const tooltip = _getTooltipEl();
         if (tooltip) tooltip.style.display = 'none';
     }, 3000);
 }
 // Close tooltip when tapping elsewhere
 document.addEventListener('touchstart', function (e) {
     if (!e.target.closest('[data-dir]') && !e.target.closest('#obTooltip')) {
-        const tooltip = document.getElementById('obTooltip');
+        const tooltip = _getTooltipEl();
         if (tooltip) tooltip.style.display = 'none';
     }
 }, { passive: true });

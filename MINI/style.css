@@ -69,10 +69,18 @@ body {
   font-size: 15px;
   min-height: 100dvh;
   overflow-x: hidden;
+}
+
+/* Fixed gradient via pseudo-element — avoids full repaint on scroll */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
   background-image:
     radial-gradient(ellipse 80% 60% at 15% 0%, rgba(10, 191, 122, 0.09) 0%, transparent 60%),
     radial-gradient(ellipse 60% 80% at 85% 100%, rgba(99, 102, 241, 0.07) 0%, transparent 60%);
-  background-attachment: fixed;
 }
 
 ::-webkit-scrollbar {
@@ -368,6 +376,7 @@ body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.95);
   box-shadow: 0 1px 6px rgba(100, 130, 180, 0.07);
   min-height: 34px;
+  will-change: contents;
 }
 
 .signal-bar::-webkit-scrollbar {
@@ -386,6 +395,7 @@ body {
   flex-shrink: 0;
   transition: background .15s;
   min-width: 110px;
+  contain: layout style;
 }
 
 .signal-chip:active {
@@ -555,15 +565,13 @@ body {
 }
 
 .mon-card {
-  background: var(--glass);
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  background: rgba(245, 248, 252, 0.92);
   border: 1px solid var(--glass-border);
   overflow: hidden;
   border-radius: 8px;
-  overflow: hidden;
   box-shadow: var(--shadow);
   transition: border-color .3s, box-shadow .3s;
+  contain: layout style;
 }
 
 .mon-card.has-signal {
@@ -804,6 +812,7 @@ body {
   text-overflow: ellipsis;
   max-width: 72px;
   color: rgba(255, 255, 255, 0.9) !important;
+  contain: layout style;
 }
 
 /* Source tag in DEX header — small superscript badge */
@@ -891,6 +900,7 @@ body {
   white-space: nowrap;
   padding: 3px 6px !important;
   font-family: 'Montserrat', sans-serif;
+  contain: layout style;
 }
 
 .mon-row-pnl .mon-lbl-side {

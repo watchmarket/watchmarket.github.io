@@ -144,9 +144,9 @@ async function scanToken(tok) {
     // CTD: user beli token di CEX → WD token ke wallet → swap ke pair di DEX
     // DTC: user swap pair → token di DEX → deposit token ke CEX → jual, lalu WD pair
     const pairSymbol = (tok.tickerPair || 'USDT').toUpperCase();
-    const _STABLES = new Set(['USDT','USDC','BUSD','DAI','TUSD','USDP','FDUSD']);
     // isPairStable: PAIR adalah stablecoin → tidak perlu trade ke-2 di CEX (fee lebih rendah)
-    const isPairStable = _STABLES.has(pairSymbol);
+    // Menggunakan STABLE_COINS global dari base.js (lebih lengkap & tanpa re-allokasi per call)
+    const isPairStable = STABLE_COINS.has(pairSymbol);
     const feeWdCtD = (typeof getCexFeeWdUsdt === 'function')
         ? getCexFeeWdUsdt(tok.cex, tok.ticker, tok.chain, obToken.askPrice) : 0;
     // DTC + pair stablecoin: tidak perlu WD stablecoin dari CEX (diasumsikan sudah ada di DEX wallet)
@@ -646,7 +646,7 @@ function resetMonitorCells() {
             const dtcP = els.dtcPnl[i]; if (dtcP) { dtcP.textContent = '-'; dtcP.className = 'mon-dex-cell'; }
         }
     });
-    document.querySelectorAll('.signal-chip').forEach(c => c.remove());
+    _clearAllSignalChips();
 }
 
 // ─── Scan Loop ───────────────────────────────
@@ -663,7 +663,7 @@ async function runScan() {
     $('#btnScanCount').text('');
     $('#scanBadge').addClass('active');
     // Clear previous signal chips and reset table
-    document.querySelectorAll('.signal-chip').forEach(c => c.remove());
+    _clearAllSignalChips();
     $('#notStartedNotice').hide();
     $('#scanDoneNotice').hide();
     $('#scanStopNotice').hide();
@@ -722,7 +722,7 @@ async function runScan() {
             await new Promise(r => setTimeout(r, 10000));
             if (!scanAbort) {
                 resetMonitorCells();
-                document.querySelectorAll('.signal-chip').forEach(c => c.remove());
+                _clearAllSignalChips();
                 updateNoSignalNotice();
             }
         }
