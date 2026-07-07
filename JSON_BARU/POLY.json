@@ -1233,67 +1233,11 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "crv",
-    "ticker": "CRV",
-    "sc": "0x172370d5cd63279efa6d502dab29171933a610af",
-    "decimals": 18,
-    "coin_id_token": "curve-dao-token"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "gmt",
-    "ticker": "GMT",
-    "sc": "0x714db550b574b3e927af3d93e26127d15721d4c2",
-    "decimals": 8,
-    "coin_id_token": "green-metaverse-token"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "grt",
-    "ticker": "GRT",
-    "sc": "0x5fe2b58c013d7601147dcdd68c143a77499f5531",
-    "decimals": 18,
-    "coin_id_token": "the-graph"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "knc",
-    "ticker": "KNC",
-    "sc": "0x1c954e8fe737f99f68fa1ccda3e51ebdb291948c",
-    "decimals": 18,
-    "coin_id_token": "kyber-network-crystal-v2"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "matic",
-    "ticker": "MATIC",
-    "sc": "0x0000000000000000000000000000000000001010",
-    "decimals": 18,
-    "coin_id_token": ""
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "pol",
     "ticker": "POL",
     "sc": "0x0000000000000000000000000000000000001010",
     "decimals": 18,
     "coin_id_token": "polygon-ecosystem-token"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "sand",
-    "ticker": "SAND",
-    "sc": "0xbbba073c31bf03b8acf7c28ef0738decf3695683",
-    "decimals": 18,
-    "coin_id_token": "the-sandbox"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "stg",
-    "ticker": "STG",
-    "sc": "0x2f6f07cdcf3588944bf4c42ac74ff24bf56e7590",
-    "decimals": 18,
-    "coin_id_token": "stargate-finance"
   },
   {
     "cex": "KRAKEN",
@@ -1321,43 +1265,11 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "vanry",
-    "ticker": "VANRY",
-    "sc": "0x8de5b80a0c1b02fe4976851d030b36122dbb8624",
-    "decimals": 18,
-    "coin_id_token": "vanar"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "waxl",
-    "ticker": "WAXL",
-    "sc": "0x6e4e624106cb12e168e6533f8ec7c82263358940",
-    "decimals": 6,
-    "coin_id_token": ""
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "eth",
     "ticker": "ETH",
     "sc": "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",
     "decimals": 18,
     "coin_id_token": "ethereum"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "zig",
-    "ticker": "ZIG",
-    "sc": "0x7bebd226154e865954a87650faefa8f485d36081",
-    "decimals": 18,
-    "coin_id_token": "zigcoin"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "zro",
-    "ticker": "ZRO",
-    "sc": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
-    "decimals": 18,
-    "coin_id_token": "layerzero"
   },
   {
     "cex": "COINBASE",

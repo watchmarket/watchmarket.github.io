@@ -3328,7 +3328,7 @@
     "cex": "MEXC",
     "nama_token": "bobacat",
     "ticker": "BOBA",
-    "sc": "0x6eCf5FE60e27cd03ABdBA3a19Af8dC6845A0dA58",
+    "sc": "0x42bbfa2e77757c645eeaad1655e0911a7553efbc",
     "decimals": 18
   },
   {
@@ -5219,7 +5219,7 @@
     "nama_token": "nil",
     "ticker": "NIL",
     "sc": "0x7Cf9a80db3B29eE8efE3710AadB7b95270572d47",
-    "decimals": 6
+    "decimals": 18
   },
   {
     "cex": "MEXC",
@@ -5303,7 +5303,7 @@
     "nama_token": "senso",
     "ticker": "SENSO",
     "sc": "0xc19b6a4ac7c7cc24459f08984bbd09664af17bd1",
-    "decimals": 18
+    "decimals": 0
   },
   {
     "cex": "MEXC",
@@ -5631,8 +5631,8 @@
     "cex": "MEXC",
     "nama_token": "asteroid1",
     "ticker": "ASTEROID",
-    "sc": "0xAFF2565091E7207191dBe340B8528D02FA78d044",
-    "decimals": 18
+    "sc": "0xf280b16ef293d8e534e370794ef26bf312694126",
+    "decimals": 9
   },
   {
     "cex": "MEXC",
@@ -7731,7 +7731,7 @@
     "cex": "GATE",
     "nama_token": "saffronfi",
     "ticker": "SFI",
-    "sc": "0xb753428af26e81097e7fd17f40c88aaa3e04902c",
+    "sc": "0x7636d8722fdf7cd34232a915e48e96aa3eb386bf",
     "decimals": 18
   },
   {
@@ -9061,7 +9061,7 @@
     "cex": "GATE",
     "nama_token": "opn1",
     "ticker": "OPN",
-    "sc": "0xc28eb2250d1ae32c7e74cfb6d6b86afc9beb6509",
+    "sc": "0x7977bf3e7e0c954d12cdca3e013adaf57e0b06e0",
     "decimals": 18
   },
   {
@@ -9965,7 +9965,7 @@
     "nama_token": "senso",
     "ticker": "SENSO",
     "sc": "0xC19B6A4Ac7C7Cc24459F08984Bbd09664af17bD1",
-    "decimals": 18
+    "decimals": 0
   },
   {
     "cex": "GATE",
@@ -23556,23 +23556,9 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "ai",
-    "ticker": "AI",
-    "sc": "0x4d7078ddd6ccfed2f85db5b7d3ff16828d378d48",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "aioz",
     "ticker": "AIOZ",
     "sc": "0x626e8036deb333b408be468f951bdb42433cbf18",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "air",
-    "ticker": "AIR",
-    "sc": "0x294b9da569c0d694870239813bbe7b5824fd2339",
     "decimals": 18
   },
   {
@@ -23588,13 +23574,6 @@
     "ticker": "ALICE",
     "sc": "0xac51066d7bec65dc4589368da368b212745d63e8",
     "decimals": 6
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "allo",
-    "ticker": "ALLO",
-    "sc": "0x8408d45b61f5823298f19a09b53b7339c0280489",
-    "decimals": 18
   },
   {
     "cex": "KRAKEN",
@@ -23647,30 +23626,9 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "apr",
-    "ticker": "APR",
-    "sc": "0x5a9610919f5e81183823a2be4bd1beb2b4da2a20",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "apu",
     "ticker": "APU",
     "sc": "0x594daad7d77592a2b97b725a7ad59d7e188b5bfa",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "arb",
-    "ticker": "ARB",
-    "sc": "0xb50721bcf8d664c30412cfbc6cf7a15145234ad1",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "arc",
-    "ticker": "ARC",
-    "sc": "0x672fdba7055bddfa8fd6bd45b1455ce5eb97f499",
     "decimals": 18
   },
   {
@@ -23713,20 +23671,6 @@
     "nama_token": "audio",
     "ticker": "AUDIO",
     "sc": "0x18aaa7115705e8be94bffebde57af9bfc265b998",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "ava",
-    "ticker": "AVA",
-    "sc": "0xa6c0c097741d55ecd9a3a7def3a8253fd022ceb9",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "avt",
-    "ticker": "AVT",
-    "sc": "0x0d88ed6e74bbfd96b831231638b66c05571e824f",
     "decimals": 18
   },
   {
@@ -23780,13 +23724,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "bch",
-    "ticker": "BBCH",
-    "sc": "0x85c4edc43724e954e5849caaab61a26a9cb65f1b",
-    "decimals": 8
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "bdxn",
     "ticker": "BDXN",
     "sc": "0xbdbdbdd0c22888e63cb9098ad6d68439197cb091",
@@ -23822,20 +23759,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "bill",
-    "ticker": "BILL",
-    "sc": "0xb1110919016846972056ab995054d65560d5f05e",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "bio",
-    "ticker": "BIO",
-    "sc": "0xcb1592591996765ec0efc1f92599a19767ee5ffa",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "bit",
     "ticker": "BIT",
     "sc": "0x1a4b46696b2bb4794eb3d4c26f1c55f9170fa4c5",
@@ -23860,13 +23783,6 @@
     "nama_token": "blz",
     "ticker": "BLZ",
     "sc": "0x5732046a883704404f284ce41ffadd5b007fd668",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "bnb",
-    "ticker": "BNB",
-    "sc": "0xb8c77482e45f1f44de1745f52c74426c631bdd52",
     "decimals": 18
   },
   {
@@ -23920,13 +23836,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "cake",
-    "ticker": "CAKE",
-    "sc": "0x152649ea73beab28c5b49b26eb48f7ead6d4c898",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "camp",
     "ticker": "CAMP",
     "sc": "0x84eaac1b2dc3f84d92ff84c3ec205b1fa74671fc",
@@ -23934,23 +23843,9 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "cap",
-    "ticker": "CAP",
-    "sc": "0x99991c6aabba5a096f24f250b73580f5179b9999",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "celr",
     "ticker": "CELR",
     "sc": "0x4f9254c83eb525f9fcf346490bbb3ed28a81c667",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "cfg",
-    "ticker": "CFG",
-    "sc": "0xcccccccccc33d538dbc2ee4feab0a7a1ff4e8a94",
     "decimals": 18
   },
   {
@@ -24032,13 +23927,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "ctc",
-    "ticker": "G-CRE",
-    "sc": "0xa3ee21c306a700e682abcdfe9baa6a08f3820419",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "ctsi",
     "ticker": "CTSI",
     "sc": "0x491604c0fdf08347dd1fa4ee062a822a5dd06b5d",
@@ -24060,20 +23948,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "cxt",
-    "ticker": "CXT",
-    "sc": "0x7abc8a5768e6be61a6c693a6e4eacb5b60602c4d",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "cyber",
-    "ticker": "CYBER",
-    "sc": "0x14778860e937f509e651192a90589de711fb88a9",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "dai",
     "ticker": "DAI",
     "sc": "0x6b175474e89094c44da98b954eedeac495271d0f",
@@ -24088,51 +23962,9 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "dolo",
-    "ticker": "DOLO",
-    "sc": "0x0f81001ef0a83ecce5ccebf63eb302c70a39a654",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "dot",
-    "ticker": "BDOT",
-    "sc": "0x7884f51dc1410387371ce61747cb6264e1daee0b",
-    "decimals": 10
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "drv",
     "ticker": "DRV",
     "sc": "0xb1d1eae60eea9525032a6dcb4c1ce336a1de71be",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "dydx",
-    "ticker": "DYDX",
-    "sc": "0x92d6c1e31e14520e676a687f0a93788b716beff5",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "eden",
-    "ticker": "EDEN",
-    "sc": "0x24a3d725c37a8d1a66eb87f0e5d07fe67c120035",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "edge",
-    "ticker": "EDGE",
-    "sc": "0xb0076de78dc50581770bba1d211ddc0ad4f2a241",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "edgex",
-    "ticker": "EDGE",
-    "sc": "0xb0076de78dc50581770bba1d211ddc0ad4f2a241",
     "decimals": 18
   },
   {
@@ -24154,13 +23986,6 @@
     "nama_token": "ena",
     "ticker": "ENA",
     "sc": "0x57e114b691db790c35207b2e685d4a43181e6061",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "enj",
-    "ticker": "ENJ",
-    "sc": "0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c",
     "decimals": 18
   },
   {
@@ -24235,23 +24060,9 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "ewt",
-    "ticker": "EWT",
-    "sc": "0xb66a5d30d04f076e78ffb0d045c55846fdcde928",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "farm",
     "ticker": "FARM",
     "sc": "0xa0246c9032bc3a600820415ae600c6388619a14d",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "fet",
-    "ticker": "FET",
-    "sc": "0xaea46a60368a7bd060eec7df8cba43b7ef41ad85",
     "decimals": 18
   },
   {
@@ -24270,23 +24081,9 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "fil",
-    "ticker": "BFIL",
-    "sc": "0x8e16bf47065fe843a82f4399baf5abac4e0822b7",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "fis",
     "ticker": "FIS",
     "sc": "0xef3a930e1ffffacd2fc13434ac81bd278b0ecc8d",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "flock",
-    "ticker": "FLOCK",
-    "sc": "0xb33d999469a7e6b9ebc25a3a05248287b855ed46",
     "decimals": 18
   },
   {
@@ -24309,13 +24106,6 @@
     "ticker": "FORTH",
     "sc": "0x77fba179c79de5b7653f68b5039af940ada60ce0",
     "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "fun",
-    "ticker": "FUN",
-    "sc": "0x419d0d8bdd9af5e606ae2232ed285aff190e711b",
-    "decimals": 8
   },
   {
     "cex": "KRAKEN",
@@ -24361,13 +24151,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "game2",
-    "ticker": "GAME",
-    "sc": "0x825459139c897d769339f295e962396c4f9e4a4d",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "gfi",
     "ticker": "GFI",
     "sc": "0xdab396ccf3d84cf2d07c4454e10c8a6f5b008d2b",
@@ -24382,23 +24165,9 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "gmt",
-    "ticker": "GMT",
-    "sc": "0xe3c408bd53c31c085a1746af401a4042954ff740",
-    "decimals": 8
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "gno",
     "ticker": "GNO",
     "sc": "0x6810e776880c02933d47db1b9fc05908e5386b96",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "gomining",
-    "ticker": "GMT",
-    "sc": "0x7ddc52c4de30e94be3a6a0a2b259b2850f421989",
     "decimals": 18
   },
   {
@@ -24438,23 +24207,9 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "hpos10i",
-    "ticker": "BITCOIN",
-    "sc": "0x72e4f9f808c49a2a61de9c5896298920dc4eeea9",
-    "decimals": 8
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "hsk",
     "ticker": "HSK",
     "sc": "0xe7c6bf469e97eeb0bfb74c8dbff5bd47d4c1c98a",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "icnt",
-    "ticker": "ICNT",
-    "sc": "0xe5e0b73380181273abcfd88695f52c4d0c825661",
     "decimals": 18
   },
   {
@@ -24473,20 +24228,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "in",
-    "ticker": "IN",
-    "sc": "0x61fac5f038515572d6f42d4bcb6b581642753d50",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "inj",
-    "ticker": "INJ",
-    "sc": "0xe28b3b32b6c345a34ff64674606124dd5aceca30",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "inx",
     "ticker": "INX",
     "sc": "0xdef1b2d939edc0e4d35806c59b3166f790175afe",
@@ -24501,16 +24242,9 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "jup",
-    "ticker": "JUP",
-    "sc": "0x4b1e80cac91e2216eeb63e29b957eb91ae9c2be8",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "keep",
     "ticker": "KEEP",
-    "sc": "0x85eee30c52b0b379b046fb0f85f4f3dc3009afec",
+    "sc": "0xbf40440703a3f7092b2e73c2f7868727275dbbda",
     "decimals": 18
   },
   {
@@ -24564,23 +24298,9 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "linea",
-    "ticker": "LINEA",
-    "sc": "0x1789e0043623282d5dcc7f213d703c6d8bafbb04",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "link",
     "ticker": "LINK",
     "sc": "0x514910771af9ca656af840dff83e8264ecf986ca",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "lit",
-    "ticker": "LIT",
-    "sc": "0x232ce3bd40fcd6f80f3d55a522d03f25df784ee2",
     "decimals": 18
   },
   {
@@ -24637,13 +24357,6 @@
     "nama_token": "mask",
     "ticker": "MASK",
     "sc": "0x69af81e73a73b40adf4f3d4223cd9b1ece623074",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "matic",
-    "ticker": "MATIC",
-    "sc": "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
     "decimals": 18
   },
   {
@@ -24718,13 +24431,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "mpl",
-    "ticker": "MPL",
-    "sc": "0x33349b282065b0284d756f0577fb39c158f935e6",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "multi",
     "ticker": "MULTI",
     "sc": "0x65ef703f5594d2573eb71aaf55bc0cb548492df4",
@@ -24736,41 +24442,6 @@
     "ticker": "MXC",
     "sc": "0x5ca381bbfb58f0092df149bd3d243b08b9a8386e",
     "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "neiro",
-    "ticker": "NEIRO",
-    "sc": "0x812ba41e071c7b7fa4ebcfb62df5f45f6fa853ee",
-    "decimals": 9
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "nes",
-    "ticker": "NES",
-    "sc": "0x230f1e241c621d5af670dad83ebcdd18971e2995",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "newt",
-    "ticker": "NEWT",
-    "sc": "0xd0ec028a3d21533fdd200838f39c85b03679285d",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "nex",
-    "ticker": "NEX",
-    "sc": "0xf57d49646621f563b0b905afc8336923ac569ec5",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "nil",
-    "ticker": "NIL",
-    "sc": "0x7cf9a80db3b29ee8efe3710aadb7b95270572d47",
-    "decimals": 6
   },
   {
     "cex": "KRAKEN",
@@ -24795,13 +24466,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "nym",
-    "ticker": "NYM",
-    "sc": "0x525a8f6f3ba4752868cde25164382bfbae3990e1",
-    "decimals": 6
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "obol",
     "ticker": "OBOL",
     "sc": "0x0b010000b7624eb9b3dfbc279673c76e9d29d5f7",
@@ -24819,13 +24483,6 @@
     "nama_token": "ogn",
     "ticker": "OGN",
     "sc": "0x8207c1ffc5b6804f6024322ccf34f29c3541ae26",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "okb",
-    "ticker": "OKB",
-    "sc": "0x75231f58b43240c9718dd58b4967c5114342a86c",
     "decimals": 18
   },
   {
@@ -24865,13 +24522,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "opn",
-    "ticker": "OPN",
-    "sc": "0x7977bf3e7e0c954d12cdca3e013adaf57e0b06e0",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "order",
     "ticker": "ORDER",
     "sc": "0xabd4c63d2616a5201454168269031355f4764337",
@@ -24886,23 +24536,9 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "oxy",
-    "ticker": "OXY",
-    "sc": "0x965697b4ef02f0de01384d0d4f9f782b1670c163",
-    "decimals": 6
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "paxg",
     "ticker": "PAXG",
     "sc": "0x45804880de22913dafe09f4980848ece6ecbaf78",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "pda",
-    "ticker": "PDA",
-    "sc": "0x0d3cbed3f69ee050668adf3d9ea57241cba33a2b",
     "decimals": 18
   },
   {
@@ -24931,27 +24567,6 @@
     "nama_token": "perp",
     "ticker": "PERP",
     "sc": "0xbc396689893d065f41bc2c6ecbee5e0085233447",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "pha",
-    "ticker": "PHA",
-    "sc": "0x6c5ba91642f10282b576d91922ae6448c9d52f4e",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "pieverse",
-    "ticker": "PIEVERSE",
-    "sc": "0x0e63b9c287e32a05e6b9ab8ee8df88a2760225a9",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "pla",
-    "ticker": "PLA",
-    "sc": "0x3a4f40631a4f906c2bad353ed06de7a5d3fcb430",
     "decimals": 18
   },
   {
@@ -25021,7 +24636,7 @@
     "cex": "KRAKEN",
     "nama_token": "pros",
     "ticker": "PROS",
-    "sc": "0x915424ac489433130d92b04096f3b96c82e92a9d",
+    "sc": "0xb197e02499e6502733c6bce2eb39013c39a03147",
     "decimals": 18
   },
   {
@@ -25096,13 +24711,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "re",
-    "ticker": "RE",
-    "sc": "0x526526528f35ac738177003b8773b402b8df8143",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "red",
     "ticker": "RED",
     "sc": "0xc43c6bfeda065fe2c4c11765bf838789bd0bb5de",
@@ -25138,13 +24746,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "river",
-    "ticker": "RIVER",
-    "sc": "0xda7ad9dea9397cffddae2f8a052b82f1484252b3",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "rlc",
     "ticker": "RLC",
     "sc": "0x607f4c5bb672230e8672085532f7e901544a7375",
@@ -25176,13 +24777,6 @@
     "nama_token": "rpl",
     "ticker": "RPL",
     "sc": "0xd33526068d116ce69f19a9ee46f0bd304f21a51f",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "rsc",
-    "ticker": "RSC",
-    "sc": "0xd101dcc414f310268c37eeb4cd376ccfa507f571",
     "decimals": 18
   },
   {
@@ -25236,13 +24830,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "sign",
-    "ticker": "SIGN",
-    "sc": "0x868fced65edbf0056c4163515dd840e9f287a4c3",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "sky",
     "ticker": "SKY",
     "sc": "0x56072c95faa701256059aa122697b133aded9279",
@@ -25253,20 +24840,6 @@
     "nama_token": "snx",
     "ticker": "SNX",
     "sc": "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "solv",
-    "ticker": "SOLV",
-    "sc": "0x169e36f327caa83d004f5c2668ac25a1424c940d",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "somi",
-    "ticker": "SOMI",
-    "sc": "0x1b0f6590d21dc02b92ad3a7d00f8884dc4f1aed9",
     "decimals": 18
   },
   {
@@ -25306,23 +24879,9 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "srm",
-    "ticker": "SRM",
-    "sc": "0x476c5e26a75bd202a9683ffd34359c0cc15be0ff",
-    "decimals": 6
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "ssv",
     "ticker": "SSV",
     "sc": "0x9d65ff81a3c488d585bbfb0bfe3c7707c7917f54",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "steth",
-    "ticker": "STETH",
-    "sc": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
     "decimals": 18
   },
   {
@@ -25338,13 +24897,6 @@
     "ticker": "STORJ",
     "sc": "0xb64ef51c888972c908cfacf59b47c1afbc0ab8ac",
     "decimals": 8
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "strk",
-    "ticker": "STRK",
-    "sc": "0xca14007eff0db1f8135f4c25b34de49ab0d42766",
-    "decimals": 18
   },
   {
     "cex": "KRAKEN",
@@ -25418,13 +24970,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "tac",
-    "ticker": "TAC",
-    "sc": "0xc20d9413bb7c03cb147a5590960ddaf389afaaa4",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "tanssi",
     "ticker": "TANSSI",
     "sc": "0x553f4cb7256d8fc038e91d36cb63fa7c13b624ab",
@@ -25434,22 +24979,8 @@
     "cex": "KRAKEN",
     "nama_token": "tbtc",
     "ticker": "TBTC",
-    "sc": "0x8daebade922df735c38c80c7ebd708af50815faa",
+    "sc": "0x18084fba666a33d37592fa2633fd49a74dd93a88",
     "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "tea",
-    "ticker": "TEA",
-    "sc": "0x7ea7ea50ed58bc4d0a9194bcd328e21f7be80c2b",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "tel",
-    "ticker": "TEL",
-    "sc": "0x467bccd9d29f223bce8043b84e8c8b282827790f",
-    "decimals": 2
   },
   {
     "cex": "KRAKEN",
@@ -25481,23 +25012,9 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "tree",
-    "ticker": "TREE",
-    "sc": "0x77146784315ba81904d654466968e3a7c196d1f3",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "tria",
     "ticker": "TRIA",
     "sc": "0x228bec415ade4b61d7caf0adf8c91eac587ba369",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "tribe",
-    "ticker": "TRIBE",
-    "sc": "0xc7283b66eb1eb5fb86327f08e1b5816b0720212b",
     "decimals": 18
   },
   {
@@ -25509,23 +25026,9 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "trx",
-    "ticker": "TRX",
-    "sc": "0xf230b790e05390fc8295f4d3f60332c93bed42e2",
-    "decimals": 6
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "turbo",
     "ticker": "TURBO",
     "sc": "0xa35923162c49cf95e6bf26623385eb431ad920d3",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "tusd",
-    "ticker": "TUSD",
-    "sc": "0x0000000000085d4780b73119b644ae5ecd22b376",
     "decimals": 18
   },
   {
@@ -25539,7 +25042,7 @@
     "cex": "KRAKEN",
     "nama_token": "u",
     "ticker": "U",
-    "sc": "0xce24439f2d9c6a2289f741120fe202248b666666",
+    "sc": "0xba5ed44733953d79717f6269357c77718c8ba5ed",
     "decimals": 18
   },
   {
@@ -25572,24 +25075,10 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "usd1",
-    "ticker": "USD1",
-    "sc": "0x8d0d000ee44948fc98c9b98a4fa4921476f08b0d",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "usdc",
     "ticker": "USDC",
     "sc": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
     "decimals": 6
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "usdd",
-    "ticker": "USDD",
-    "sc": "0x4f8e5de400de08b164e7421b3ee387f461becd1a",
-    "decimals": 18
   },
   {
     "cex": "KRAKEN",
@@ -25635,20 +25124,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "usdtb",
-    "ticker": "USDTB",
-    "sc": "0xc139190f447e929f090edeb554d95abb8b18ac1c",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "ust",
-    "ticker": "UST",
-    "sc": "0xa47c8bf37f92abed4a126bda807a7b7498661acd",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "usual",
     "ticker": "USUAL",
     "sc": "0xc4441c2be5d8fa8126822b9929ca0b81ea0de38e",
@@ -25656,30 +25131,9 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "uxlink",
-    "ticker": "UXLINK",
-    "sc": "0x3991b07b2951a4300da8c76e7d2c7edde861fef3",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "vanry",
     "ticker": "VANRY",
     "sc": "0x8de5b80a0c1b02fe4976851d030b36122dbb8624",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "velo",
-    "ticker": "VELO",
-    "sc": "0x5ecd6271c4f1eb8db03c841e9da01fd865b94dab",
-    "decimals": 5
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "virtual",
-    "ticker": "VIRTUAL",
-    "sc": "0x44ff8620b8ca30902395a7bd3f2407e1a091bf73",
     "decimals": 18
   },
   {
@@ -25698,27 +25152,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "w",
-    "ticker": "W",
-    "sc": "0xb0ffa8000886e57f86dd5264b9582b2ad87b2b91",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "waxl",
-    "ticker": "AXL",
-    "sc": "0x467719ad09025fcc6cf6f8311755809d45a5e5f3",
-    "decimals": 6
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "wbt",
-    "ticker": "WBT",
-    "sc": "0x925206b8a707096ed26ae47c84747fe0bb734f59",
-    "decimals": 8
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "wbtc",
     "ticker": "WBTC",
     "sc": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
@@ -25726,31 +25159,10 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "wct",
-    "ticker": "WCT",
-    "sc": "0xef4461891dfb3ac8572ccf7c794664a8dd927945",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "wld",
-    "ticker": "WLD",
-    "sc": "0x163f8c2467924be0ae7b5347228cabf260318753",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "wlfi",
     "ticker": "WLFI",
     "sc": "0xda5e1988097297dcdc1f90d4dfe7909e847cbef6",
     "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "wmtx",
-    "ticker": "WMTX",
-    "sc": "0xdbb5cf12408a3ac17d668037ce289f9ea75439d7",
-    "decimals": 6
   },
   {
     "cex": "KRAKEN",
@@ -25789,13 +25201,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "ltc",
-    "ticker": "HLTC",
-    "sc": "0x2c000c0093de75a8fa2fccd3d97b314e20b431c3",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "mln",
     "ticker": "MLN",
     "sc": "0xec67005c4e498ec7f55e092bd1d35cbc47c91892",
@@ -25806,27 +25211,6 @@
     "nama_token": "rep",
     "ticker": "REP",
     "sc": "0x1985365e9f78359a9b6ad760e32412f4a445e862",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "xtz",
-    "ticker": "HXTZ",
-    "sc": "0x4a10307e221781570e4b7e409eb315f11e8d0385",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "btc",
-    "ticker": "BBTC",
-    "sc": "0x9be89d2a4cd102d8fecc6bf9da793be995c22541",
-    "decimals": 8
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "xrp",
-    "ticker": "WXRP",
-    "sc": "0x39fbbabf11738317a448031930706cd3e612e1b9",
     "decimals": 18
   },
   {
@@ -25862,20 +25246,6 @@
     "nama_token": "zama",
     "ticker": "ZAMA",
     "sc": "0xa12cc123ba206d4031d1c7f6223d1c2ec249f4f3",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "zbt",
-    "ticker": "ZBT",
-    "sc": "0xfab99fcf605fd8f4593edb70a43ba56542777777",
-    "decimals": 18
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "cad",
-    "ticker": "CAD",
-    "sc": "0x4349929808e515936a68903f6085f5e2b143ff3d",
     "decimals": 18
   },
   {
@@ -27905,7 +27275,7 @@
     "cex": "INDODAX",
     "nama_token": "cst",
     "ticker": "CST",
-    "sc": "0x3c41c80b966b92d345dc8fc91e5508bc7248da6e",
+    "sc": "0xb6c652c3d71a28fed73d5b2929ce16afa8160411",
     "decimals": 18
   },
   {
@@ -28654,7 +28024,7 @@
     "cex": "INDODAX",
     "nama_token": "sfi",
     "ticker": "SFI",
-    "sc": "0xb753428af26e81097e7fd17f40c88aaa3e04902c",
+    "sc": "0x7636d8722fdf7cd34232a915e48e96aa3eb386bf",
     "decimals": 18
   },
   {
@@ -28697,7 +28067,7 @@
     "nama_token": "slp",
     "ticker": "SLP",
     "sc": "0xcc8fa225d80b9c7d42f96e9570156c65d6caaa25",
-    "decimals": 0
+    "decimals": 18
   },
   {
     "cex": "INDODAX",
@@ -28808,7 +28178,7 @@
     "cex": "INDODAX",
     "nama_token": "ten",
     "ticker": "TEN",
-    "sc": "0xdd16ec0f66e54d453e6756713e533355989040e4",
+    "sc": "0xea9bb54fc76bfd5dd2ff2f6da641e78c230bb683",
     "decimals": 18
   },
   {
@@ -28871,8 +28241,8 @@
     "cex": "INDODAX",
     "nama_token": "uni",
     "ticker": "UNI",
-    "sc": "0x2730d6fdc86c95a74253beffaa8306b40fedecbb",
-    "decimals": 8
+    "sc": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
+    "decimals": 18
   },
   {
     "cex": "INDODAX",

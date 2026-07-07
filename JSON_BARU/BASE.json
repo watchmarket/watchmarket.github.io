@@ -3457,27 +3457,11 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "allo",
-    "ticker": "ALLO",
-    "sc": "0x032d86656db142138ac97d2c5c4e3766e8c0482d",
-    "decimals": 18,
-    "coin_id_token": "allora"
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "art",
     "ticker": "ART",
     "sc": "0x4dec3139f4a6c638e26452d32181fe87a7530805",
     "decimals": 18,
     "coin_id_token": "liveart"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "auki",
-    "ticker": "AUKI",
-    "sc": "0xf9569cfb8fd265e91aa478d86ae8c78b8af55df4",
-    "decimals": 18,
-    "coin_id_token": "auki-labs"
   },
   {
     "cex": "KRAKEN",
@@ -3497,27 +3481,11 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "bio",
-    "ticker": "BIO",
-    "sc": "0x226a2fa2556c48245e57cd1cba4c6c9e67077dd2",
-    "decimals": 18,
-    "coin_id_token": "bio"
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "bks",
     "ticker": "BKS",
     "sc": "0xf578c9e57b40a00aef168774f3e47b04c03bf59a",
     "decimals": 18,
     "coin_id_token": "backstage"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "brev",
-    "ticker": "BREV",
-    "sc": "0x086f405146ce90135750bbec9a063a8b20a8bffb",
-    "decimals": 18,
-    "coin_id_token": "brevis"
   },
   {
     "cex": "KRAKEN",
@@ -3545,14 +3513,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "chip",
-    "ticker": "CHIP",
-    "sc": "0x0c1c1c109fe34733fca54b82d7b46b75cfb71f6e",
-    "decimals": 18,
-    "coin_id_token": "usd-ai"
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "clanker",
     "ticker": "CLANKER",
     "sc": "0x1bc0c42215582d5a085795f4badbac3ff36d1bcb",
@@ -3561,35 +3521,11 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "cookie",
-    "ticker": "COOKIE",
-    "sc": "0xc0041ef357b183448b235a8ea73ce4e4ec8c265f",
-    "decimals": 18,
-    "coin_id_token": "cookie"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "ctr",
-    "ticker": "CTR",
-    "sc": "0x11030f79109269d796fd0fb956d6244e502757f7",
-    "decimals": 18,
-    "coin_id_token": "citrea"
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "degen",
     "ticker": "DEGEN",
     "sc": "0x4ed4e862860bed51a9570b96d89af5e1b0efefed",
     "decimals": 18,
     "coin_id_token": "degen-base"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "drv",
-    "ticker": "DRV",
-    "sc": "0x9d0e8f5b25384c7310cb8c6ae32c8fbeb645d083",
-    "decimals": 18,
-    "coin_id_token": "derive"
   },
   {
     "cex": "KRAKEN",
@@ -3609,14 +3545,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "eul",
-    "ticker": "EUL",
-    "sc": "0xa153ad732f831a79b5575fa02e793ec4e99181b0",
-    "decimals": 18,
-    "coin_id_token": "euler-finance"
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "flock",
     "ticker": "FLOCK",
     "sc": "0x5ab3d4c385b400f3abb49e80de2faf6a88a7b691",
@@ -3633,14 +3561,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "gaia",
-    "ticker": "GAIA",
-    "sc": "0x6fbf03efa4363ca0afe0c9c3906f7d610890b683",
-    "decimals": 18,
-    "coin_id_token": "gaianet"
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "icnt",
     "ticker": "ICNT",
     "sc": "0xe0cd4cacddcbf4f36e845407ce53e87717b6601d",
@@ -3654,14 +3574,6 @@
     "sc": "0x98d0baa52b2d063e780de12f615f963fe8537553",
     "decimals": 18,
     "coin_id_token": "kaito"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "kat",
-    "ticker": "KAT",
-    "sc": "0xd5390300c5db71f80d46f0fa9983fc72d4d1e3da",
-    "decimals": 18,
-    "coin_id_token": "katana-network"
   },
   {
     "cex": "KRAKEN",
@@ -3705,83 +3617,11 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "mog",
-    "ticker": "MOG",
-    "sc": "0x2da56acb9ea78330f947bd57c54119debda7af71",
-    "decimals": 18,
-    "coin_id_token": "mog-coin"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "morpho",
-    "ticker": "MORPHO",
-    "sc": "0xbaa5cc21fd487b8fcc2f632f3f4e8d37262a0842",
-    "decimals": 18,
-    "coin_id_token": "morpho"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "nock",
-    "ticker": "NOCK",
-    "sc": "0x9b5e262cf9bb04869ab40b19af91d2dc85761722",
-    "decimals": 16,
-    "coin_id_token": "nockchain"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "parti",
-    "ticker": "PARTI",
-    "sc": "0x59264f02d301281f3393e1385c0aefd446eb0f00",
-    "decimals": 18,
-    "coin_id_token": "particle-network"
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "play",
     "ticker": "PLAY",
     "sc": "0x853a7c99227499dba9db8c3a02aa691afdebf841",
     "decimals": 18,
     "coin_id_token": "playsout"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "prime",
-    "ticker": "PRIME",
-    "sc": "0xfa980ced6895ac314e7de34ef1bfae90a5add21b",
-    "decimals": 18,
-    "coin_id_token": "echelon-prime"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "pro",
-    "ticker": "PRO",
-    "sc": "0x18dd5b087bca9920562aff7a0199b96b9230438b",
-    "decimals": 8,
-    "coin_id_token": "propy"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "prompt",
-    "ticker": "PROMPT",
-    "sc": "0x30c7235866872213f68cb1f08c37cb9eccb93452",
-    "decimals": 18,
-    "coin_id_token": "wayfinder"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "pros",
-    "ticker": "PROS",
-    "sc": "0x8b7dde054be9d180c1be7fae0874697374a49832",
-    "decimals": 18,
-    "coin_id_token": "pharos"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "rave",
-    "ticker": "RAVE",
-    "sc": "0x1aa8fd5bcce2231c6100d55bf8b377cff33acfc3",
-    "decimals": 18,
-    "coin_id_token": "ravedao"
   },
   {
     "cex": "KRAKEN",
@@ -3801,14 +3641,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "robo",
-    "ticker": "ROBO",
-    "sc": "0x407a5fb66cb1b3d50004f7091c08a27b42ba6d6f",
-    "decimals": 18,
-    "coin_id_token": "fabric-foundation"
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "roll",
     "ticker": "ROLL",
     "sc": "0xab6363da0c80cef3ae105bd6241e30872355d021",
@@ -3822,22 +3654,6 @@
     "sc": "0xfbb75a59193a3525a8825bebe7d4b56899e2f7e1",
     "decimals": 18,
     "coin_id_token": "researchcoin"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "rsr",
-    "ticker": "RSR",
-    "sc": "0xab36452dbac151be02b16ca17d8919826072f64a",
-    "decimals": 18,
-    "coin_id_token": "reserve-rights"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "sand",
-    "ticker": "SAND",
-    "sc": "0xac531eb26ca1d21b85126de8fb87e80e09002dcf",
-    "decimals": 18,
-    "coin_id_token": "the-sandbox"
   },
   {
     "cex": "KRAKEN",
@@ -3857,91 +3673,11 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "sign",
-    "ticker": "SIGN",
-    "sc": "0x868fced65edbf0056c4163515dd840e9f287a4c3",
-    "decimals": 18,
-    "coin_id_token": "sign"
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "sogni",
     "ticker": "SOGNI",
     "sc": "0xe014d2a4da6e450f21b5050120d291e63c8940fd",
     "decimals": 18,
     "coin_id_token": "sogni-ai"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "sol",
-    "ticker": "SOL",
-    "sc": "0x311935cd80b76769bf2ecc9d8ab7635b2139cf82",
-    "decimals": 9,
-    "coin_id_token": "solana"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "somi",
-    "ticker": "SOMI",
-    "sc": "0x47636b3188774a3e7273d85a537b9ba4ee7b2535",
-    "decimals": 18,
-    "coin_id_token": "somnia"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "soso",
-    "ticker": "SOSO",
-    "sc": "0x624e2e7fdc8903165f64891672267ab0fcb98831",
-    "decimals": 18,
-    "coin_id_token": "sosovalue"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "sup",
-    "ticker": "SUP",
-    "sc": "0xa69f80524381275a7ffdb3ae01c54150644c8792",
-    "decimals": 18,
-    "coin_id_token": "superfluid"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "sxt",
-    "ticker": "SXT",
-    "sc": "0xa2c22252cdc8b7cddee1b0b2e242818509fcf7b8",
-    "decimals": 18,
-    "coin_id_token": "space-and-time"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "synd",
-    "ticker": "SYND",
-    "sc": "0x11dc28d01984079b7efe7763b533e6ed9e3722b9",
-    "decimals": 18,
-    "coin_id_token": "syndicate-io"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "syrup",
-    "ticker": "SYRUP",
-    "sc": "0x688aee022aa544f150678b8e5720b6b96a9e9a2f",
-    "decimals": 18,
-    "coin_id_token": "maple-finance"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "tgbp",
-    "ticker": "TGBP",
-    "sc": "0x27f6c8289550fce67f6b50bed1f519966afe5287",
-    "decimals": 18,
-    "coin_id_token": "tokenised-gbp"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "thq",
-    "ticker": "THQ",
-    "sc": "0x0b2558bdbc7ffec0f327fb3579c23dabd1699706",
-    "decimals": 18,
-    "coin_id_token": "theoriq"
   },
   {
     "cex": "KRAKEN",
@@ -3961,14 +3697,6 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "trx",
-    "ticker": "TRX",
-    "sc": "0x989cfdc3508500d0c91f22896a0d2ee1ef675870",
-    "decimals": 6,
-    "coin_id_token": "tron"
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "up",
     "ticker": "UP",
     "sc": "0x5b2193fdc451c1f847be09ca9d13a4bf60f8c86b",
@@ -3985,27 +3713,11 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "virtual",
-    "ticker": "VIRTUAL",
-    "sc": "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
-    "decimals": 18,
-    "coin_id_token": "virtual-protocol"
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "vvv",
     "ticker": "VVV",
     "sc": "0xacfe6019ed1a7dc6f7b508c02d1b04ec88cc21bf",
     "decimals": 18,
     "coin_id_token": "venice-token"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "waxl",
-    "ticker": "WAXL",
-    "sc": "0x23ee2343b892b1bb63503a4fabc840e0e2c6810f",
-    "decimals": 6,
-    "coin_id_token": ""
   },
   {
     "cex": "KRAKEN",
@@ -4025,51 +3737,11 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "xcn",
-    "ticker": "XCN",
-    "sc": "0x9c632e6aaa3ea73f91554f8a3cb2ed2f29605e0c",
-    "decimals": 18,
-    "coin_id_token": "onyxcoin"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "btc",
-    "ticker": "BTC",
-    "sc": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
-    "decimals": 8,
-    "coin_id_token": "bitcoin"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "zbt",
-    "ticker": "ZBT",
-    "sc": "0xfab99fcf605fd8f4593edb70a43ba56542777777",
-    "decimals": 18,
-    "coin_id_token": "zerobase"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "zkp",
-    "ticker": "ZKP",
-    "sc": "0xc6c1be6c6d828f9cea70f1b8351879510fbf0065",
-    "decimals": 18,
-    "coin_id_token": "zkpass"
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "zora",
     "ticker": "ZORA",
     "sc": "0x1111111111166b7fe7bd91427724b487980afc69",
     "decimals": 18,
     "coin_id_token": "zora"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "zro",
-    "ticker": "ZRO",
-    "sc": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
-    "decimals": 18,
-    "coin_id_token": "layerzero"
   },
   {
     "cex": "COINBASE",

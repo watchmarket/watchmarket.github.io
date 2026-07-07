@@ -449,27 +449,11 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "avax",
-    "ticker": "AVAX",
-    "sc": "0xfvweahmxkfeig8snevq42hc6whryy3efyavebmqdndgcgxn5z",
-    "decimals": 18,
-    "coin_id_token": "avalanche"
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "coq",
     "ticker": "COQ",
     "sc": "0x420fca0121dc28039145009570975747295f2329",
     "decimals": 18,
     "coin_id_token": "coq-inu"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "gmx",
-    "ticker": "GMX",
-    "sc": "0x62edc0692bd897d2295872a9ffcac5425011c661",
-    "decimals": 18,
-    "coin_id_token": "gmx"
   },
   {
     "cex": "KRAKEN",
@@ -505,43 +489,11 @@
   },
   {
     "cex": "KRAKEN",
-    "nama_token": "stg",
-    "ticker": "STG",
-    "sc": "0x2f6f07cdcf3588944bf4c42ac74ff24bf56e7590",
-    "decimals": 18,
-    "coin_id_token": "stargate-finance"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "tusd",
-    "ticker": "TUSD",
-    "sc": "0x1c20e891bab6b1727d14da358fae2984ed9b59eb",
-    "decimals": 18,
-    "coin_id_token": "trueusd"
-  },
-  {
-    "cex": "KRAKEN",
     "nama_token": "usdc",
     "ticker": "USDC",
     "sc": "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e",
     "decimals": 6,
     "coin_id_token": "usd-coin"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "yom",
-    "ticker": "YOM",
-    "sc": "0xb6314518b61b4864162c7ae7fdc36261e0a14c4b",
-    "decimals": 18,
-    "coin_id_token": "yom"
-  },
-  {
-    "cex": "KRAKEN",
-    "nama_token": "zro",
-    "ticker": "ZRO",
-    "sc": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
-    "decimals": 18,
-    "coin_id_token": "layerzero"
   },
   {
     "cex": "COINBASE",
