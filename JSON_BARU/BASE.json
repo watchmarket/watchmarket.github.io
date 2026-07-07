@@ -1,0 +1,4578 @@
+[
+  {
+    "cex": "BINANCE",
+    "nama_token": "c",
+    "ticker": "C",
+    "sc": "0xba12bc7b210e61e5d3110b997a63ea216e0e18f7",
+    "decimals": 18,
+    "coin_id_token": "chainbase"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "f",
+    "ticker": "F",
+    "sc": "0x2c24497d4086490e7ead87cc12597fb50c2e6ed6",
+    "decimals": 18,
+    "coin_id_token": "synfutures"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "sand",
+    "ticker": "SAND",
+    "sc": "0xac531eb26ca1d21b85126de8fb87e80e09002dcf",
+    "decimals": 18,
+    "coin_id_token": "the-sandbox"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "avnt",
+    "ticker": "AVNT",
+    "sc": "0x696f9436b67233384889472cd7cd58a6fb5df4f1",
+    "decimals": 18,
+    "coin_id_token": "avantis"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "bio",
+    "ticker": "BIO",
+    "sc": "0x226a2fa2556c48245e57cd1cba4c6c9e67077dd2",
+    "decimals": 18,
+    "coin_id_token": "bio"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "mav",
+    "ticker": "MAV",
+    "sc": "0x64b88c73a5dfa78d1713fe1b4c69a22d7e0faaa7",
+    "decimals": 18,
+    "coin_id_token": "maverick-protocol"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "zbt",
+    "ticker": "ZBT",
+    "sc": "0xfab99fcf605fd8f4593edb70a43ba56542777777",
+    "decimals": 18,
+    "coin_id_token": "zerobase"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "aixbt",
+    "ticker": "AIXBT",
+    "sc": "0x4f9fd6be4a90f2620860d680c0d4d5fb53d1a825",
+    "decimals": 18,
+    "coin_id_token": "aixbt"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "hyper",
+    "ticker": "HYPER",
+    "sc": "0xc9d23ed2adb0f551369946bd377f8644ce1ca5c4",
+    "decimals": 18,
+    "coin_id_token": "hyperlane"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "zen",
+    "ticker": "ZEN",
+    "sc": "0xf43eb8de897fbc7f2502483b2bef7bb9ea179229",
+    "decimals": 18,
+    "coin_id_token": "horizen"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "opg",
+    "ticker": "OPG",
+    "sc": "0xfbc2051ae2265686a469421b2c5a2d5462fbf5eb",
+    "decimals": 18,
+    "coin_id_token": "opengradient"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "sxt",
+    "ticker": "SXT",
+    "sc": "0xa2c22252cdc8b7cddee1b0b2e242818509fcf7b8",
+    "decimals": 18,
+    "coin_id_token": "space-and-time"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "sapien",
+    "ticker": "SAPIEN",
+    "sc": "0xc729777d0470f30612b1564fd96e8dd26f5814e3",
+    "decimals": 18,
+    "coin_id_token": "sapien-io"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "allo",
+    "ticker": "ALLO",
+    "sc": "0x032d86656db142138ac97d2c5c4e3766e8c0482d",
+    "decimals": 18,
+    "coin_id_token": "allora"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "zkp",
+    "ticker": "ZKP",
+    "sc": "0xc6c1be6c6d828f9cea70f1b8351879510fbf0065",
+    "decimals": 18,
+    "coin_id_token": "zkpass"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "morpho",
+    "ticker": "MORPHO",
+    "sc": "0xbaa5cc21fd487b8fcc2f632f3f4e8d37262a0842",
+    "decimals": 18,
+    "coin_id_token": "morpho"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "usdc",
+    "ticker": "USDC",
+    "sc": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "decimals": 6,
+    "coin_id_token": "usd-coin"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "zro",
+    "ticker": "ZRO",
+    "sc": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+    "decimals": 18,
+    "coin_id_token": "layerzero"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "virtual",
+    "ticker": "VIRTUAL",
+    "sc": "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
+    "decimals": 18,
+    "coin_id_token": "virtual-protocol"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "gps",
+    "ticker": "GPS",
+    "sc": "0x0c1dc73159e30c4b06170f2593d3118968a0dca5",
+    "decimals": 18,
+    "coin_id_token": "goplus-security"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "towns",
+    "ticker": "TOWNS",
+    "sc": "0x00000000a22c618fd6b4d7e9a335c4b96b189a38",
+    "decimals": 18,
+    "coin_id_token": "towns"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "somi",
+    "ticker": "SOMI",
+    "sc": "0x47636b3188774a3e7273d85a537b9ba4ee7b2535",
+    "decimals": 18,
+    "coin_id_token": "somnia"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "mira",
+    "ticker": "MIRA",
+    "sc": "0x7aafd31a321d3627b30a8e2171264b56852187fe",
+    "decimals": 18,
+    "coin_id_token": "mira-network"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "home",
+    "ticker": "HOME",
+    "sc": "0x4bfaa776991e85e5f8b1255461cbbd216cfc714f",
+    "decimals": 18,
+    "coin_id_token": "defi-app"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "brev",
+    "ticker": "BREV",
+    "sc": "0x086f405146ce90135750bbec9a063a8b20a8bffb",
+    "decimals": 18,
+    "coin_id_token": "brevis"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "sign",
+    "ticker": "SIGN",
+    "sc": "0x868fced65edbf0056c4163515dd840e9f287a4c3",
+    "decimals": 18,
+    "coin_id_token": "sign"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "eul",
+    "ticker": "EUL",
+    "sc": "0xa153ad732f831a79b5575fa02e793ec4e99181b0",
+    "decimals": 18,
+    "coin_id_token": "euler-finance"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "parti",
+    "ticker": "PARTI",
+    "sc": "0x59264f02d301281f3393e1385c0aefd446eb0f00",
+    "decimals": 18,
+    "coin_id_token": "particle-network"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "awe",
+    "ticker": "AWE",
+    "sc": "0x1b4617734c43f6159f3a70b7e06d883647512778",
+    "decimals": 18,
+    "coin_id_token": "awe-network"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "axl",
+    "ticker": "AXL",
+    "sc": "0x23ee2343b892b1bb63503a4fabc840e0e2c6810f",
+    "decimals": 6,
+    "coin_id_token": "axelar"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "syrup",
+    "ticker": "SYRUP",
+    "sc": "0x688aee022aa544f150678b8e5720b6b96a9e9a2f",
+    "decimals": 18,
+    "coin_id_token": "maple-finance"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "kaito",
+    "ticker": "KAITO",
+    "sc": "0x98d0baa52b2d063e780de12f615f963fe8537553",
+    "decimals": 18,
+    "coin_id_token": "kaito"
+  },
+  {
+    "cex": "BINANCE",
+    "nama_token": "rdnt",
+    "ticker": "RDNT",
+    "sc": "0xd722e55c1d9d9fa0021a5215cbb904b92b3dc5d4",
+    "decimals": 18,
+    "coin_id_token": "radiant-capital"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "c",
+    "ticker": "C",
+    "sc": "0xba12bc7b210e61e5d3110b997a63ea216e0e18f7",
+    "decimals": 18,
+    "coin_id_token": "chainbase"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "prompt",
+    "ticker": "PROMPT",
+    "sc": "0x30c7235866872213f68cb1f08c37cb9eccb93452",
+    "decimals": 18,
+    "coin_id_token": "wayfinder"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "o",
+    "ticker": "O",
+    "sc": "0x182fa643e5f29d5eca75e7b9cf9336a3fe4620b2",
+    "decimals": 18,
+    "coin_id_token": "o1-exchange"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "bks",
+    "ticker": "BKS",
+    "sc": "0xf578c9e57b40a00aef168774f3e47b04c03bf59a",
+    "decimals": 18,
+    "coin_id_token": "backstage"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "sxt",
+    "ticker": "SXT",
+    "sc": "0xa2c22252cdc8b7cddee1b0b2e242818509fcf7b8",
+    "decimals": 18,
+    "coin_id_token": "space-and-time"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "trust",
+    "ticker": "TRUST",
+    "sc": "0x6cd905df2ed214b22e0d48ff17cd4200c1c6d8a3",
+    "decimals": 18,
+    "coin_id_token": "intuition"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "plai",
+    "ticker": "PLAI",
+    "sc": "0x9215e6362f76fc781df00d51293cc7179c6c99a4",
+    "decimals": 18,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "play",
+    "ticker": "PLAY",
+    "sc": "0x853a7c99227499dba9db8c3a02aa691afdebf841",
+    "decimals": 18,
+    "coin_id_token": "playsout"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "gaia",
+    "ticker": "GAIA",
+    "sc": "0x6fbf03efa4363ca0afe0c9c3906f7d610890b683",
+    "decimals": 18,
+    "coin_id_token": "gaianet"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "thq",
+    "ticker": "THQ",
+    "sc": "0x0b2558bdbc7ffec0f327fb3579c23dabd1699706",
+    "decimals": 18,
+    "coin_id_token": "theoriq"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "cgn",
+    "ticker": "CGN",
+    "sc": "0x2e6c4bd1c947e195645d2b920b827498cfaa6766",
+    "decimals": 18,
+    "coin_id_token": "cygnus-finance"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "superform",
+    "ticker": "SUPERFORM",
+    "sc": "0x5b2193fdc451c1f847be09ca9d13a4bf60f8c86b",
+    "decimals": 18,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "elsa",
+    "ticker": "ELSA",
+    "sc": "0x29cc30f9d113b356ce408667aa6433589cecbdca",
+    "decimals": 18,
+    "coin_id_token": "heyelsa"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "ttn",
+    "ticker": "TTN",
+    "sc": "0x225530e4afcdb5eccb96af7a45d94452a10a3879",
+    "decimals": 18,
+    "coin_id_token": "toyow-token"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "ctr",
+    "ticker": "CTR",
+    "sc": "0x11030f79109269d796fd0fb956d6244e502757f7",
+    "decimals": 18,
+    "coin_id_token": "citrea"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "svts",
+    "ticker": "SVTS",
+    "sc": "0xb4e017223fd3d639d0264de4da1b9e080325cb5e",
+    "decimals": 18,
+    "coin_id_token": "syncvault"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "b3",
+    "ticker": "B3",
+    "sc": "0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3",
+    "decimals": 18,
+    "coin_id_token": "b3"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "cookie",
+    "ticker": "COOKIE",
+    "sc": "0xc0041ef357b183448b235a8ea73ce4e4ec8c265f",
+    "decimals": 18,
+    "coin_id_token": "cookie"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "clawbank",
+    "ticker": "CLAWBANK",
+    "sc": "0x16332535e2c27da578bc2e82beb09ce9d3c8eb07",
+    "decimals": 18,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "aerobud",
+    "ticker": "AEROBUD",
+    "sc": "0xfad8cb754230dbfd249db0e8eccb5142dd675a0d",
+    "decimals": 18,
+    "coin_id_token": "aerobud"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "esx",
+    "ticker": "ESX",
+    "sc": "0x6a72d3a87f97a0fee2c2ee4233bdaebc32813d7a",
+    "decimals": 9,
+    "coin_id_token": "estatex"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "vvv",
+    "ticker": "VVV",
+    "sc": "0xacfe6019ed1a7dc6f7b508c02d1b04ec88cc21bf",
+    "decimals": 18,
+    "coin_id_token": "venice-token"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "lunam",
+    "ticker": "LUNAM",
+    "sc": "0x852a1771cfa50d237026cd4263bfce6c62d4e908",
+    "decimals": 18,
+    "coin_id_token": "adlunam"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "fai",
+    "ticker": "FAI",
+    "sc": "0xb33ff54b9f7242ef1593d2c9bcd8f9df46c77935",
+    "decimals": 18,
+    "coin_id_token": "freysa-ai"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "kaito",
+    "ticker": "KAITO",
+    "sc": "0x98d0baa52b2d063e780de12f615f963fe8537553",
+    "decimals": 18,
+    "coin_id_token": "kaito"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "lcap",
+    "ticker": "LCAP",
+    "sc": "0x4da9a0f397db1397902070f93a4d6ddbc0e0e6e8",
+    "decimals": 18,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "fun",
+    "ticker": "FUN",
+    "sc": "0x16ee7ecac70d1028e7712751e2ee6ba808a7dd92",
+    "decimals": 18,
+    "coin_id_token": "funtoken"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "handl",
+    "ticker": "HANDL",
+    "sc": "0x3bbcb624cb9a1f73163a886f460f47603e5e4425",
+    "decimals": 18,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "edge1",
+    "ticker": "EDGE1",
+    "sc": "0xed6e000def95780fb89734c07ee2ce9f6dcaf110",
+    "decimals": 18,
+    "coin_id_token": "definitive"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "mwxt",
+    "ticker": "MWXT",
+    "sc": "0x93918567cdd1bc845be955325a43419a7c56d66f",
+    "decimals": 18,
+    "coin_id_token": "mwx-token"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "atwo",
+    "ticker": "ATWO",
+    "sc": "0x499d35ebe6cee9b2ac35fd003fcbbeeb9cfc7b32",
+    "decimals": 18,
+    "coin_id_token": "arena-two"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "lingo",
+    "ticker": "LINGO",
+    "sc": "0xfb42da273158b0f642f59f2ba7cc1d5457481677",
+    "decimals": 18,
+    "coin_id_token": "lingo"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "gps",
+    "ticker": "GPS",
+    "sc": "0x0c1dc73159e30c4b06170f2593d3118968a0dca5",
+    "decimals": 18,
+    "coin_id_token": "goplus-security"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "auki",
+    "ticker": "AUKI",
+    "sc": "0xf9569cfb8fd265e91aa478d86ae8c78b8af55df4",
+    "decimals": 18,
+    "coin_id_token": "auki-labs"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "sign",
+    "ticker": "SIGN",
+    "sc": "0x868fced65edbf0056c4163515dd840e9f287a4c3",
+    "decimals": 18,
+    "coin_id_token": "sign"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "hint",
+    "ticker": "HINT",
+    "sc": "0x91da780bc7f4b7cf19abe90411a2a296ec5ff787",
+    "decimals": 18,
+    "coin_id_token": "hive-intelligence"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "heu",
+    "ticker": "HEU",
+    "sc": "0xef22cb48b8483df6152e1423b19df5553bbd818b",
+    "decimals": 18,
+    "coin_id_token": "heurist-ai"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "rwainc",
+    "ticker": "RWAINC",
+    "sc": "0xe2b1dc2d4a3b4e59fdf0c47b71a7a86391a8b35a",
+    "decimals": 18,
+    "coin_id_token": "rwa-inc"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "gitlawb",
+    "ticker": "GITLAWB",
+    "sc": "0x5f980dcfc4c0fa3911554cf5ab288ed0eb13dba3",
+    "decimals": 18,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "avnt",
+    "ticker": "AVNT",
+    "sc": "0x696f9436b67233384889472cd7cd58a6fb5df4f1",
+    "decimals": 18,
+    "coin_id_token": "avantis"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "imgn",
+    "ticker": "IMGN",
+    "sc": "0x9bba915f036158582c20b51113b925f243a1a1a1",
+    "decimals": 18,
+    "coin_id_token": "imgn-labs"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "aero",
+    "ticker": "AERO",
+    "sc": "0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+    "decimals": 18,
+    "coin_id_token": "aerodrome-finance"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "tibbir",
+    "ticker": "TIBBIR",
+    "sc": "0xa4a2e2ca3fbfe21aed83471d28b6f65a233c6e00",
+    "decimals": 18,
+    "coin_id_token": "ribbita-by-virtuals"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "zen",
+    "ticker": "ZEN",
+    "sc": "0xf43eb8de897fbc7f2502483b2bef7bb9ea179229",
+    "decimals": 18,
+    "coin_id_token": "horizen"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "imo",
+    "ticker": "IMO",
+    "sc": "0x5a7a2bf9ffae199f088b25837dcd7e115cf8e1bb",
+    "decimals": 18,
+    "coin_id_token": "imo"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "zora",
+    "ticker": "ZORA",
+    "sc": "0x1111111111166b7fe7bd91427724b487980afc69",
+    "decimals": 18,
+    "coin_id_token": "zora"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "zro",
+    "ticker": "ZRO",
+    "sc": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+    "decimals": 18,
+    "coin_id_token": "layerzero"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "mira",
+    "ticker": "MIRA",
+    "sc": "0x7aafd31a321d3627b30a8e2171264b56852187fe",
+    "decimals": 18,
+    "coin_id_token": "mira-network"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "doginme",
+    "ticker": "DOGINME",
+    "sc": "0x6921b130d297cc43754afba22e5eac0fbf8db75b",
+    "decimals": 18,
+    "coin_id_token": "doginme"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "rize",
+    "ticker": "RIZE",
+    "sc": "0x9818b6c09f5ecc843060927e8587c427c7c93583",
+    "decimals": 18,
+    "coin_id_token": "rize"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "giza",
+    "ticker": "GIZA",
+    "sc": "0x590830dfdf9a3f68afcdde2694773debdf267774",
+    "decimals": 18,
+    "coin_id_token": "giza"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "usdc",
+    "ticker": "USDC",
+    "sc": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "decimals": 6,
+    "coin_id_token": "usd-coin"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "kta",
+    "ticker": "KTA",
+    "sc": "0xc0634090f2fe6c6d75e61be2b949464abb498973",
+    "decimals": 18,
+    "coin_id_token": "keeta"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "recall",
+    "ticker": "RECALL",
+    "sc": "0x1f16e03c1a5908818f47f6ee7bb16690b40d0671",
+    "decimals": 18,
+    "coin_id_token": "recall-network"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "toshi",
+    "ticker": "TOSHI",
+    "sc": "0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4",
+    "decimals": 18,
+    "coin_id_token": "toshithecat"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "edel",
+    "ticker": "EDEL",
+    "sc": "0xfb31f85a8367210b2e4ed2360d2da9dc2d2ccc95",
+    "decimals": 18,
+    "coin_id_token": "edel"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "nock",
+    "ticker": "NOCK",
+    "sc": "0x9b5e262cf9bb04869ab40b19af91d2dc85761722",
+    "decimals": 16,
+    "coin_id_token": "nockchain"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "flock",
+    "ticker": "FLOCK",
+    "sc": "0x5ab3d4c385b400f3abb49e80de2faf6a88a7b691",
+    "decimals": 18,
+    "coin_id_token": "flock-io"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "mey",
+    "ticker": "MEY",
+    "sc": "0x8bfac1b375bf2894d6f12fb2eb48b1c1a7916789",
+    "decimals": 18,
+    "coin_id_token": "mey-network"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "tower",
+    "ticker": "TOWER",
+    "sc": "0xf7c1cefcf7e1dd8161e00099facd3e1db9e528ee",
+    "decimals": 18,
+    "coin_id_token": "tower-token"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "mog",
+    "ticker": "MOG",
+    "sc": "0x2da56acb9ea78330f947bd57c54119debda7af71",
+    "decimals": 18,
+    "coin_id_token": "mog-coin"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "virtual",
+    "ticker": "VIRTUAL",
+    "sc": "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
+    "decimals": 18,
+    "coin_id_token": "virtual-protocol"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "degen",
+    "ticker": "DEGEN",
+    "sc": "0x4ed4e862860bed51a9570b96d89af5e1b0efefed",
+    "decimals": 18,
+    "coin_id_token": "degen-base"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "home",
+    "ticker": "HOME",
+    "sc": "0x4bfaa776991e85e5f8b1255461cbbd216cfc714f",
+    "decimals": 18,
+    "coin_id_token": "defi-app"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "mavia",
+    "ticker": "MAVIA",
+    "sc": "0x24fcfc492c1393274b6bcd568ac9e225bec93584",
+    "decimals": 18,
+    "coin_id_token": "heroes-of-mavia"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "soso",
+    "ticker": "SOSO",
+    "sc": "0x624e2e7fdc8903165f64891672267ab0fcb98831",
+    "decimals": 18,
+    "coin_id_token": "sosovalue"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "bnkr",
+    "ticker": "BNKR",
+    "sc": "0x22af33fe49fd1fa80c7149773dde5890d3c76f3b",
+    "decimals": 18,
+    "coin_id_token": "bankr-coin"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "openx",
+    "ticker": "OPENX",
+    "sc": "0xa66b448f97cbf58d12f00711c02bac2d9eac6f7f",
+    "decimals": 18,
+    "coin_id_token": "openxai-network"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "check",
+    "ticker": "CHECK",
+    "sc": "0x9126236476efba9ad8ab77855c60eb5bf37586eb",
+    "decimals": 18,
+    "coin_id_token": "checkmate"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "obt",
+    "ticker": "OBT",
+    "sc": "0x514d8e8099286a13486ef6c525c120f51c239b52",
+    "decimals": 18,
+    "coin_id_token": "orbiter-finance"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "ofc",
+    "ticker": "OFC",
+    "sc": "0x752c5a95d202972e124390f30a50154409d3c858",
+    "decimals": 18,
+    "coin_id_token": "onefootball-credits"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "moew",
+    "ticker": "MOEW",
+    "sc": "0x15ac90165f8b45a80534228bdcb124a011f62fee",
+    "decimals": 18,
+    "coin_id_token": "donotfomoew"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "opg",
+    "ticker": "OPG",
+    "sc": "0xfbc2051ae2265686a469421b2c5a2d5462fbf5eb",
+    "decimals": 18,
+    "coin_id_token": "opengradient"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "allo",
+    "ticker": "ALLO",
+    "sc": "0x032d86656db142138ac97d2c5c4e3766e8c0482d",
+    "decimals": 18,
+    "coin_id_token": "allora"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "carv",
+    "ticker": "CARV",
+    "sc": "0xc08cd26474722ce93f4d0c34d16201461c10aa8c",
+    "decimals": 18,
+    "coin_id_token": "carv"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "rnbw",
+    "ticker": "RNBW",
+    "sc": "0xa53887f7e7c1bf5010b8627f1c1ba94fe7a5d6e0",
+    "decimals": 18,
+    "coin_id_token": "rainbow"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "icnt",
+    "ticker": "ICNT",
+    "sc": "0xe0cd4cacddcbf4f36e845407ce53e87717b6601d",
+    "decimals": 18,
+    "coin_id_token": "impossible-cloud-network"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "towns",
+    "ticker": "TOWNS",
+    "sc": "0x00000000a22c618fd6b4d7e9a335c4b96b189a38",
+    "decimals": 18,
+    "coin_id_token": "towns"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "ovpp",
+    "ticker": "OVPP",
+    "sc": "0x8c0d3adcf8ce094e1ae437557ec90a6374dc9bdd",
+    "decimals": 9,
+    "coin_id_token": "openvpp-energy"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "gochu",
+    "ticker": "GOCHU",
+    "sc": "0x9aaae745cf2830fb8ddc6248b17436dc3a5e701c",
+    "decimals": 18,
+    "coin_id_token": "gochujangcoin"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "deus",
+    "ticker": "DEUS",
+    "sc": "0x940a319b75861014a220d9c6c144d108552b089b",
+    "decimals": 18,
+    "coin_id_token": "deus-token"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "lmts",
+    "ticker": "LMTS",
+    "sc": "0x9eadbe35f3ee3bf3e28180070c429298a1b02f93",
+    "decimals": 18,
+    "coin_id_token": "limitless-lmts"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "roll",
+    "ticker": "ROLL",
+    "sc": "0xab6363da0c80cef3ae105bd6241e30872355d021",
+    "decimals": 18,
+    "coin_id_token": "rollx"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "aixbt",
+    "ticker": "AIXBT",
+    "sc": "0x4f9fd6be4a90f2620860d680c0d4d5fb53d1a825",
+    "decimals": 18,
+    "coin_id_token": "aixbt"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "grampus",
+    "ticker": "GRAMPUS",
+    "sc": "0x856d602e73545deaa1491a3726cf628d49f74f51",
+    "decimals": 18,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "sapien",
+    "ticker": "SAPIEN",
+    "sc": "0xc729777d0470f30612b1564fd96e8dd26f5814e3",
+    "decimals": 18,
+    "coin_id_token": "sapien-io"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "mochi",
+    "ticker": "MOCHI",
+    "sc": "0xf6e932ca12afa26665dc4dde7e27be02a7c02e50",
+    "decimals": 18,
+    "coin_id_token": "mochi-the-catcoin-new"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "rem",
+    "ticker": "REM",
+    "sc": "0x83d5d441ed15737d34226b682f7427d2217f2a8f",
+    "decimals": 18,
+    "coin_id_token": "real-estate-metaverse"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "riz",
+    "ticker": "RIZ",
+    "sc": "0x67543cf0304c19ca62ac95ba82fd4f4b40788dc1",
+    "decimals": 8,
+    "coin_id_token": "rivalz-network"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "brev",
+    "ticker": "BREV",
+    "sc": "0x086f405146ce90135750bbec9a063a8b20a8bffb",
+    "decimals": 18,
+    "coin_id_token": "brevis"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "clanker",
+    "ticker": "CLANKER",
+    "sc": "0x1bc0c42215582d5a085795f4badbac3ff36d1bcb",
+    "decimals": 18,
+    "coin_id_token": "tokenbot-2"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "mamo",
+    "ticker": "MAMO",
+    "sc": "0x7300b37dfdfab110d83290a29dfb31b1740219fe",
+    "decimals": 18,
+    "coin_id_token": "mamo"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "rsc",
+    "ticker": "RSC",
+    "sc": "0xfbb75a59193a3525a8825bebe7d4b56899e2f7e1",
+    "decimals": 18,
+    "coin_id_token": "researchcoin"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "art",
+    "ticker": "ART",
+    "sc": "0x4dec3139f4a6c638e26452d32181fe87a7530805",
+    "decimals": 18,
+    "coin_id_token": "liveart"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "auc",
+    "ticker": "AUC",
+    "sc": "0x1584b02d095a4b1b9a11a4049193d155b4f75454",
+    "decimals": 18,
+    "coin_id_token": "advanced-united-continent-project"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "aora",
+    "ticker": "AORA",
+    "sc": "0x6e84030fa86ebf585e3e18fe557e5612f7e93bff",
+    "decimals": 18,
+    "coin_id_token": "atlasora"
+  },
+  {
+    "cex": "MEXC",
+    "nama_token": "awe",
+    "ticker": "AWE",
+    "sc": "0x1b4617734c43f6159f3a70b7e06d883647512778",
+    "decimals": 18,
+    "coin_id_token": "awe-network"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "scor",
+    "ticker": "SCOR",
+    "sc": "0xd67ec255100ef200a439d09ff865fbaa2ad9c730",
+    "decimals": 18,
+    "coin_id_token": "scor"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "c",
+    "ticker": "C",
+    "sc": "0xba12bc7b210e61e5d3110b997a63ea216e0e18f7",
+    "decimals": 18,
+    "coin_id_token": "chainbase"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "f",
+    "ticker": "F",
+    "sc": "0x2c24497d4086490e7ead87cc12597fb50c2e6ed6",
+    "decimals": 18,
+    "coin_id_token": "synfutures"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "o",
+    "ticker": "O",
+    "sc": "0x182fa643e5f29d5eca75e7b9cf9336a3fe4620b2",
+    "decimals": 18,
+    "coin_id_token": "o1-exchange"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "bid",
+    "ticker": "BID",
+    "sc": "0xa1832f7f4e534ae557f9b5ab76de54b1873e498b",
+    "decimals": 18,
+    "coin_id_token": "creatorbid"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "dyor",
+    "ticker": "DYOR",
+    "sc": "0xa001dcc9a7974dae133a11d2800a7abf7b8f5f3c",
+    "decimals": 18,
+    "coin_id_token": "do-your-own-research"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "sqt",
+    "ticker": "SQT",
+    "sc": "0x858c50c3af1913b0e849afdb74617388a1a5340d",
+    "decimals": 18,
+    "coin_id_token": "subquery-network"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "gamevirtual",
+    "ticker": "GAMEVIRTUAL",
+    "sc": "0x1c4cca7c5db003824208adda61bd749e55f463a3",
+    "decimals": 18,
+    "coin_id_token": "game-by-virtuals"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "sxt",
+    "ticker": "SXT",
+    "sc": "0xa2c22252cdc8b7cddee1b0b2e242818509fcf7b8",
+    "decimals": 18,
+    "coin_id_token": "space-and-time"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "trust",
+    "ticker": "TRUST",
+    "sc": "0x6cd905df2ed214b22e0d48ff17cd4200c1c6d8a3",
+    "decimals": 18,
+    "coin_id_token": "intuition"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "thq",
+    "ticker": "THQ",
+    "sc": "0x0b2558bdbc7ffec0f327fb3579c23dabd1699706",
+    "decimals": 18,
+    "coin_id_token": "theoriq"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "cgn",
+    "ticker": "CGN",
+    "sc": "0x2e6c4bd1c947e195645d2b920b827498cfaa6766",
+    "decimals": 18,
+    "coin_id_token": "cygnus-finance"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "superform",
+    "ticker": "SUPERFORM",
+    "sc": "0x5b2193fdc451c1f847be09ca9d13a4bf60f8c86b",
+    "decimals": 18,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "elsa",
+    "ticker": "ELSA",
+    "sc": "0x29cc30f9d113b356ce408667aa6433589cecbdca",
+    "decimals": 18,
+    "coin_id_token": "heyelsa"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "trc",
+    "ticker": "TRC",
+    "sc": "0xc23e4352cdba6fc951398bf274619c4529eac867",
+    "decimals": 18,
+    "coin_id_token": "terrace"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "ctr",
+    "ticker": "CTR",
+    "sc": "0x11030f79109269d796fd0fb956d6244e502757f7",
+    "decimals": 18,
+    "coin_id_token": "citrea"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "mag7ssi",
+    "ticker": "MAG7SSI",
+    "sc": "0x9e6a46f294bb67c20f1d1e7afb0bbef614403b55",
+    "decimals": 8,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "xtta",
+    "ticker": "XTTA",
+    "sc": "0xb4c6458c2e67da23caa4ffadb9b4d3659da98164",
+    "decimals": 18,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "b3",
+    "ticker": "B3",
+    "sc": "0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3",
+    "decimals": 18,
+    "coin_id_token": "b3"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "cookie",
+    "ticker": "COOKIE",
+    "sc": "0xc0041ef357b183448b235a8ea73ce4e4ec8c265f",
+    "decimals": 18,
+    "coin_id_token": "cookie"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "una",
+    "ticker": "UNA",
+    "sc": "0x24569d33653c404f90af10a2b98d6e0030d3d267",
+    "decimals": 18,
+    "coin_id_token": "unagi-token"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "waxl",
+    "ticker": "WAXL",
+    "sc": "0x23ee2343b892b1bb63503a4fabc840e0e2c6810f",
+    "decimals": 6,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "titn",
+    "ticker": "TITN",
+    "sc": "0xe62bfbe57763ec24c0f130426f34dbce11fc5b06",
+    "decimals": 18,
+    "coin_id_token": "thorwallet-titn"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "emt",
+    "ticker": "EMT",
+    "sc": "0xe2c86869216ac578bd62a4b8313770d9ee359a05",
+    "decimals": 18,
+    "coin_id_token": "email-token"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "vvv",
+    "ticker": "VVV",
+    "sc": "0xacfe6019ed1a7dc6f7b508c02d1b04ec88cc21bf",
+    "decimals": 18,
+    "coin_id_token": "venice-token"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "lunai",
+    "ticker": "LUNAI",
+    "sc": "0x55cd6469f597452b5a7536e2cd98fde4c1247ee4",
+    "decimals": 18,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "fai",
+    "ticker": "FAI",
+    "sc": "0xb33ff54b9f7242ef1593d2c9bcd8f9df46c77935",
+    "decimals": 18,
+    "coin_id_token": "freysa-ai"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "kaito",
+    "ticker": "KAITO",
+    "sc": "0x98d0baa52b2d063e780de12f615f963fe8537553",
+    "decimals": 18,
+    "coin_id_token": "kaito"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "fun",
+    "ticker": "FUN",
+    "sc": "0x16ee7ecac70d1028e7712751e2ee6ba808a7dd92",
+    "decimals": 18,
+    "coin_id_token": "funtoken"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "lingo",
+    "ticker": "LINGO",
+    "sc": "0xfb42da273158b0f642f59f2ba7cc1d5457481677",
+    "decimals": 18,
+    "coin_id_token": "lingo"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "gps",
+    "ticker": "GPS",
+    "sc": "0x0c1dc73159e30c4b06170f2593d3118968a0dca5",
+    "decimals": 18,
+    "coin_id_token": "goplus-security"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "sign",
+    "ticker": "SIGN",
+    "sc": "0x868fced65edbf0056c4163515dd840e9f287a4c3",
+    "decimals": 18,
+    "coin_id_token": "sign"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "hint",
+    "ticker": "HINT",
+    "sc": "0x91da780bc7f4b7cf19abe90411a2a296ec5ff787",
+    "decimals": 18,
+    "coin_id_token": "hive-intelligence"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "heu",
+    "ticker": "HEU",
+    "sc": "0xef22cb48b8483df6152e1423b19df5553bbd818b",
+    "decimals": 18,
+    "coin_id_token": "heurist-ai"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "rwainc",
+    "ticker": "RWAINC",
+    "sc": "0xe2b1dc2d4a3b4e59fdf0c47b71a7a86391a8b35a",
+    "decimals": 18,
+    "coin_id_token": "rwa-inc"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "eqty",
+    "ticker": "EQTY",
+    "sc": "0xc71f37d9bf4c5d1e7fe4bccb97e6f30b11b37d29",
+    "decimals": 18,
+    "coin_id_token": "lto-network"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "mirror",
+    "ticker": "MIRROR",
+    "sc": "0xe1bfa25468af64e366ddafc9d91bcc6c97439a14",
+    "decimals": 18,
+    "coin_id_token": "black-mirror-experience"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "avnt",
+    "ticker": "AVNT",
+    "sc": "0x696f9436b67233384889472cd7cd58a6fb5df4f1",
+    "decimals": 18,
+    "coin_id_token": "avantis"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "lvly",
+    "ticker": "LVLY",
+    "sc": "0xc734635cd30e882037c3f3de1ebccf9fa9d27d9f",
+    "decimals": 18,
+    "coin_id_token": "lyvely"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "sogni",
+    "ticker": "SOGNI",
+    "sc": "0xe014d2a4da6e450f21b5050120d291e63c8940fd",
+    "decimals": 18,
+    "coin_id_token": "sogni-ai"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "xswap",
+    "ticker": "XSWAP",
+    "sc": "0x8fe815417913a93ea99049fc0718ee1647a2a07c",
+    "decimals": 18,
+    "coin_id_token": "xswap"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "benji",
+    "ticker": "BENJI",
+    "sc": "0xbc45647ea894030a4e9801ec03479739fa2485f0",
+    "decimals": 18,
+    "coin_id_token": "basenjibase"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "aero",
+    "ticker": "AERO",
+    "sc": "0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+    "decimals": 18,
+    "coin_id_token": "aerodrome-finance"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "zora",
+    "ticker": "ZORA",
+    "sc": "0x1111111111166b7fe7bd91427724b487980afc69",
+    "decimals": 18,
+    "coin_id_token": "zora"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "isk",
+    "ticker": "ISK",
+    "sc": "0xd85eff20288ca72ea9eecffb428f89ee5066ca5c",
+    "decimals": 18,
+    "coin_id_token": "iskra"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "mira",
+    "ticker": "MIRA",
+    "sc": "0x7aafd31a321d3627b30a8e2171264b56852187fe",
+    "decimals": 18,
+    "coin_id_token": "mira-network"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "skop",
+    "ticker": "SKOP",
+    "sc": "0x6d3b8c76c5396642960243febf736c6be8b60562",
+    "decimals": 18,
+    "coin_id_token": "skulls-of-pepe-token"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "doginme",
+    "ticker": "DOGINME",
+    "sc": "0x6921b130d297cc43754afba22e5eac0fbf8db75b",
+    "decimals": 18,
+    "coin_id_token": "doginme"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "brett",
+    "ticker": "BRETT",
+    "sc": "0x532f27101965dd16442e59d40670faf5ebb142e4",
+    "decimals": 18,
+    "coin_id_token": "based-brett"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "miggles",
+    "ticker": "MIGGLES",
+    "sc": "0xb1a03eda10342529bbf8eb700a06c60441fef25d",
+    "decimals": 18,
+    "coin_id_token": "mr-miggles"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "archai",
+    "ticker": "ARCHAI",
+    "sc": "0xd3b0b58ec9516e4b875a075328e2cb059d4d54db",
+    "decimals": 18,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "giza",
+    "ticker": "GIZA",
+    "sc": "0x590830dfdf9a3f68afcdde2694773debdf267774",
+    "decimals": 18,
+    "coin_id_token": "giza"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "usdc",
+    "ticker": "USDC",
+    "sc": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "decimals": 6,
+    "coin_id_token": "usd-coin"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "recall",
+    "ticker": "RECALL",
+    "sc": "0x1f16e03c1a5908818f47f6ee7bb16690b40d0671",
+    "decimals": 18,
+    "coin_id_token": "recall-network"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "toshi",
+    "ticker": "TOSHI",
+    "sc": "0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4",
+    "decimals": 18,
+    "coin_id_token": "toshithecat"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "edge",
+    "ticker": "EDGE",
+    "sc": "0xed6e000def95780fb89734c07ee2ce9f6dcaf110",
+    "decimals": 18,
+    "coin_id_token": "definitive"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "parti",
+    "ticker": "PARTI",
+    "sc": "0x59264f02d301281f3393e1385c0aefd446eb0f00",
+    "decimals": 18,
+    "coin_id_token": "particle-network"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "lyp",
+    "ticker": "LYP",
+    "sc": "0x4837b18a6d7af6159c8665505b90a2ed393255e0",
+    "decimals": 18,
+    "coin_id_token": "lympid"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "aix9",
+    "ticker": "AIX9",
+    "sc": "0x8e306e02ec1effc4fdad3f952fbeeebf3730ae19",
+    "decimals": 18,
+    "coin_id_token": "athenax9"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "mav",
+    "ticker": "MAV",
+    "sc": "0x64b88c73a5dfa78d1713fe1b4c69a22d7e0faaa7",
+    "decimals": 18,
+    "coin_id_token": "maverick-protocol"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "flock",
+    "ticker": "FLOCK",
+    "sc": "0x5ab3d4c385b400f3abb49e80de2faf6a88a7b691",
+    "decimals": 18,
+    "coin_id_token": "flock-io"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "common",
+    "ticker": "COMMON",
+    "sc": "0x4c87da04887a1f9f21f777e3a8dd55c3c9f84701",
+    "decimals": 18,
+    "coin_id_token": "common"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "virtual",
+    "ticker": "VIRTUAL",
+    "sc": "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
+    "decimals": 18,
+    "coin_id_token": "virtual-protocol"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "degen",
+    "ticker": "DEGEN",
+    "sc": "0x4ed4e862860bed51a9570b96d89af5e1b0efefed",
+    "decimals": 18,
+    "coin_id_token": "degen-base"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "home",
+    "ticker": "HOME",
+    "sc": "0x4bfaa776991e85e5f8b1255461cbbd216cfc714f",
+    "decimals": 18,
+    "coin_id_token": "defi-app"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "mavia",
+    "ticker": "MAVIA",
+    "sc": "0x24fcfc492c1393274b6bcd568ac9e225bec93584",
+    "decimals": 18,
+    "coin_id_token": "heroes-of-mavia"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "soso",
+    "ticker": "SOSO",
+    "sc": "0x624e2e7fdc8903165f64891672267ab0fcb98831",
+    "decimals": 18,
+    "coin_id_token": "sosovalue"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "bnkr",
+    "ticker": "BNKR",
+    "sc": "0x22af33fe49fd1fa80c7149773dde5890d3c76f3b",
+    "decimals": 18,
+    "coin_id_token": "bankr-coin"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "check",
+    "ticker": "CHECK",
+    "sc": "0x9126236476efba9ad8ab77855c60eb5bf37586eb",
+    "decimals": 18,
+    "coin_id_token": "checkmate"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "spon",
+    "ticker": "SPON",
+    "sc": "0x080d43c2164afdbc3712422ce78ab902ccab5ca1",
+    "decimals": 18,
+    "coin_id_token": "spheron-network"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "ofc",
+    "ticker": "OFC",
+    "sc": "0x752c5a95d202972e124390f30a50154409d3c858",
+    "decimals": 18,
+    "coin_id_token": "onefootball-credits"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "deepseek",
+    "ticker": "DEEPSEEK",
+    "sc": "0x81a382272bd2bec1f3f9fdab5763a500cbd8ebad",
+    "decimals": 18,
+    "coin_id_token": "global-depin-chain"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "gmrt",
+    "ticker": "GMRT",
+    "sc": "0x6967f0974d76d34e140cae27efea32cdf546b58e",
+    "decimals": 18,
+    "coin_id_token": "the-game-company"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "gtbtc",
+    "ticker": "GTBTC",
+    "sc": "0xc2d09cf86b9ff43cb29ef8ddca57a4eb4410d5f3",
+    "decimals": 8,
+    "coin_id_token": "gtbtc"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "opg",
+    "ticker": "OPG",
+    "sc": "0xfbc2051ae2265686a469421b2c5a2d5462fbf5eb",
+    "decimals": 18,
+    "coin_id_token": "opengradient"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "allo",
+    "ticker": "ALLO",
+    "sc": "0x032d86656db142138ac97d2c5c4e3766e8c0482d",
+    "decimals": 18,
+    "coin_id_token": "allora"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "carv",
+    "ticker": "CARV",
+    "sc": "0xc08cd26474722ce93f4d0c34d16201461c10aa8c",
+    "decimals": 18,
+    "coin_id_token": "carv"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "rnbw",
+    "ticker": "RNBW",
+    "sc": "0xa53887f7e7c1bf5010b8627f1c1ba94fe7a5d6e0",
+    "decimals": 18,
+    "coin_id_token": "rainbow"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "icnt",
+    "ticker": "ICNT",
+    "sc": "0xe0cd4cacddcbf4f36e845407ce53e87717b6601d",
+    "decimals": 18,
+    "coin_id_token": "impossible-cloud-network"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "towns",
+    "ticker": "TOWNS",
+    "sc": "0x00000000a22c618fd6b4d7e9a335c4b96b189a38",
+    "decimals": 18,
+    "coin_id_token": "towns"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "gochu",
+    "ticker": "GOCHU",
+    "sc": "0x9aaae745cf2830fb8ddc6248b17436dc3a5e701c",
+    "decimals": 18,
+    "coin_id_token": "gochujangcoin"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "talent",
+    "ticker": "TALENT",
+    "sc": "0x9a33406165f562e16c3abd82fd1185482e01b49a",
+    "decimals": 18,
+    "coin_id_token": "talent-protocol"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "lmts",
+    "ticker": "LMTS",
+    "sc": "0x9eadbe35f3ee3bf3e28180070c429298a1b02f93",
+    "decimals": 18,
+    "coin_id_token": "limitless-lmts"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "sand",
+    "ticker": "SAND",
+    "sc": "0xac531eb26ca1d21b85126de8fb87e80e09002dcf",
+    "decimals": 18,
+    "coin_id_token": "the-sandbox"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "plian",
+    "ticker": "PLIAN",
+    "sc": "0x31d1154e9fd9607e6f95b4efb6fc3d868426fc30",
+    "decimals": 18,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "aixbt",
+    "ticker": "AIXBT",
+    "sc": "0x4f9fd6be4a90f2620860d680c0d4d5fb53d1a825",
+    "decimals": 18,
+    "coin_id_token": "aixbt"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "sapien",
+    "ticker": "SAPIEN",
+    "sc": "0xc729777d0470f30612b1564fd96e8dd26f5814e3",
+    "decimals": 18,
+    "coin_id_token": "sapien-io"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "teva",
+    "ticker": "TEVA",
+    "sc": "0x00309d634d11541b857f927be91ad2f0bd78894c",
+    "decimals": 18,
+    "coin_id_token": "tevaera"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "riz",
+    "ticker": "RIZ",
+    "sc": "0x67543cf0304c19ca62ac95ba82fd4f4b40788dc1",
+    "decimals": 8,
+    "coin_id_token": "rivalz-network"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "clanker",
+    "ticker": "CLANKER",
+    "sc": "0x1bc0c42215582d5a085795f4badbac3ff36d1bcb",
+    "decimals": 18,
+    "coin_id_token": "tokenbot-2"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "ball",
+    "ticker": "BALL",
+    "sc": "0x8b15cbb7ecd9b8fff38da8ead55a20490b99ad11",
+    "decimals": 18,
+    "coin_id_token": "game-5-ball"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "rsc",
+    "ticker": "RSC",
+    "sc": "0xfbb75a59193a3525a8825bebe7d4b56899e2f7e1",
+    "decimals": 18,
+    "coin_id_token": "researchcoin"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "art",
+    "ticker": "ART",
+    "sc": "0x4dec3139f4a6c638e26452d32181fe87a7530805",
+    "decimals": 18,
+    "coin_id_token": "liveart"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "awe",
+    "ticker": "AWE",
+    "sc": "0x1b4617734c43f6159f3a70b7e06d883647512778",
+    "decimals": 18,
+    "coin_id_token": "awe-network"
+  },
+  {
+    "cex": "GATE",
+    "nama_token": "stix",
+    "ticker": "STIX",
+    "sc": "0xfd1013c72cbb0ffb920d347c5836bf88965d0d5e",
+    "decimals": 18,
+    "coin_id_token": "stix"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "aero",
+    "ticker": "AERO",
+    "sc": "0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+    "decimals": 18,
+    "coin_id_token": "aerodrome-finance"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "aixbt",
+    "ticker": "AIXBT",
+    "sc": "0x4f9fd6be4a90f2620860d680c0d4d5fb53d1a825",
+    "decimals": 18,
+    "coin_id_token": "aixbt"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "avnt",
+    "ticker": "AVNT",
+    "sc": "0x696f9436b67233384889472cd7cd58a6fb5df4f1",
+    "decimals": 18,
+    "coin_id_token": "avantis"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "b3",
+    "ticker": "B3",
+    "sc": "0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3",
+    "decimals": 18,
+    "coin_id_token": "b3"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "brett",
+    "ticker": "BRETT",
+    "sc": "0x532f27101965dd16442e59d40670faf5ebb142e4",
+    "decimals": 18,
+    "coin_id_token": "based-brett"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "carv",
+    "ticker": "CARV",
+    "sc": "0xc08cd26474722ce93f4d0c34d16201461c10aa8c",
+    "decimals": 18,
+    "coin_id_token": "carv"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "cookie",
+    "ticker": "COOKIE",
+    "sc": "0xc0041ef357b183448b235a8ea73ce4e4ec8c265f",
+    "decimals": 18,
+    "coin_id_token": "cookie"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "degen",
+    "ticker": "DEGEN",
+    "sc": "0x4ed4e862860bed51a9570b96d89af5e1b0efefed",
+    "decimals": 18,
+    "coin_id_token": "degen-base"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "elsa",
+    "ticker": "ELSA",
+    "sc": "0x29cc30f9d113b356ce408667aa6433589cecbdca",
+    "decimals": 18,
+    "coin_id_token": "heyelsa"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "f",
+    "ticker": "F",
+    "sc": "0x2c24497d4086490e7ead87cc12597fb50c2e6ed6",
+    "decimals": 18,
+    "coin_id_token": "synfutures"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "flock",
+    "ticker": "FLOCK",
+    "sc": "0x5ab3d4c385b400f3abb49e80de2faf6a88a7b691",
+    "decimals": 18,
+    "coin_id_token": "flock-io"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "gps",
+    "ticker": "GPS",
+    "sc": "0x0c1dc73159e30c4b06170f2593d3118968a0dca5",
+    "decimals": 18,
+    "coin_id_token": "goplus-security"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "home",
+    "ticker": "HOME",
+    "sc": "0x4bfaa776991e85e5f8b1255461cbbd216cfc714f",
+    "decimals": 18,
+    "coin_id_token": "defi-app"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "icnt",
+    "ticker": "ICNT",
+    "sc": "0xe0cd4cacddcbf4f36e845407ce53e87717b6601d",
+    "decimals": 18,
+    "coin_id_token": "impossible-cloud-network"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "mavia",
+    "ticker": "MAVIA",
+    "sc": "0x24fcfc492c1393274b6bcd568ac9e225bec93584",
+    "decimals": 18,
+    "coin_id_token": "heroes-of-mavia"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "mog",
+    "ticker": "MOG",
+    "sc": "0x2da56acb9ea78330f947bd57c54119debda7af71",
+    "decimals": 18,
+    "coin_id_token": "mog-coin"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "morpho",
+    "ticker": "MORPHO",
+    "sc": "0xbaa5cc21fd487b8fcc2f632f3f4e8d37262a0842",
+    "decimals": 18,
+    "coin_id_token": "morpho"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "obt",
+    "ticker": "OBT",
+    "sc": "0x514d8e8099286a13486ef6c525c120f51c239b52",
+    "decimals": 18,
+    "coin_id_token": "orbiter-finance"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "opg",
+    "ticker": "OPG",
+    "sc": "0xfbc2051ae2265686a469421b2c5a2d5462fbf5eb",
+    "decimals": 18,
+    "coin_id_token": "opengradient"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "parti",
+    "ticker": "PARTI",
+    "sc": "0x59264f02d301281f3393e1385c0aefd446eb0f00",
+    "decimals": 18,
+    "coin_id_token": "particle-network"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "recall",
+    "ticker": "RECALL",
+    "sc": "0x1f16e03c1a5908818f47f6ee7bb16690b40d0671",
+    "decimals": 18,
+    "coin_id_token": "recall-network"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "robo",
+    "ticker": "ROBO",
+    "sc": "0x407a5fb66cb1b3d50004f7091c08a27b42ba6d6f",
+    "decimals": 18,
+    "coin_id_token": "fabric-foundation"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "scor",
+    "ticker": "SCOR",
+    "sc": "0xd67ec255100ef200a439d09ff865fbaa2ad9c730",
+    "decimals": 18,
+    "coin_id_token": "scor"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "sign",
+    "ticker": "SIGN",
+    "sc": "0x868fced65edbf0056c4163515dd840e9f287a4c3",
+    "decimals": 18,
+    "coin_id_token": "sign"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "soso",
+    "ticker": "SOSO",
+    "sc": "0x624e2e7fdc8903165f64891672267ab0fcb98831",
+    "decimals": 18,
+    "coin_id_token": "sosovalue"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "toshi",
+    "ticker": "TOSHI",
+    "sc": "0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4",
+    "decimals": 18,
+    "coin_id_token": "toshithecat"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "towns",
+    "ticker": "TOWNS",
+    "sc": "0x00000000a22c618fd6b4d7e9a335c4b96b189a38",
+    "decimals": 18,
+    "coin_id_token": "towns"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "usdc",
+    "ticker": "USDC",
+    "sc": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "decimals": 6,
+    "coin_id_token": "usd-coin"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "virtual",
+    "ticker": "VIRTUAL",
+    "sc": "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
+    "decimals": 18,
+    "coin_id_token": "virtual-protocol"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "vvv",
+    "ticker": "VVV",
+    "sc": "0xacfe6019ed1a7dc6f7b508c02d1b04ec88cc21bf",
+    "decimals": 18,
+    "coin_id_token": "venice-token"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "zen",
+    "ticker": "ZEN",
+    "sc": "0xf43eb8de897fbc7f2502483b2bef7bb9ea179229",
+    "decimals": 18,
+    "coin_id_token": "horizen"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "zkp",
+    "ticker": "ZKP",
+    "sc": "0xc6c1be6c6d828f9cea70f1b8351879510fbf0065",
+    "decimals": 18,
+    "coin_id_token": "zkpass"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "zora",
+    "ticker": "ZORA",
+    "sc": "0x1111111111166b7fe7bd91427724b487980afc69",
+    "decimals": 18,
+    "coin_id_token": "zora"
+  },
+  {
+    "cex": "BYBIT",
+    "nama_token": "zro",
+    "ticker": "ZRO",
+    "sc": "0x6985884c4392d348587b19cb9eaaf157f13271cd",
+    "decimals": 18,
+    "coin_id_token": "layerzero"
+  },
+  {
+    "cex": "OKX",
+    "nama_token": "usdc",
+    "ticker": "USDC",
+    "sc": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "decimals": 6,
+    "coin_id_token": "usd-coin"
+  },
+  {
+    "cex": "OKX",
+    "nama_token": "aixbt",
+    "ticker": "AIXBT",
+    "sc": "0x4f9fd6be4a90f2620860d680c0d4d5fb53d1a825",
+    "decimals": 18,
+    "coin_id_token": "aixbt"
+  },
+  {
+    "cex": "OKX",
+    "nama_token": "avnt",
+    "ticker": "AVNT",
+    "sc": "0x696f9436b67233384889472cd7cd58a6fb5df4f1",
+    "decimals": 18,
+    "coin_id_token": "avantis"
+  },
+  {
+    "cex": "OKX",
+    "nama_token": "degen",
+    "ticker": "DEGEN",
+    "sc": "0x4ed4e862860bed51a9570b96d89af5e1b0efefed",
+    "decimals": 18,
+    "coin_id_token": "degen-base"
+  },
+  {
+    "cex": "OKX",
+    "nama_token": "kaito",
+    "ticker": "KAITO",
+    "sc": "0x98d0baa52b2d063e780de12f615f963fe8537553",
+    "decimals": 18,
+    "coin_id_token": "kaito"
+  },
+  {
+    "cex": "OKX",
+    "nama_token": "ofc",
+    "ticker": "OFC",
+    "sc": "0x752c5a95d202972e124390f30a50154409d3c858",
+    "decimals": 18,
+    "coin_id_token": "onefootball-credits"
+  },
+  {
+    "cex": "OKX",
+    "nama_token": "parti",
+    "ticker": "PARTI",
+    "sc": "0x59264f02d301281f3393e1385c0aefd446eb0f00",
+    "decimals": 18,
+    "coin_id_token": "particle-network"
+  },
+  {
+    "cex": "OKX",
+    "nama_token": "toshi",
+    "ticker": "TOSHI",
+    "sc": "0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4",
+    "decimals": 18,
+    "coin_id_token": "toshithecat"
+  },
+  {
+    "cex": "OKX",
+    "nama_token": "virtual",
+    "ticker": "VIRTUAL",
+    "sc": "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
+    "decimals": 18,
+    "coin_id_token": "virtual-protocol"
+  },
+  {
+    "cex": "OKX",
+    "nama_token": "zen",
+    "ticker": "ZEN",
+    "sc": "0xf43eb8de897fbc7f2502483b2bef7bb9ea179229",
+    "decimals": 18,
+    "coin_id_token": "horizen"
+  },
+  {
+    "cex": "OKX",
+    "nama_token": "zora",
+    "ticker": "ZORA",
+    "sc": "0x1111111111166b7fe7bd91427724b487980afc69",
+    "decimals": 18,
+    "coin_id_token": "zora"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "usdc",
+    "ticker": "USDC",
+    "sc": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "decimals": 6,
+    "coin_id_token": "usd-coin"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "btc",
+    "ticker": "BTC",
+    "sc": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+    "decimals": 8,
+    "coin_id_token": "bitcoin"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "trx",
+    "ticker": "TRX",
+    "sc": "0x989cfdc3508500d0c91f22896a0d2ee1ef675870",
+    "decimals": 6,
+    "coin_id_token": "tron"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "zen",
+    "ticker": "ZEN",
+    "sc": "0xf43eb8de897fbc7f2502483b2bef7bb9ea179229",
+    "decimals": 18,
+    "coin_id_token": "horizen"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "aixbt",
+    "ticker": "AIXBT",
+    "sc": "0x4f9fd6be4a90f2620860d680c0d4d5fb53d1a825",
+    "decimals": 18,
+    "coin_id_token": "aixbt"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "atwo",
+    "ticker": "ATWO",
+    "sc": "0x499d35ebe6cee9b2ac35fd003fcbbeeb9cfc7b32",
+    "decimals": 18,
+    "coin_id_token": "arena-two"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "avnt",
+    "ticker": "AVNT",
+    "sc": "0x696f9436b67233384889472cd7cd58a6fb5df4f1",
+    "decimals": 18,
+    "coin_id_token": "avantis"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "awe",
+    "ticker": "AWE",
+    "sc": "0x1b4617734c43f6159f3a70b7e06d883647512778",
+    "decimals": 18,
+    "coin_id_token": "awe-network"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "bnkr",
+    "ticker": "BNKR",
+    "sc": "0x22af33fe49fd1fa80c7149773dde5890d3c76f3b",
+    "decimals": 18,
+    "coin_id_token": "bankr-coin"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "brett",
+    "ticker": "BRETT",
+    "sc": "0x532f27101965dd16442e59d40670faf5ebb142e4",
+    "decimals": 18,
+    "coin_id_token": "based-brett"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "carv",
+    "ticker": "CARV",
+    "sc": "0xc08cd26474722ce93f4d0c34d16201461c10aa8c",
+    "decimals": 18,
+    "coin_id_token": "carv"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "check",
+    "ticker": "CHECK",
+    "sc": "0x9126236476efba9ad8ab77855c60eb5bf37586eb",
+    "decimals": 18,
+    "coin_id_token": "checkmate"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "clanker",
+    "ticker": "CLANKER",
+    "sc": "0x1bc0c42215582d5a085795f4badbac3ff36d1bcb",
+    "decimals": 18,
+    "coin_id_token": "tokenbot-2"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "clawd",
+    "ticker": "CLAWD",
+    "sc": "0x9f86db9fc6f7c9408e8fda3ff8ce4e78ac7a6b07",
+    "decimals": 18,
+    "coin_id_token": "clawd-atg-eth"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "clawnch",
+    "ticker": "CLAWNCH",
+    "sc": "0xa1f72459dfa10bad200ac160ecd78c6b77a747be",
+    "decimals": 18,
+    "coin_id_token": "clawnch"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "ctr",
+    "ticker": "CTR",
+    "sc": "0x11030f79109269d796fd0fb956d6244e502757f7",
+    "decimals": 18,
+    "coin_id_token": "citrea"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "degen",
+    "ticker": "DEGEN",
+    "sc": "0x4ed4e862860bed51a9570b96d89af5e1b0efefed",
+    "decimals": 18,
+    "coin_id_token": "degen-base"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "elsa",
+    "ticker": "ELSA",
+    "sc": "0x29cc30f9d113b356ce408667aa6433589cecbdca",
+    "decimals": 18,
+    "coin_id_token": "heyelsa"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "gamebase",
+    "ticker": "GAMEBASE",
+    "sc": "0x1c4cca7c5db003824208adda61bd749e55f463a3",
+    "decimals": 18,
+    "coin_id_token": "game-by-virtuals"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "home",
+    "ticker": "HOME",
+    "sc": "0x4bfaa776991e85e5f8b1255461cbbd216cfc714f",
+    "decimals": 18,
+    "coin_id_token": "defi-app"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "kaito",
+    "ticker": "KAITO",
+    "sc": "0x98d0baa52b2d063e780de12f615f963fe8537553",
+    "decimals": 18,
+    "coin_id_token": "kaito"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "mira",
+    "ticker": "MIRA",
+    "sc": "0x7aafd31a321d3627b30a8e2171264b56852187fe",
+    "decimals": 18,
+    "coin_id_token": "mira-network"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "molt",
+    "ticker": "MOLT",
+    "sc": "0xb695559b26bb2c9703ef1935c37aeae9526bab07",
+    "decimals": 18,
+    "coin_id_token": "moltbook"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "o",
+    "ticker": "O",
+    "sc": "0x182fa643e5f29d5eca75e7b9cf9336a3fe4620b2",
+    "decimals": 18,
+    "coin_id_token": "o1-exchange"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "opg",
+    "ticker": "OPG",
+    "sc": "0xfbc2051ae2265686a469421b2c5a2d5462fbf5eb",
+    "decimals": 18,
+    "coin_id_token": "opengradient"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "ping",
+    "ticker": "PING",
+    "sc": "0xd85c31854c2b0fb40aaa9e2fc4da23c21f829d46",
+    "decimals": 18,
+    "coin_id_token": "ping"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "up",
+    "ticker": "UP",
+    "sc": "0x5b2193fdc451c1f847be09ca9d13a4bf60f8c86b",
+    "decimals": 18,
+    "coin_id_token": "unitas"
+  },
+  {
+    "cex": "HTX",
+    "nama_token": "virtual",
+    "ticker": "VIRTUAL",
+    "sc": "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
+    "decimals": 18,
+    "coin_id_token": "virtual-protocol"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "zen",
+    "ticker": "ZEN",
+    "sc": "0xf43eb8de897fbc7f2502483b2bef7bb9ea179229",
+    "decimals": 18,
+    "coin_id_token": "horizen"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "xcn",
+    "ticker": "XCN",
+    "sc": "0x9c632e6aaa3ea73f91554f8a3cb2ed2f29605e0c",
+    "decimals": 18,
+    "coin_id_token": "onyxcoin"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "aero",
+    "ticker": "AERO",
+    "sc": "0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+    "decimals": 18,
+    "coin_id_token": "aerodrome-finance"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "degen",
+    "ticker": "DEGEN",
+    "sc": "0x4ed4e862860bed51a9570b96d89af5e1b0efefed",
+    "decimals": 18,
+    "coin_id_token": "degen-base"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "brett",
+    "ticker": "BRETT",
+    "sc": "0x532f27101965dd16442e59d40670faf5ebb142e4",
+    "decimals": 18,
+    "coin_id_token": "based-brett"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "una",
+    "ticker": "UNA",
+    "sc": "0x24569d33653c404f90af10a2b98d6e0030d3d267",
+    "decimals": 18,
+    "coin_id_token": "unagi-token"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "carv",
+    "ticker": "CARV",
+    "sc": "0xc08cd26474722ce93f4d0c34d16201461c10aa8c",
+    "decimals": 18,
+    "coin_id_token": "carv"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "rwa",
+    "ticker": "RWA",
+    "sc": "0xe2b1dc2d4a3b4e59fdf0c47b71a7a86391a8b35a",
+    "decimals": 18,
+    "coin_id_token": "allo"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "virtual",
+    "ticker": "VIRTUAL",
+    "sc": "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
+    "decimals": 18,
+    "coin_id_token": "virtual-protocol"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "toshi",
+    "ticker": "TOSHI",
+    "sc": "0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4",
+    "decimals": 18,
+    "coin_id_token": "toshithecat"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "f",
+    "ticker": "F",
+    "sc": "0x2c24497d4086490e7ead87cc12597fb50c2e6ed6",
+    "decimals": 18,
+    "coin_id_token": "synfutures"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "lingo",
+    "ticker": "LINGO",
+    "sc": "0xfb42da273158b0f642f59f2ba7cc1d5457481677",
+    "decimals": 18,
+    "coin_id_token": "lingo"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "aixbt",
+    "ticker": "AIXBT",
+    "sc": "0x4f9fd6be4a90f2620860d680c0d4d5fb53d1a825",
+    "decimals": 18,
+    "coin_id_token": "aixbt"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "gameai",
+    "ticker": "GAMEAI",
+    "sc": "0x1c4cca7c5db003824208adda61bd749e55f463a3",
+    "decimals": 18,
+    "coin_id_token": "game-by-virtuals"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "gps",
+    "ticker": "GPS",
+    "sc": "0x0c1dc73159e30c4b06170f2593d3118968a0dca5",
+    "decimals": 18,
+    "coin_id_token": "goplus-security"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "vvv",
+    "ticker": "VVV",
+    "sc": "0xacfe6019ed1a7dc6f7b508c02d1b04ec88cc21bf",
+    "decimals": 18,
+    "coin_id_token": "venice-token"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "xoxo",
+    "ticker": "XOXO",
+    "sc": "0xc799ada44171b741abf41ee54fb1b47fda5960be",
+    "decimals": 6,
+    "coin_id_token": "xo-protocol"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "riz",
+    "ticker": "RIZ",
+    "sc": "0x67543cf0304c19ca62ac95ba82fd4f4b40788dc1",
+    "decimals": 8,
+    "coin_id_token": "rivalz-network"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "kaito",
+    "ticker": "KAITO",
+    "sc": "0x98d0baa52b2d063e780de12f615f963fe8537553",
+    "decimals": 18,
+    "coin_id_token": "kaito"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "b3",
+    "ticker": "B3",
+    "sc": "0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3",
+    "decimals": 18,
+    "coin_id_token": "b3"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "parti",
+    "ticker": "PARTI",
+    "sc": "0x59264f02d301281f3393e1385c0aefd446eb0f00",
+    "decimals": 18,
+    "coin_id_token": "particle-network"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "prompt",
+    "ticker": "PROMPT",
+    "sc": "0x30c7235866872213f68cb1f08c37cb9eccb93452",
+    "decimals": 18,
+    "coin_id_token": "wayfinder"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "zora",
+    "ticker": "ZORA",
+    "sc": "0x1111111111166b7fe7bd91427724b487980afc69",
+    "decimals": 18,
+    "coin_id_token": "zora"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "clanker",
+    "ticker": "CLANKER",
+    "sc": "0x1bc0c42215582d5a085795f4badbac3ff36d1bcb",
+    "decimals": 18,
+    "coin_id_token": "tokenbot-2"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "sign",
+    "ticker": "SIGN",
+    "sc": "0x868fced65edbf0056c4163515dd840e9f287a4c3",
+    "decimals": 18,
+    "coin_id_token": "sign"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "sxt",
+    "ticker": "SXT",
+    "sc": "0xa2c22252cdc8b7cddee1b0b2e242818509fcf7b8",
+    "decimals": 18,
+    "coin_id_token": "space-and-time"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "giza",
+    "ticker": "GIZA",
+    "sc": "0x590830dfdf9a3f68afcdde2694773debdf267774",
+    "decimals": 18,
+    "coin_id_token": "giza"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "awe",
+    "ticker": "AWE",
+    "sc": "0x1b4617734c43f6159f3a70b7e06d883647512778",
+    "decimals": 18,
+    "coin_id_token": "awe-network"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "pro",
+    "ticker": "PRO",
+    "sc": "0x18dd5b087bca9920562aff7a0199b96b9230438b",
+    "decimals": 8,
+    "coin_id_token": "propy"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "flock",
+    "ticker": "FLOCK",
+    "sc": "0x5ab3d4c385b400f3abb49e80de2faf6a88a7b691",
+    "decimals": 18,
+    "coin_id_token": "flock-io"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "home",
+    "ticker": "HOME",
+    "sc": "0x4bfaa776991e85e5f8b1255461cbbd216cfc714f",
+    "decimals": 18,
+    "coin_id_token": "defi-app"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "icnt",
+    "ticker": "ICNT",
+    "sc": "0xe0cd4cacddcbf4f36e845407ce53e87717b6601d",
+    "decimals": 18,
+    "coin_id_token": "impossible-cloud-network"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "c",
+    "ticker": "C",
+    "sc": "0xba12bc7b210e61e5d3110b997a63ea216e0e18f7",
+    "decimals": 18,
+    "coin_id_token": "chainbase"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "towns",
+    "ticker": "TOWNS",
+    "sc": "0x00000000a22c618fd6b4d7e9a335c4b96b189a38",
+    "decimals": 18,
+    "coin_id_token": "towns"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "sapien",
+    "ticker": "SAPIEN",
+    "sc": "0xc729777d0470f30612b1564fd96e8dd26f5814e3",
+    "decimals": 18,
+    "coin_id_token": "sapien-io"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "art",
+    "ticker": "ART",
+    "sc": "0x4dec3139f4a6c638e26452d32181fe87a7530805",
+    "decimals": 18,
+    "coin_id_token": "liveart"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "avnt",
+    "ticker": "AVNT",
+    "sc": "0x696f9436b67233384889472cd7cd58a6fb5df4f1",
+    "decimals": 18,
+    "coin_id_token": "avantis"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "mira",
+    "ticker": "MIRA",
+    "sc": "0x7aafd31a321d3627b30a8e2171264b56852187fe",
+    "decimals": 18,
+    "coin_id_token": "mira-network"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "cypr",
+    "ticker": "CYPR",
+    "sc": "0xd262a4c7108c8139b2b189758e8d17c3dfc91a38",
+    "decimals": 18,
+    "coin_id_token": "cypher-token"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "flk",
+    "ticker": "FLK",
+    "sc": "0xe0969ec84456b7e4d3dd2181fb5265edbb63f7bd",
+    "decimals": 18,
+    "coin_id_token": "fleek"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "recall",
+    "ticker": "RECALL",
+    "sc": "0x1f16e03c1a5908818f47f6ee7bb16690b40d0671",
+    "decimals": 18,
+    "coin_id_token": "recall-network"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "lmts",
+    "ticker": "LMTS",
+    "sc": "0x9eadbe35f3ee3bf3e28180070c429298a1b02f93",
+    "decimals": 18,
+    "coin_id_token": "limitless-lmts"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "eqty",
+    "ticker": "EQTY",
+    "sc": "0xc71f37d9bf4c5d1e7fe4bccb97e6f30b11b37d29",
+    "decimals": 18,
+    "coin_id_token": "lto-network"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "common",
+    "ticker": "COMMON",
+    "sc": "0x4c87da04887a1f9f21f777e3a8dd55c3c9f84701",
+    "decimals": 18,
+    "coin_id_token": "common"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "plai",
+    "ticker": "PLAI",
+    "sc": "0x9215e6362f76fc781df00d51293cc7179c6c99a4",
+    "decimals": 18,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "trust",
+    "ticker": "TRUST",
+    "sc": "0x6cd905df2ed214b22e0d48ff17cd4200c1c6d8a3",
+    "decimals": 18,
+    "coin_id_token": "intuition"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "play",
+    "ticker": "PLAY",
+    "sc": "0x853a7c99227499dba9db8c3a02aa691afdebf841",
+    "decimals": 18,
+    "coin_id_token": "playsout"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "thq",
+    "ticker": "THQ",
+    "sc": "0x0b2558bdbc7ffec0f327fb3579c23dabd1699706",
+    "decimals": 18,
+    "coin_id_token": "theoriq"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "scor",
+    "ticker": "SCOR",
+    "sc": "0xd67ec255100ef200a439d09ff865fbaa2ad9c730",
+    "decimals": 18,
+    "coin_id_token": "scor"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "fun",
+    "ticker": "FUN",
+    "sc": "0x16ee7ecac70d1028e7712751e2ee6ba808a7dd92",
+    "decimals": 18,
+    "coin_id_token": "funtoken"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "elsa",
+    "ticker": "ELSA",
+    "sc": "0x29cc30f9d113b356ce408667aa6433589cecbdca",
+    "decimals": 18,
+    "coin_id_token": "heyelsa"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "rnbw",
+    "ticker": "RNBW",
+    "sc": "0xa53887f7e7c1bf5010b8627f1c1ba94fe7a5d6e0",
+    "decimals": 18,
+    "coin_id_token": "rainbow"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "up",
+    "ticker": "UP",
+    "sc": "0x5b2193fdc451c1f847be09ca9d13a4bf60f8c86b",
+    "decimals": 18,
+    "coin_id_token": "unitas"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "bnkr",
+    "ticker": "BNKR",
+    "sc": "0x22af33fe49fd1fa80c7149773dde5890d3c76f3b",
+    "decimals": 18,
+    "coin_id_token": "bankr-coin"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "atwo",
+    "ticker": "ATWO",
+    "sc": "0x499d35ebe6cee9b2ac35fd003fcbbeeb9cfc7b32",
+    "decimals": 18,
+    "coin_id_token": "arena-two"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "deus",
+    "ticker": "DEUS",
+    "sc": "0x940a319b75861014a220d9c6c144d108552b089b",
+    "decimals": 18,
+    "coin_id_token": "deus-token"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "o",
+    "ticker": "O",
+    "sc": "0x182fa643e5f29d5eca75e7b9cf9336a3fe4620b2",
+    "decimals": 18,
+    "coin_id_token": "o1-exchange"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "ily",
+    "ticker": "ILY",
+    "sc": "0x90eb0e291e9d78a96bfe423b8e616a02c4838cf0",
+    "decimals": 18,
+    "coin_id_token": "ility"
+  },
+  {
+    "cex": "KUCOIN",
+    "nama_token": "usdc",
+    "ticker": "USDC",
+    "sc": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "decimals": 6,
+    "coin_id_token": "usd-coin"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "usdc",
+    "ticker": "USDC",
+    "sc": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "decimals": 6,
+    "coin_id_token": "usd-coin"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "zen",
+    "ticker": "ZEN",
+    "sc": "0xf43eb8de897fbc7f2502483b2bef7bb9ea179229",
+    "decimals": 18,
+    "coin_id_token": "horizen"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "brett",
+    "ticker": "BRETT",
+    "sc": "0x532f27101965dd16442e59d40670faf5ebb142e4",
+    "decimals": 18,
+    "coin_id_token": "based-brett"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "aero",
+    "ticker": "AERO",
+    "sc": "0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+    "decimals": 18,
+    "coin_id_token": "aerodrome-finance"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "virtual",
+    "ticker": "VIRTUAL",
+    "sc": "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
+    "decimals": 18,
+    "coin_id_token": "virtual-protocol"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "moew",
+    "ticker": "MOEW",
+    "sc": "0x15ac90165f8b45a80534228bdcb124a011f62fee",
+    "decimals": 18,
+    "coin_id_token": "donotfomoew"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "cookie",
+    "ticker": "COOKIE",
+    "sc": "0xc0041ef357b183448b235a8ea73ce4e4ec8c265f",
+    "decimals": 18,
+    "coin_id_token": "cookie"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "carv",
+    "ticker": "CARV",
+    "sc": "0xc08cd26474722ce93f4d0c34d16201461c10aa8c",
+    "decimals": 18,
+    "coin_id_token": "carv"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "clanker",
+    "ticker": "CLANKER",
+    "sc": "0x1bc0c42215582d5a085795f4badbac3ff36d1bcb",
+    "decimals": 18,
+    "coin_id_token": "tokenbot-2"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "aixbt",
+    "ticker": "AIXBT",
+    "sc": "0x4f9fd6be4a90f2620860d680c0d4d5fb53d1a825",
+    "decimals": 18,
+    "coin_id_token": "aixbt"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "flock",
+    "ticker": "FLOCK",
+    "sc": "0x5ab3d4c385b400f3abb49e80de2faf6a88a7b691",
+    "decimals": 18,
+    "coin_id_token": "flock-io"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "gps",
+    "ticker": "GPS",
+    "sc": "0x0c1dc73159e30c4b06170f2593d3118968a0dca5",
+    "decimals": 18,
+    "coin_id_token": "goplus-security"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "toshi",
+    "ticker": "TOSHI",
+    "sc": "0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4",
+    "decimals": 18,
+    "coin_id_token": "toshithecat"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "kaito",
+    "ticker": "KAITO",
+    "sc": "0x98d0baa52b2d063e780de12f615f963fe8537553",
+    "decimals": 18,
+    "coin_id_token": "kaito"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "parti",
+    "ticker": "PARTI",
+    "sc": "0x59264f02d301281f3393e1385c0aefd446eb0f00",
+    "decimals": 18,
+    "coin_id_token": "particle-network"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "zora",
+    "ticker": "ZORA",
+    "sc": "0x1111111111166b7fe7bd91427724b487980afc69",
+    "decimals": 18,
+    "coin_id_token": "zora"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "sign",
+    "ticker": "SIGN",
+    "sc": "0x868fced65edbf0056c4163515dd840e9f287a4c3",
+    "decimals": 18,
+    "coin_id_token": "sign"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "awe",
+    "ticker": "AWE",
+    "sc": "0x1b4617734c43f6159f3a70b7e06d883647512778",
+    "decimals": 18,
+    "coin_id_token": "awe-network"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "home",
+    "ticker": "HOME",
+    "sc": "0x4bfaa776991e85e5f8b1255461cbbd216cfc714f",
+    "decimals": 18,
+    "coin_id_token": "defi-app"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "icnt",
+    "ticker": "ICNT",
+    "sc": "0xe0cd4cacddcbf4f36e845407ce53e87717b6601d",
+    "decimals": 18,
+    "coin_id_token": "impossible-cloud-network"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "c",
+    "ticker": "C",
+    "sc": "0xba12bc7b210e61e5d3110b997a63ea216e0e18f7",
+    "decimals": 18,
+    "coin_id_token": "chainbase"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "towns",
+    "ticker": "TOWNS",
+    "sc": "0x00000000a22c618fd6b4d7e9a335c4b96b189a38",
+    "decimals": 18,
+    "coin_id_token": "towns"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "sapien",
+    "ticker": "SAPIEN",
+    "sc": "0xc729777d0470f30612b1564fd96e8dd26f5814e3",
+    "decimals": 18,
+    "coin_id_token": "sapien-io"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "avnt",
+    "ticker": "AVNT",
+    "sc": "0x696f9436b67233384889472cd7cd58a6fb5df4f1",
+    "decimals": 18,
+    "coin_id_token": "avantis"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "mira",
+    "ticker": "MIRA",
+    "sc": "0x7aafd31a321d3627b30a8e2171264b56852187fe",
+    "decimals": 18,
+    "coin_id_token": "mira-network"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "cgn",
+    "ticker": "CGN",
+    "sc": "0x2e6c4bd1c947e195645d2b920b827498cfaa6766",
+    "decimals": 18,
+    "coin_id_token": "cygnus-finance"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "recall",
+    "ticker": "RECALL",
+    "sc": "0x1f16e03c1a5908818f47f6ee7bb16690b40d0671",
+    "decimals": 18,
+    "coin_id_token": "recall-network"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "plai",
+    "ticker": "PLAI",
+    "sc": "0x9215e6362f76fc781df00d51293cc7179c6c99a4",
+    "decimals": 18,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "trust",
+    "ticker": "TRUST",
+    "sc": "0x6cd905df2ed214b22e0d48ff17cd4200c1c6d8a3",
+    "decimals": 18,
+    "coin_id_token": "intuition"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "fun",
+    "ticker": "FUN",
+    "sc": "0x16ee7ecac70d1028e7712751e2ee6ba808a7dd92",
+    "decimals": 18,
+    "coin_id_token": "funtoken"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "roll",
+    "ticker": "ROLL",
+    "sc": "0xab6363da0c80cef3ae105bd6241e30872355d021",
+    "decimals": 18,
+    "coin_id_token": "rollx"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "ily",
+    "ticker": "ILY",
+    "sc": "0x90eb0e291e9d78a96bfe423b8e616a02c4838cf0",
+    "decimals": 18,
+    "coin_id_token": "ility"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "up",
+    "ticker": "UP",
+    "sc": "0x5b2193fdc451c1f847be09ca9d13a4bf60f8c86b",
+    "decimals": 18,
+    "coin_id_token": "unitas"
+  },
+  {
+    "cex": "BITGET",
+    "nama_token": "o",
+    "ticker": "O",
+    "sc": "0x182fa643e5f29d5eca75e7b9cf9336a3fe4620b2",
+    "decimals": 18,
+    "coin_id_token": "o1-exchange"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "zen",
+    "ticker": "ZEN",
+    "sc": "0xf43eb8de897fbc7f2502483b2bef7bb9ea179229",
+    "decimals": 18,
+    "coin_id_token": "horizen"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "trust",
+    "ticker": "TRUST",
+    "sc": "0x6cd905df2ed214b22e0d48ff17cd4200c1c6d8a3",
+    "decimals": 18,
+    "coin_id_token": "intuition"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "brett",
+    "ticker": "BRETT",
+    "sc": "0x532f27101965dd16442e59d40670faf5ebb142e4",
+    "decimals": 18,
+    "coin_id_token": "based-brett"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "home",
+    "ticker": "HOME",
+    "sc": "0x4bfaa776991e85e5f8b1255461cbbd216cfc714f",
+    "decimals": 18,
+    "coin_id_token": "defi-app"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "toshi",
+    "ticker": "TOSHI",
+    "sc": "0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4",
+    "decimals": 18,
+    "coin_id_token": "toshithecat"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "avnt",
+    "ticker": "AVNT",
+    "sc": "0x696f9436b67233384889472cd7cd58a6fb5df4f1",
+    "decimals": 18,
+    "coin_id_token": "avantis"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "towns",
+    "ticker": "TOWNS",
+    "sc": "0x00000000a22c618fd6b4d7e9a335c4b96b189a38",
+    "decimals": 18,
+    "coin_id_token": "towns"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "elsa",
+    "ticker": "ELSA",
+    "sc": "0x29cc30f9d113b356ce408667aa6433589cecbdca",
+    "decimals": 18,
+    "coin_id_token": "heyelsa"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "zora",
+    "ticker": "ZORA",
+    "sc": "0x1111111111166b7fe7bd91427724b487980afc69",
+    "decimals": 18,
+    "coin_id_token": "zora"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "play",
+    "ticker": "PLAY",
+    "sc": "0x853a7c99227499dba9db8c3a02aa691afdebf841",
+    "decimals": 18,
+    "coin_id_token": "playsout"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "degen",
+    "ticker": "DEGEN",
+    "sc": "0x4ed4e862860bed51a9570b96d89af5e1b0efefed",
+    "decimals": 18,
+    "coin_id_token": "degen-base"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "miggles",
+    "ticker": "MIGGLES",
+    "sc": "0xb1a03eda10342529bbf8eb700a06c60441fef25d",
+    "decimals": 18,
+    "coin_id_token": "mr-miggles"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "gps",
+    "ticker": "GPS",
+    "sc": "0x0c1dc73159e30c4b06170f2593d3118968a0dca5",
+    "decimals": 18,
+    "coin_id_token": "goplus-security"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "c",
+    "ticker": "C",
+    "sc": "0xba12bc7b210e61e5d3110b997a63ea216e0e18f7",
+    "decimals": 18,
+    "coin_id_token": "chainbase"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "b3",
+    "ticker": "B3",
+    "sc": "0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3",
+    "decimals": 18,
+    "coin_id_token": "b3"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "heu",
+    "ticker": "HEU",
+    "sc": "0xef22cb48b8483df6152e1423b19df5553bbd818b",
+    "decimals": 18,
+    "coin_id_token": "heurist-ai"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "definitive",
+    "ticker": "DEFINITIVE",
+    "sc": "0xed6e000def95780fb89734c07ee2ce9f6dcaf110",
+    "decimals": 18,
+    "coin_id_token": "definitive"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "doginme",
+    "ticker": "DOGINME",
+    "sc": "0x6921b130d297cc43754afba22e5eac0fbf8db75b",
+    "decimals": 18,
+    "coin_id_token": "doginme"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "ctr",
+    "ticker": "CTR",
+    "sc": "0x11030f79109269d796fd0fb956d6244e502757f7",
+    "decimals": 18,
+    "coin_id_token": "citrea"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "nock",
+    "ticker": "NOCK",
+    "sc": "0x9b5e262cf9bb04869ab40b19af91d2dc85761722",
+    "decimals": 16,
+    "coin_id_token": "nockchain"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "fai",
+    "ticker": "FAI",
+    "sc": "0xb33ff54b9f7242ef1593d2c9bcd8f9df46c77935",
+    "decimals": 18,
+    "coin_id_token": "freysa-ai"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "icnt",
+    "ticker": "ICNT",
+    "sc": "0xe0cd4cacddcbf4f36e845407ce53e87717b6601d",
+    "decimals": 18,
+    "coin_id_token": "impossible-cloud-network"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "mira",
+    "ticker": "MIRA",
+    "sc": "0x7aafd31a321d3627b30a8e2171264b56852187fe",
+    "decimals": 18,
+    "coin_id_token": "mira-network"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "opg",
+    "ticker": "OPG",
+    "sc": "0xfbc2051ae2265686a469421b2c5a2d5462fbf5eb",
+    "decimals": 18,
+    "coin_id_token": "opengradient"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "aero",
+    "ticker": "AERO",
+    "sc": "0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+    "decimals": 18,
+    "coin_id_token": "aerodrome-finance"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "virtual",
+    "ticker": "VIRTUAL",
+    "sc": "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
+    "decimals": 18,
+    "coin_id_token": "virtual-protocol"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "lmts",
+    "ticker": "LMTS",
+    "sc": "0x9eadbe35f3ee3bf3e28180070c429298a1b02f93",
+    "decimals": 18,
+    "coin_id_token": "limitless-lmts"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "flock",
+    "ticker": "FLOCK",
+    "sc": "0x5ab3d4c385b400f3abb49e80de2faf6a88a7b691",
+    "decimals": 18,
+    "coin_id_token": "flock-io"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "keycat",
+    "ticker": "KEYCAT",
+    "sc": "0x9a26f5433671751c3276a065f57e5a02d2817973",
+    "decimals": 18,
+    "coin_id_token": "keyboard-cat"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "vader",
+    "ticker": "VADER",
+    "sc": "0x731814e491571a2e9ee3c5b1f7f3b962ee8f4870",
+    "decimals": 18,
+    "coin_id_token": "vaderai-by-virtuals"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "vvv",
+    "ticker": "VVV",
+    "sc": "0xacfe6019ed1a7dc6f7b508c02d1b04ec88cc21bf",
+    "decimals": 18,
+    "coin_id_token": "venice-token"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "usdc",
+    "ticker": "USDC",
+    "sc": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "decimals": 6,
+    "coin_id_token": "usd-coin"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "sportfun",
+    "ticker": "SPORTFUN",
+    "sc": "0x16ee7ecac70d1028e7712751e2ee6ba808a7dd92",
+    "decimals": 18,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "ski",
+    "ticker": "SKI",
+    "sc": "0x768be13e1680b5ebe0024c42c896e3db59ec0149",
+    "decimals": 9,
+    "coin_id_token": "ski-mask-dog"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "aixbt",
+    "ticker": "AIXBT",
+    "sc": "0x4f9fd6be4a90f2620860d680c0d4d5fb53d1a825",
+    "decimals": 18,
+    "coin_id_token": "aixbt"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "thq",
+    "ticker": "THQ",
+    "sc": "0x0b2558bdbc7ffec0f327fb3579c23dabd1699706",
+    "decimals": 18,
+    "coin_id_token": "theoriq"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "mamo",
+    "ticker": "MAMO",
+    "sc": "0x7300b37dfdfab110d83290a29dfb31b1740219fe",
+    "decimals": 18,
+    "coin_id_token": "mamo"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "rei",
+    "ticker": "REI",
+    "sc": "0x6b2504a03ca4d43d0d73776f6ad46dab2f2a4cfd",
+    "decimals": 18,
+    "coin_id_token": "rei-network-base"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "kaito",
+    "ticker": "KAITO",
+    "sc": "0x98d0baa52b2d063e780de12f615f963fe8537553",
+    "decimals": 18,
+    "coin_id_token": "kaito"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "sapien",
+    "ticker": "SAPIEN",
+    "sc": "0xc729777d0470f30612b1564fd96e8dd26f5814e3",
+    "decimals": 18,
+    "coin_id_token": "sapien-io"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "noice",
+    "ticker": "NOICE",
+    "sc": "0x9cb41fd9dc6891bae8187029461bfaadf6cc0c69",
+    "decimals": 18,
+    "coin_id_token": "noice"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "tibbir",
+    "ticker": "TIBBIR",
+    "sc": "0xa4a2e2ca3fbfe21aed83471d28b6f65a233c6e00",
+    "decimals": 18,
+    "coin_id_token": "ribbita-by-virtuals"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "clanker",
+    "ticker": "CLANKER",
+    "sc": "0x1bc0c42215582d5a085795f4badbac3ff36d1bcb",
+    "decimals": 18,
+    "coin_id_token": "tokenbot-2"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "kta",
+    "ticker": "KTA",
+    "sc": "0xc0634090f2fe6c6d75e61be2b949464abb498973",
+    "decimals": 18,
+    "coin_id_token": "keeta"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "drb",
+    "ticker": "DRB",
+    "sc": "0x3ec2156d4c0a9cbdab4a016633b7bcf6a8d68ea2",
+    "decimals": 18,
+    "coin_id_token": "digimon-rabbit"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "awe",
+    "ticker": "AWE",
+    "sc": "0x1b4617734c43f6159f3a70b7e06d883647512778",
+    "decimals": 18,
+    "coin_id_token": "awe-network"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "carv",
+    "ticker": "CARV",
+    "sc": "0xc08cd26474722ce93f4d0c34d16201461c10aa8c",
+    "decimals": 18,
+    "coin_id_token": "carv"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "bnkr",
+    "ticker": "BNKR",
+    "sc": "0x22af33fe49fd1fa80c7149773dde5890d3c76f3b",
+    "decimals": 18,
+    "coin_id_token": "bankr-coin"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "lingo",
+    "ticker": "LINGO",
+    "sc": "0xfb42da273158b0f642f59f2ba7cc1d5457481677",
+    "decimals": 18,
+    "coin_id_token": "lingo"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "recall",
+    "ticker": "RECALL",
+    "sc": "0x1f16e03c1a5908818f47f6ee7bb16690b40d0671",
+    "decimals": 18,
+    "coin_id_token": "recall-network"
+  },
+  {
+    "cex": "COINEX",
+    "nama_token": "check",
+    "ticker": "CHECK",
+    "sc": "0x9126236476efba9ad8ab77855c60eb5bf37586eb",
+    "decimals": 18,
+    "coin_id_token": "checkmate"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "aero",
+    "ticker": "AERO",
+    "sc": "0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+    "decimals": 18,
+    "coin_id_token": "aerodrome-finance"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "avnt",
+    "ticker": "AVNT",
+    "sc": "0x696f9436b67233384889472cd7cd58a6fb5df4f1",
+    "decimals": 18,
+    "coin_id_token": "avantis"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "awe",
+    "ticker": "AWE",
+    "sc": "0x1b4617734c43f6159f3a70b7e06d883647512778",
+    "decimals": 18,
+    "coin_id_token": "awe-network"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "b3",
+    "ticker": "B3",
+    "sc": "0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3",
+    "decimals": 18,
+    "coin_id_token": "b3"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "bnkr",
+    "ticker": "BNKR",
+    "sc": "0x22af33fe49fd1fa80c7149773dde5890d3c76f3b",
+    "decimals": 18,
+    "coin_id_token": "bankr-coin"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "check",
+    "ticker": "CHECK",
+    "sc": "0x9126236476efba9ad8ab77855c60eb5bf37586eb",
+    "decimals": 18,
+    "coin_id_token": "checkmate"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "chip",
+    "ticker": "CHIP",
+    "sc": "0x0c1c1c109fe34733fca54b82d7b46b75cfb71f6e",
+    "decimals": 18,
+    "coin_id_token": "usd-ai"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "clanker",
+    "ticker": "CLANKER",
+    "sc": "0x1bc0c42215582d5a085795f4badbac3ff36d1bcb",
+    "decimals": 18,
+    "coin_id_token": "tokenbot-2"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "cookie",
+    "ticker": "COOKIE",
+    "sc": "0xc0041ef357b183448b235a8ea73ce4e4ec8c265f",
+    "decimals": 18,
+    "coin_id_token": "cookie"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "ctr",
+    "ticker": "CTR",
+    "sc": "0x11030f79109269d796fd0fb956d6244e502757f7",
+    "decimals": 18,
+    "coin_id_token": "citrea"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "degen",
+    "ticker": "DEGEN",
+    "sc": "0x4ed4e862860bed51a9570b96d89af5e1b0efefed",
+    "decimals": 18,
+    "coin_id_token": "degen-base"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "diem",
+    "ticker": "DIEM",
+    "sc": "0xf4d97f2da56e8c3098f3a8d538db630a2606a024",
+    "decimals": 18,
+    "coin_id_token": "venice-ai"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "doginme",
+    "ticker": "DOGINME",
+    "sc": "0x6921b130d297cc43754afba22e5eac0fbf8db75b",
+    "decimals": 18,
+    "coin_id_token": "doginme"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "drv",
+    "ticker": "DRV",
+    "sc": "0x9d0e8f5b25384c7310cb8c6ae32c8fbeb645d083",
+    "decimals": 18,
+    "coin_id_token": "derive"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "edge",
+    "ticker": "EDGE",
+    "sc": "0xed6e000def95780fb89734c07ee2ce9f6dcaf110",
+    "decimals": 18,
+    "coin_id_token": "definitive"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "elsa",
+    "ticker": "ELSA",
+    "sc": "0x29cc30f9d113b356ce408667aa6433589cecbdca",
+    "decimals": 18,
+    "coin_id_token": "heyelsa"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "fai",
+    "ticker": "FAI",
+    "sc": "0xb33ff54b9f7242ef1593d2c9bcd8f9df46c77935",
+    "decimals": 18,
+    "coin_id_token": "freysa-ai"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "flock",
+    "ticker": "FLOCK",
+    "sc": "0x5ab3d4c385b400f3abb49e80de2faf6a88a7b691",
+    "decimals": 18,
+    "coin_id_token": "flock-io"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "fluid",
+    "ticker": "FLUID",
+    "sc": "0x61e030a56d33e8260fdd81f03b162a79fe3449cd",
+    "decimals": 18,
+    "coin_id_token": "instadapp"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "fun1",
+    "ticker": "FUN1",
+    "sc": "0x16ee7ecac70d1028e7712751e2ee6ba808a7dd92",
+    "decimals": 18,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "home",
+    "ticker": "HOME",
+    "sc": "0x4bfaa776991e85e5f8b1255461cbbd216cfc714f",
+    "decimals": 18,
+    "coin_id_token": "defi-app"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "hyper",
+    "ticker": "HYPER",
+    "sc": "0xc9d23ed2adb0f551369946bd377f8644ce1ca5c4",
+    "decimals": 18,
+    "coin_id_token": "hyperlane"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "icnt",
+    "ticker": "ICNT",
+    "sc": "0xe0cd4cacddcbf4f36e845407ce53e87717b6601d",
+    "decimals": 18,
+    "coin_id_token": "impossible-cloud-network"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "kaito",
+    "ticker": "KAITO",
+    "sc": "0x98d0baa52b2d063e780de12f615f963fe8537553",
+    "decimals": 18,
+    "coin_id_token": "kaito"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "kat",
+    "ticker": "KAT",
+    "sc": "0xd5390300c5db71f80d46f0fa9983fc72d4d1e3da",
+    "decimals": 18,
+    "coin_id_token": "katana-network"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "keycat",
+    "ticker": "KEYCAT",
+    "sc": "0x9a26f5433671751c3276a065f57e5a02d2817973",
+    "decimals": 18,
+    "coin_id_token": "keyboard-cat"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "kta",
+    "ticker": "KTA",
+    "sc": "0xc0634090f2fe6c6d75e61be2b949464abb498973",
+    "decimals": 18,
+    "coin_id_token": "keeta"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "lmts",
+    "ticker": "LMTS",
+    "sc": "0x9eadbe35f3ee3bf3e28180070c429298a1b02f93",
+    "decimals": 18,
+    "coin_id_token": "limitless-lmts"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "mamo",
+    "ticker": "MAMO",
+    "sc": "0x7300b37dfdfab110d83290a29dfb31b1740219fe",
+    "decimals": 18,
+    "coin_id_token": "mamo"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "mezo",
+    "ticker": "MEZO",
+    "sc": "0x8e4cbbcc33db6c0a18561fde1f6ba35906d4848b",
+    "decimals": 18,
+    "coin_id_token": "mezo"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "mog",
+    "ticker": "MOG",
+    "sc": "0x2da56acb9ea78330f947bd57c54119debda7af71",
+    "decimals": 18,
+    "coin_id_token": "mog-coin"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "morpho",
+    "ticker": "MORPHO",
+    "sc": "0xbaa5cc21fd487b8fcc2f632f3f4e8d37262a0842",
+    "decimals": 18,
+    "coin_id_token": "morpho"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "noice",
+    "ticker": "NOICE",
+    "sc": "0x9cb41fd9dc6891bae8187029461bfaadf6cc0c69",
+    "decimals": 18,
+    "coin_id_token": "noice"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "o",
+    "ticker": "O",
+    "sc": "0x182fa643e5f29d5eca75e7b9cf9336a3fe4620b2",
+    "decimals": 18,
+    "coin_id_token": "o1-exchange"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "oned",
+    "ticker": "ONED",
+    "sc": "0x10ed0050b7a5d5e1e9cc164f77a71d0bf69f64bd",
+    "decimals": 6,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "opg",
+    "ticker": "OPG",
+    "sc": "0xfbc2051ae2265686a469421b2c5a2d5462fbf5eb",
+    "decimals": 18,
+    "coin_id_token": "opengradient"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "prompt",
+    "ticker": "PROMPT",
+    "sc": "0x30c7235866872213f68cb1f08c37cb9eccb93452",
+    "decimals": 18,
+    "coin_id_token": "wayfinder"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "pros",
+    "ticker": "PROS",
+    "sc": "0x8b7dde054be9d180c1be7fae0874697374a49832",
+    "decimals": 18,
+    "coin_id_token": "pharos"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "rave",
+    "ticker": "RAVE",
+    "sc": "0x1aa8fd5bcce2231c6100d55bf8b377cff33acfc3",
+    "decimals": 18,
+    "coin_id_token": "ravedao"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "recall",
+    "ticker": "RECALL",
+    "sc": "0x1f16e03c1a5908818f47f6ee7bb16690b40d0671",
+    "decimals": 18,
+    "coin_id_token": "recall-network"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "rnbw",
+    "ticker": "RNBW",
+    "sc": "0xa53887f7e7c1bf5010b8627f1c1ba94fe7a5d6e0",
+    "decimals": 18,
+    "coin_id_token": "rainbow"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "rsc",
+    "ticker": "RSC",
+    "sc": "0xfbb75a59193a3525a8825bebe7d4b56899e2f7e1",
+    "decimals": 18,
+    "coin_id_token": "researchcoin"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "rsr",
+    "ticker": "RSR",
+    "sc": "0xab36452dbac151be02b16ca17d8919826072f64a",
+    "decimals": 18,
+    "coin_id_token": "reserve-rights"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "sapien",
+    "ticker": "SAPIEN",
+    "sc": "0xc729777d0470f30612b1564fd96e8dd26f5814e3",
+    "decimals": 18,
+    "coin_id_token": "sapien-io"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "seam",
+    "ticker": "SEAM",
+    "sc": "0x1c7a460413dd4e964f96d8dfc56e7223ce88cd85",
+    "decimals": 18,
+    "coin_id_token": "seamless"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "sign",
+    "ticker": "SIGN",
+    "sc": "0x868fced65edbf0056c4163515dd840e9f287a4c3",
+    "decimals": 18,
+    "coin_id_token": "sign"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "sol",
+    "ticker": "SOL",
+    "sc": "0x311935cd80b76769bf2ecc9d8ab7635b2139cf82",
+    "decimals": 9,
+    "coin_id_token": "solana"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "sup",
+    "ticker": "SUP",
+    "sc": "0xa69f80524381275a7ffdb3ae01c54150644c8792",
+    "decimals": 18,
+    "coin_id_token": "superfluid"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "synd",
+    "ticker": "SYND",
+    "sc": "0x11dc28d01984079b7efe7763b533e6ed9e3722b9",
+    "decimals": 18,
+    "coin_id_token": "syndicate-io"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "tgbp",
+    "ticker": "TGBP",
+    "sc": "0x27f6c8289550fce67f6b50bed1f519966afe5287",
+    "decimals": 18,
+    "coin_id_token": "tokenised-gbp"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "toshi",
+    "ticker": "TOSHI",
+    "sc": "0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4",
+    "decimals": 18,
+    "coin_id_token": "toshithecat"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "towns",
+    "ticker": "TOWNS",
+    "sc": "0x00000000a22c618fd6b4d7e9a335c4b96b189a38",
+    "decimals": 18,
+    "coin_id_token": "towns"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "trust",
+    "ticker": "TRUST",
+    "sc": "0x6cd905df2ed214b22e0d48ff17cd4200c1c6d8a3",
+    "decimals": 18,
+    "coin_id_token": "intuition"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "up",
+    "ticker": "UP",
+    "sc": "0x5b2193fdc451c1f847be09ca9d13a4bf60f8c86b",
+    "decimals": 18,
+    "coin_id_token": "unitas"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "virtual",
+    "ticker": "VIRTUAL",
+    "sc": "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
+    "decimals": 18,
+    "coin_id_token": "virtual-protocol"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "vvv",
+    "ticker": "VVV",
+    "sc": "0xacfe6019ed1a7dc6f7b508c02d1b04ec88cc21bf",
+    "decimals": 18,
+    "coin_id_token": "venice-token"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "well",
+    "ticker": "WELL",
+    "sc": "0xa88594d404727625a9437c3f886c7643872296ae",
+    "decimals": 18,
+    "coin_id_token": "moonwell-artemis"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "wmtx",
+    "ticker": "WMTX",
+    "sc": "0x3e31966d4f81c72d2a55310a6365a56a4393e98d",
+    "decimals": 6,
+    "coin_id_token": "walmart-tokenized-stock-xstock"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "zen",
+    "ticker": "ZEN",
+    "sc": "0xf43eb8de897fbc7f2502483b2bef7bb9ea179229",
+    "decimals": 18,
+    "coin_id_token": "horizen"
+  },
+  {
+    "cex": "COINBASE",
+    "nama_token": "zora",
+    "ticker": "ZORA",
+    "sc": "0x1111111111166b7fe7bd91427724b487980afc69",
+    "decimals": 18,
+    "coin_id_token": "zora"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "aero",
+    "ticker": "AERO",
+    "sc": "0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+    "decimals": 18,
+    "coin_id_token": "aerodrome-finance"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "aixbt",
+    "ticker": "AIXBT",
+    "sc": "0x4f9fd6be4a90f2620860d680c0d4d5fb53d1a825",
+    "decimals": 18,
+    "coin_id_token": "aixbt"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "avnt",
+    "ticker": "AVNT",
+    "sc": "0x696f9436b67233384889472cd7cd58a6fb5df4f1",
+    "decimals": 18,
+    "coin_id_token": "avantis"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "bnkr",
+    "ticker": "BNKR",
+    "sc": "0x22af33fe49fd1fa80c7149773dde5890d3c76f3b",
+    "decimals": 18,
+    "coin_id_token": "bankr-coin"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "brett",
+    "ticker": "BRETT",
+    "sc": "0x532f27101965dd16442e59d40670faf5ebb142e4",
+    "decimals": 18,
+    "coin_id_token": "based-brett"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "degen",
+    "ticker": "DEGEN",
+    "sc": "0x4ed4e862860bed51a9570b96d89af5e1b0efefed",
+    "decimals": 18,
+    "coin_id_token": "degen-base"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "home",
+    "ticker": "HOME",
+    "sc": "0x4bfaa776991e85e5f8b1255461cbbd216cfc714f",
+    "decimals": 18,
+    "coin_id_token": "defi-app"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "icnt",
+    "ticker": "ICNT",
+    "sc": "0xe0cd4cacddcbf4f36e845407ce53e87717b6601d",
+    "decimals": 18,
+    "coin_id_token": "impossible-cloud-network"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "kaito",
+    "ticker": "KAITO",
+    "sc": "0x98d0baa52b2d063e780de12f615f963fe8537553",
+    "decimals": 18,
+    "coin_id_token": "kaito"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "kta",
+    "ticker": "KTA",
+    "sc": "0xc0634090f2fe6c6d75e61be2b949464abb498973",
+    "decimals": 18,
+    "coin_id_token": "keeta"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "mog",
+    "ticker": "MOG",
+    "sc": "0x2da56acb9ea78330f947bd57c54119debda7af71",
+    "decimals": 18,
+    "coin_id_token": "mog-coin"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "molt",
+    "ticker": "MOLT",
+    "sc": "0xb695559b26bb2c9703ef1935c37aeae9526bab07",
+    "decimals": 18,
+    "coin_id_token": "moltbook"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "morpho",
+    "ticker": "MORPHO",
+    "sc": "0xbaa5cc21fd487b8fcc2f632f3f4e8d37262a0842",
+    "decimals": 18,
+    "coin_id_token": "morpho"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "nxa",
+    "ticker": "NXA",
+    "sc": "0xbe1518af2419b8ead1fbca138a676d559fedb51d",
+    "decimals": 18,
+    "coin_id_token": "nexaagent-xyz"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "prime",
+    "ticker": "PRIME",
+    "sc": "0xfa980ced6895ac314e7de34ef1bfae90a5add21b",
+    "decimals": 18,
+    "coin_id_token": "echelon-prime"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "sapien",
+    "ticker": "SAPIEN",
+    "sc": "0xc729777d0470f30612b1564fd96e8dd26f5814e3",
+    "decimals": 18,
+    "coin_id_token": "sapien-io"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "sign",
+    "ticker": "SIGN",
+    "sc": "0x868fced65edbf0056c4163515dd840e9f287a4c3",
+    "decimals": 18,
+    "coin_id_token": "sign"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "sxt",
+    "ticker": "SXT",
+    "sc": "0xa2c22252cdc8b7cddee1b0b2e242818509fcf7b8",
+    "decimals": 18,
+    "coin_id_token": "space-and-time"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "syrup",
+    "ticker": "SYRUP",
+    "sc": "0x688aee022aa544f150678b8e5720b6b96a9e9a2f",
+    "decimals": 18,
+    "coin_id_token": "maple-finance"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "toshi",
+    "ticker": "TOSHI",
+    "sc": "0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4",
+    "decimals": 18,
+    "coin_id_token": "toshithecat"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "usdc",
+    "ticker": "USDC",
+    "sc": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "decimals": 6,
+    "coin_id_token": "usd-coin"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "virtual",
+    "ticker": "VIRTUAL",
+    "sc": "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
+    "decimals": 18,
+    "coin_id_token": "virtual-protocol"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "vvv",
+    "ticker": "VVV",
+    "sc": "0xacfe6019ed1a7dc6f7b508c02d1b04ec88cc21bf",
+    "decimals": 18,
+    "coin_id_token": "venice-token"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "xcn",
+    "ticker": "XCN",
+    "sc": "0x9c632e6aaa3ea73f91554f8a3cb2ed2f29605e0c",
+    "decimals": 18,
+    "coin_id_token": "onyxcoin"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "zen",
+    "ticker": "ZEN",
+    "sc": "0xf43eb8de897fbc7f2502483b2bef7bb9ea179229",
+    "decimals": 18,
+    "coin_id_token": "horizen"
+  },
+  {
+    "cex": "INDODAX",
+    "nama_token": "zora",
+    "ticker": "ZORA",
+    "sc": "0x1111111111166b7fe7bd91427724b487980afc69",
+    "decimals": 18,
+    "coin_id_token": "zora"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "aero",
+    "ticker": "AERO",
+    "sc": "0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+    "decimals": 18,
+    "coin_id_token": "aerodrome-finance"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "aixbt",
+    "ticker": "AIXBT",
+    "sc": "0x4f9fd6be4a90f2620860d680c0d4d5fb53d1a825",
+    "decimals": 18,
+    "coin_id_token": "aixbt"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "art",
+    "ticker": "ART",
+    "sc": "0x4dec3139f4a6c638e26452d32181fe87a7530805",
+    "decimals": 18,
+    "coin_id_token": "liveart"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "avnt",
+    "ticker": "AVNT",
+    "sc": "0x696f9436b67233384889472cd7cd58a6fb5df4f1",
+    "decimals": 18,
+    "coin_id_token": "avantis"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "b3",
+    "ticker": "B3",
+    "sc": "0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3",
+    "decimals": 18,
+    "coin_id_token": "b3"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "bks",
+    "ticker": "BKS",
+    "sc": "0xf578c9e57b40a00aef168774f3e47b04c03bf59a",
+    "decimals": 18,
+    "coin_id_token": "backstage"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "mirror",
+    "ticker": "MIRROR",
+    "sc": "0xe1bfa25468af64e366ddafc9d91bcc6c97439a14",
+    "decimals": 18,
+    "coin_id_token": "black-mirror-experience"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "carv",
+    "ticker": "CARV",
+    "sc": "0xc08cd26474722ce93f4d0c34d16201461c10aa8c",
+    "decimals": 18,
+    "coin_id_token": "carv"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "check",
+    "ticker": "CHECK",
+    "sc": "0x9126236476efba9ad8ab77855c60eb5bf37586eb",
+    "decimals": 18,
+    "coin_id_token": "checkmate"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "cgn",
+    "ticker": "CGN",
+    "sc": "0x2e6c4bd1c947e195645d2b920b827498cfaa6766",
+    "decimals": 18,
+    "coin_id_token": "cygnus-finance"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "edge",
+    "ticker": "EDGE",
+    "sc": "0xed6e000def95780fb89734c07ee2ce9f6dcaf110",
+    "decimals": 18,
+    "coin_id_token": "definitive"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "degen",
+    "ticker": "DEGEN",
+    "sc": "0x4ed4e862860bed51a9570b96d89af5e1b0efefed",
+    "decimals": 18,
+    "coin_id_token": "degen-base"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "esx",
+    "ticker": "ESX",
+    "sc": "0x6a72d3a87f97a0fee2c2ee4233bdaebc32813d7a",
+    "decimals": 9,
+    "coin_id_token": "estatex"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "eth",
+    "ticker": "ETH",
+    "sc": "",
+    "decimals": "",
+    "coin_id_token": ""
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "flock",
+    "ticker": "FLOCK",
+    "sc": "0x5ab3d4c385b400f3abb49e80de2faf6a88a7b691",
+    "decimals": 18,
+    "coin_id_token": "flock-io"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "icnt",
+    "ticker": "ICNT",
+    "sc": "0xe0cd4cacddcbf4f36e845407ce53e87717b6601d",
+    "decimals": 18,
+    "coin_id_token": "impossible-cloud-network"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "trust",
+    "ticker": "TRUST",
+    "sc": "0x6cd905df2ed214b22e0d48ff17cd4200c1c6d8a3",
+    "decimals": 18,
+    "coin_id_token": "intuition"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "kaito",
+    "ticker": "KAITO",
+    "sc": "0x98d0baa52b2d063e780de12f615f963fe8537553",
+    "decimals": 18,
+    "coin_id_token": "kaito"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "kta",
+    "ticker": "KTA",
+    "sc": "0xc0634090f2fe6c6d75e61be2b949464abb498973",
+    "decimals": 18,
+    "coin_id_token": "keeta"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "lcap",
+    "ticker": "LCAP",
+    "sc": "0x4da9a0f397db1397902070f93a4d6ddbc0e0e6e8",
+    "decimals": 18,
+    "coin_id_token": ""
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "mezo",
+    "ticker": "MEZO",
+    "sc": "0x8e4cbbcc33db6c0a18561fde1f6ba35906d4848b",
+    "decimals": 18,
+    "coin_id_token": "mezo"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "mira",
+    "ticker": "MIRA",
+    "sc": "0x7aafd31a321d3627b30a8e2171264b56852187fe",
+    "decimals": 18,
+    "coin_id_token": "mira-network"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "well",
+    "ticker": "WELL",
+    "sc": "0xa88594d404727625a9437c3f886c7643872296ae",
+    "decimals": 18,
+    "coin_id_token": "moonwell-artemis"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "odos",
+    "ticker": "ODOS",
+    "sc": "",
+    "decimals": "",
+    "coin_id_token": ""
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "play",
+    "ticker": "PLAY",
+    "sc": "0x853a7c99227499dba9db8c3a02aa691afdebf841",
+    "decimals": 18,
+    "coin_id_token": "playsout"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "raiin",
+    "ticker": "RAIIN",
+    "sc": "",
+    "decimals": "",
+    "coin_id_token": ""
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "rnbw",
+    "ticker": "RNBW",
+    "sc": "0xa53887f7e7c1bf5010b8627f1c1ba94fe7a5d6e0",
+    "decimals": 18,
+    "coin_id_token": "rainbow"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "reppo",
+    "ticker": "REPPO",
+    "sc": "",
+    "decimals": "",
+    "coin_id_token": ""
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "rsc",
+    "ticker": "RSC",
+    "sc": "0xfbb75a59193a3525a8825bebe7d4b56899e2f7e1",
+    "decimals": 18,
+    "coin_id_token": "researchcoin"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "rize",
+    "ticker": "RIZE",
+    "sc": "0x9818b6c09f5ecc843060927e8587c427c7c93583",
+    "decimals": 18,
+    "coin_id_token": "rize"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "roll",
+    "ticker": "ROLL",
+    "sc": "0xab6363da0c80cef3ae105bd6241e30872355d021",
+    "decimals": 18,
+    "coin_id_token": "rollx"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "sapien",
+    "ticker": "SAPIEN",
+    "sc": "0xc729777d0470f30612b1564fd96e8dd26f5814e3",
+    "decimals": 18,
+    "coin_id_token": "sapien-io"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "scor",
+    "ticker": "SCOR",
+    "sc": "0xd67ec255100ef200a439d09ff865fbaa2ad9c730",
+    "decimals": 18,
+    "coin_id_token": "scor"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "sogni",
+    "ticker": "SOGNI",
+    "sc": "0xe014d2a4da6e450f21b5050120d291e63c8940fd",
+    "decimals": 18,
+    "coin_id_token": "sogni-ai"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "fun",
+    "ticker": "FUN",
+    "sc": "0x16ee7ecac70d1028e7712751e2ee6ba808a7dd92",
+    "decimals": 18,
+    "coin_id_token": "funtoken"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "up",
+    "ticker": "UP",
+    "sc": "0x5b2193fdc451c1f847be09ca9d13a4bf60f8c86b",
+    "decimals": 18,
+    "coin_id_token": "unitas"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "clanker",
+    "ticker": "CLANKER",
+    "sc": "0x1bc0c42215582d5a085795f4badbac3ff36d1bcb",
+    "decimals": 18,
+    "coin_id_token": "tokenbot-2"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "toshi",
+    "ticker": "TOSHI",
+    "sc": "0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4",
+    "decimals": 18,
+    "coin_id_token": "toshithecat"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "unite",
+    "ticker": "UNITE",
+    "sc": "",
+    "decimals": "",
+    "coin_id_token": ""
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "usdc",
+    "ticker": "USDC",
+    "sc": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "decimals": 6,
+    "coin_id_token": "usd-coin"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "vvv",
+    "ticker": "VVV",
+    "sc": "0xacfe6019ed1a7dc6f7b508c02d1b04ec88cc21bf",
+    "decimals": 18,
+    "coin_id_token": "venice-token"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "wmtx",
+    "ticker": "WMTX",
+    "sc": "0x3e31966d4f81c72d2a55310a6365a56a4393e98d",
+    "decimals": 6,
+    "coin_id_token": "walmart-tokenized-stock-xstock"
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "vfy",
+    "ticker": "VFY",
+    "sc": "",
+    "decimals": "",
+    "coin_id_token": ""
+  },
+  {
+    "cex": "KRAKEN",
+    "nama_token": "zora",
+    "ticker": "ZORA",
+    "sc": "0x1111111111166b7fe7bd91427724b487980afc69",
+    "decimals": 18,
+    "coin_id_token": "zora"
+  }
+]
